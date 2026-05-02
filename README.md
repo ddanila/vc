@@ -26,3 +26,10 @@ described the origin of Volkov Commander:
 Git records the snapshot commit and tag dates from the newest timestamp inside
 each source archive. Per-file modification times are preserved in the original
 ZIP archives, but not in Git checkouts.
+
+## License
+
+The source snapshots include the original license text in `LICENSE.TXT`:
+
+- `versions/4.05/LICENSE.TXT`
+- `versions/4.99.09/LICENSE.TXT`
