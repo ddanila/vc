@@ -1216,11 +1216,11 @@ M15_00:		MOV	BX,OFFSET SortRev	; Reverced sort
 		.CONST
 Filter_S	DB	' Filter ',0
 Filter0_S	DB	' ',0DAh,' ^bFilter^b ',0FFh,80h+20,0C4h,0BFh,'  ',0DAh,' ^bAttributes^b ',0FFh,80h+6,0C4h,0BFh,' ',0
-Filter1_S	DB	0FFh,32,0B3h,'  [ ] Archive'  ,0FFh,5,'³',0
-Filter2_S	DB	0FFh,32,0B3h,'  [ ] System'   ,0FFh,6,'³',0
-Filter3_S	DB	0FFh,32,0B3h,'  [ ] Hidden'   ,0FFh,6,'³',0
-Filter4_S	DB	0FFh,32,0B3h,'  [ ] Directory',0FFh,3,'³',0
-Filter5_S	DB	0FFh,32,0B3h,'  [ ] Absent'   ,0FFh,6,'³',0
+Filter1_S	DB	0FFh,32,0B3h,'  [ ] Archive'  ,0FFh,5,0B3h,0
+Filter2_S	DB	0FFh,32,0B3h,'  [ ] System'   ,0FFh,6,0B3h,0
+Filter3_S	DB	0FFh,32,0B3h,'  [ ] Hidden'   ,0FFh,6,0B3h,0
+Filter4_S	DB	0FFh,32,0B3h,'  [ ] Directory',0FFh,3,0B3h,0
+Filter5_S	DB	0FFh,32,0B3h,'  [ ] Absent'   ,0FFh,6,0B3h,0
 Filter6_S	DB	0FFh,32,0C0h,0FFh,80h+18,         0C4h,0D9h,0
 Filter7_S	DB	0B3h,'  ( ) ^0E21< ',0B3h,0
 Filter8_S	DB	0B3h,0FFh,    28, 0B3h,0
