@@ -2171,15 +2171,15 @@ Interface01_S	DB	0DAh,' ^bGeneral options^b '   ,0FFh,80h+15,0C4h,0BFh,'  ',0DAh
 Interface02_S	DB	0B3h,'  [ ] Clock'			,0FFh,21,0B3h,'  ',0B3h,'  ( ) Black & White'     ,0FFh, 8,0B3h,0
 Interface03_S	DB	0B3h,'  [ ] Path prompt'		,0FFh,15,0B3h,'  ',0B3h,'  ( ) Color'	       ,0FFh,16,0B3h,0
 Interface04_S	DB	0B3h,'  [ ] Menu bar always visible',0FFh, 3,0B3h,'  ',0B3h,'  ( ) Laptop'	       ,0FFh,15,0B3h,0
-Interface05_S	DB	0B3h,'  [ ] Alt alone selects menu'	,0FFh, 4,0B3h,'  ',0C0h,'			  ,0FFh,80h+27,0C4h,0D9h,0
+Interface05_S	DB	0B3h,'  [ ] Alt alone selects menu'	,0FFh, 4,0B3h,'  ',0C0h			  ,0FFh,80h+27,0C4h,0D9h,0
 Interface06_S	DB	0B3h,'  [ ] Esc toggles screen on/off ',0B3h,'  ',0DAh,' ^bScreen output^b '	  ,0FFh,80h+12,0C4h,0BFh,0
 Interface07_S	DB	0B3h,'  [ ] Clear keyboard buffer'	,0FFh, 5,0B3h,'  ',0B3h,'  ( ) Synchronized access  ',0B3h,0
 Interface08_S	DB	0B3h,'  [ ] Confirmation on quit'	,0FFh, 6,0B3h,'  ',0B3h,'  ( ) Asynchronized access ',0B3h,0
 Interface09_S	DB	0B3h,'  [ ] Error sound'		,0FFh,15,0B3h,'  ',0B3h,'  ( ) Auto detect'       ,0FFh,10,0B3h,0
-Interface10_S	DB	0DAh,' ^bMouse options^b '	   ,0FFh,80h+17,'0C4h,0BFh,'  ',0DAh,' ^bZoom options^b ' ,0FFh,80h+13,0C4h,0BFh,0
+Interface10_S	DB	0DAh,' ^bMouse options^b '	   ,0FFh,80h+17,0C4h,0BFh,'  ',0DAh,' ^bZoom options^b ' ,0FFh,80h+13,0C4h,0BFh,0
 Interface11_S	DB	0B3h,'  [ ] Left-handed mouse'	,0FFh, 9,0B3h,'  ',0B3h,'  [ ] Zooming boxes'     ,0FFh, 8,0B3h,0
 Interface12_S	DB	0B3h,'  [ ] Fast mouse reset'	,0FFh,10,0B3h,'  ',0B3h,'  Zoom stages:'	       ,0FFh,13,0B3h,0
-Interface13_S	DB	' ',0C0h,		   ,0FFh,80h+32,0C4h,0D9h,'  ',0C0h,'		 ,0FFh,80h+27,0C4h,0D9h,' ',0
+Interface13_S	DB	' ',0C0h		   ,0FFh,80h+32,0C4h,0D9h,'  ',0C0h		 ,0FFh,80h+27,0C4h,0D9h,' ',0
 InterfErr1_S	DB	'Zoom stages value should be',0
 InterfErr2_S	DB	'between 2 and 10. Try again.',0
 
@@ -2298,9 +2298,9 @@ Chars3_S	DB	0B3h,'  dialogs'	      ,0FFh,14,'menu'	   ,0FFh,18,0B3h,0
 Chars4_S	DB	0DAh,' ^bOther^b '			      ,0FFh,80h+38,0C4h,0BFh,0
 Chars5_S	DB	0B3h,'  Left/Right scroll',0FFh,4,'Scroll bars',0FFh,11,0B3h,0
 Chars6_S	DB	0B3h,'  Mouse pointers'  ,0FFh,7,'Progress bars',0FFh,9,0B3h,0
-Chars7_S	DB	0B3h'  Items switched on',0FFh,4,'Hidden/selected files ',0B3h,0
-Chars8_S	DB	0B3h,					 ,0FFh,45,0B3h,0
-Chars9_S	DB	' ',0C0h,			      ,0FFh,80h+45,0C4h,0D9h,' ',0
+Chars7_S	DB	0B3h,'  Items switched on',0FFh,4,'Hidden/selected files ',0B3h,0
+Chars8_S	DB	0B3h					 ,0FFh,45,0B3h,0
+Chars9_S	DB	' ',0C0h			      ,0FFh,80h+45,0C4h,0D9h,' ',0
 
 		.DATA
 Chars_P		DB	Conf_C, CnfRe_C, CnfBo_C, 0
@@ -2683,7 +2683,7 @@ Descript1_S	DB	0DAh,' ^bProcess descriptions^b ' ,0FFh,80h+38,0C4h,0BFh,0
 Descript2_S	DB	0B3h,'  ( ) Do not update descriptions',0FFh,28,0B3h,0
 Descript3_S	DB	0B3h,'  ( ) Update if displayed'	   ,0FFh,35,0B3h,0
 Descript4_S	DB	0B3h,'  ( ) Always update'		   ,0FFh,41,0B3h,0
-Descript5_S	DB	0C0h,		      ,0FFh,80h+60,0C4h,0D9h,0
+Descript5_S	DB	0C0h		      ,0FFh,80h+60,0C4h,0D9h,0
 Descript6_S	DB	'Description files',0FFh,LenStr-17,0
 Descript7_S	DB	'Directory information files',0FFh,LenStr-27,0
 
@@ -2721,7 +2721,7 @@ M65_00:		PUSH	ES			; Descriptions
 
 		.CONST
 CopyOpt00_S	DB			' Copy and Move options ',0
-CopyOpt01_S	DB	' ',0DAh,' ^bDescriptions^b '				   ,0FFh,80h+48,0C4h,0BFh,0
+CopyOpt01_S	DB	' ',0DAh,' ^bDescriptions^b '				   ,0FFh,80h+48,0C4h,0BFh,' ',0
 CopyOpt02_S	DB	' ',0B3h,'  [ ] Auto create descriptions'			,0FFh,32,0B3h,' ',0
 CopyOpt03_S	DB	' ',0B3h,'  [ ] Delete target description if source without description ',0B3h,' ',0
 CopyOpt04_S	DB	' ',0B3h,'  [ ] Auto delete empty description files'		,0FFh,21,0B3h,' ',0
@@ -2730,7 +2730,7 @@ CopyOpt06_S	DB	' ',0B3h,'  [ ] Copy extended attributes'			,0FFh,32,0B3h,' ',0
 CopyOpt07_S	DB	' ',0DAh,' ^bOther options^b '				   ,0FFh,80h+47,0C4h,0BFh,' ',0
 CopyOpt08_S	DB	' ',0B3h,'  [ ] Check target file and free space before copying',0FFh,9,0B3h,' ',0
 CopyOpt09_S	DB	' ',0B3h,'  [ ] Clear read-only attribute when copy from CD-ROM',0FFh,9,0B3h,' ',0
-CopyOpt10_S	DB	' '0C0h,					   ,0FFh,80h+62,0C4h,0D9h,' ',0
+CopyOpt10_S	DB	' ',0C0h					   ,0FFh,80h+62,0C4h,0D9h,' ',0
 
 		.DATA
 CopyOpt_P	DB	Conf_C, CnfRe_C, CnfBo_C, 0
