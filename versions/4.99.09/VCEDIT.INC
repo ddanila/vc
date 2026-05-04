@@ -61,12 +61,12 @@ SvCn2_S	DB	"Save",0FFh,3,"Don't save",0FFh,3,"Continue editing",0
 SavAs_S	DB	"Save this file as",0FFh,LenStr-17,0
 SavFi_S	DB	"Saving the file",0
 SavEr_S	DB	"There was an error writing the file",0
-EdtH_S	DB	"³  !.!  Filenane with extension",0
-	DB	"³  !:",0FFh,3,"Drive letter",0
-	DB	"³  !\",0FFh,3,"Path name",0
-	DB	"³  !!",0FFh,3,"!",0
-	DB	"³  !",0FFh,4,"Filename w/o extension",0
-	DB	"³  !@",0FFh,3,"File list",0
+EdtH_S	DB	0B3h, "  !.!  Filename with extension",0
+	DB	0B3h, "  !:",0FFh,3,"Drive letter",0
+	DB	0B3h, "  !\",0FFh,3,"Path name",0
+	DB	0B3h, "  !!",0FFh,3,"!",0
+	DB	0B3h, "  !",0FFh,4,"Filename w/o extension",0
+	DB	0B3h, "  !@",0FFh,3,"File list",0
 EdtH1_S DB	" User Menu Help ",0
 	DB	"File format for user defined menus:",0
 	DB	0
@@ -79,8 +79,8 @@ EdtH2_S	DB	" Extension File Help ",0
 	DB	0
 	DB	"' comment",0FFh,10,"Comment line",0
 	DB	"txt: edit !.!",0FFh,6,"Any DOS command",0
-	DB	" ",0FFh,3,"cls",0FFh,11,"Any additional commands",0
-	DB	" À",0FFh,80h+16,"Ä File extension",0
+	DB	" ",1Eh,0FFh,3,"cls",0FFh,11,"Any additional commands",0
+	DB	" ",0C0h,0FFh,80h+16,0C4h," File extension",0
 
 	.DATA
 EdtH_P	DB	HlpMn_C
@@ -433,7 +433,7 @@ T00_14:	MOV	DS:EdStat,AL
 	MOV	CX,80
 	PUSH	CX
 	PUSH	AX
-	MOV	AL,'Ü'
+	MOV	AL,0DCh ; 'â–„'
 	REP	STOSW
 	MOV	AH,CS:[BP]
 	CALL	Color
@@ -443,7 +443,7 @@ T00_14:	MOV	DS:EdStat,AL
 	CALL	BoxDubl
 	POP	AX
 	POP	CX
-	MOV	AL,'ß'
+	MOV	AL,0DFh ; 'â–€'
 	REP	STOSW
 	MOV	SI,OFFSET EdtH1_S
 	CMP	DS:EdHelp,1
