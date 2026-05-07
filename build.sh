@@ -10,10 +10,11 @@
 # The 32 MB / FAT16 / FAT-cluster=8 / hidden-sectors=63 layout below was
 # reverse-engineered from a known-good image produced for ddanila/aml2. The
 # critical detail is the OEM ID at offset 0x03 of the partition's boot
-# sector: it MUST be "MSDOS5.0" or DOS 4.0 mounts the partition but reads
-# from misaligned sectors (writes appear to succeed but show up at wrong
-# clusters from mtools' perspective). mformat's default OEM ID
-# ("MTOO<version>") trips this; we fix it up with dd after mformat.
+# sector: it MUST be a recognised "MSDOS<n>.0" string ("MSDOS4.0" matching
+# our booting DOS or "MSDOS5.0" both work) or DOS 4.0 mounts the partition
+# but reads from misaligned sectors — writes appear to succeed but show up
+# at wrong clusters from mtools' perspective. mformat's default
+# "MTOO<version>" OEM ID trips this; we overwrite it with dd after mformat.
 #
 # The script is two-mode:
 #   - Outside the build container (default): docker-runs the CI image and
@@ -228,9 +229,11 @@ EOF
     mformat -H 63 -c 8 c:
 
     # Replace mtools' "MTOO<ver>" OEM ID at offset 0x03 of the partition's
-    # boot sector (file offset 32256 + 3) with "MSDOS5.0". DOS 4.0 mis-mounts
-    # the FAT otherwise — see the file header comment.
-    printf 'MSDOS5.0' | dd of="$stage/work.img" bs=1 \
+    # boot sector (file offset 32256 + 3) with "MSDOS4.0". DOS 4.0 mis-mounts
+    # the FAT otherwise — see the file header comment. Confirmed working with
+    # both "MSDOS4.0" and "MSDOS5.0"; we use the former since that matches
+    # the booting DOS version.
+    printf 'MSDOS4.0' | dd of="$stage/work.img" bs=1 \
         seek=$((32256 + 3)) count=8 conv=notrunc status=none
 
     mmd c:SRC c:TASM
