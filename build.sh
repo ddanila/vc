@@ -62,10 +62,27 @@ fi
 
 # === From here we are running inside ghcr.io/ddanila/msdos/ci ===
 
-# Tiny DOS .COM that signals QEMU's isa-debug-exit device, falling back to a
-# normal DOS exit if the device isn't wired in.
+# MARK.COM writes the first character of its tail (DOS PSP[80h]) to the QEMU
+# debugcon port (0xE9). EXIT.COM does the same and then triggers
+# isa-debug-exit (0xF4) so QEMU exits cleanly. The debugcon stream lets us
+# trace which AUTOEXEC steps actually ran when a build fails.
+cat > "$CACHE/mark.asm" <<'ASM'
+        org     100h
+        mov     si, 81h         ; PSP cmdline (preceded by length at 80h)
+        lodsb
+        cmp     al, 20h         ; skip leading space
+        jne     .have
+        lodsb
+.have:  mov     dx, 0E9h
+        out     dx, al
+        mov     ax, 4C00h
+        int     21h
+ASM
 cat > "$CACHE/exit.asm" <<'ASM'
         org     100h
+        mov     dx, 0E9h
+        mov     al, 'D'
+        out     dx, al
         mov     dx, 0F4h
         xor     al, al
         out     dx, al
@@ -105,10 +122,14 @@ build_version() {
 
     cat > "$stage/AUTOEXEC.BAT" <<'DOS'
 @ECHO OFF
+A:\MARK.COM A
 PATH=C:\TASM
 C:
+A:\MARK.COM C
 CD \SRC
+A:\MARK.COM S
 CALL C:\BUILD.BAT > C:\BUILD.LOG
+A:\MARK.COM B
 A:\EXIT.COM
 DOS
 
@@ -121,6 +142,7 @@ DOS
     cd "$stage"
 
     nasm -f bin -o EXIT.COM "$CACHE/exit.asm"
+    nasm -f bin -o MARK.COM "$CACHE/mark.asm"
 
     # 16 MB raw HDD with one primary FAT16 partition starting at sector 63.
     truncate -s 16M work.img
@@ -140,15 +162,17 @@ EOF
     mcopy tasm/*   c:TASM/
     mcopy BUILD.BAT c:
 
-    # Overwrite AUTOEXEC.BAT and add EXIT.COM on the boot floppy.
+    # Overwrite AUTOEXEC.BAT and add EXIT.COM / MARK.COM on the boot floppy.
     mcopy -o AUTOEXEC.BAT a:
     mcopy -o EXIT.COM     a:
+    mcopy -o MARK.COM     a:
 
     # isa-debug-exit makes QEMU exit cleanly when EXIT.COM writes to port 0xF4.
     # Exit status will be (0<<1)|1 = 1, so a non-zero exit here is the success
     # signal; we ignore it and judge success by whether artifacts came out.
     timeout 180 qemu-system-i386 \
         -display none -monitor none -serial null \
+        -debugcon "file:$stage/debugcon.log" \
         -machine pc,accel=kvm:tcg \
         -m 16 \
         -drive if=floppy,format=raw,file=boot.img \
@@ -157,6 +181,10 @@ EOF
         -no-reboot \
         -device isa-debug-exit,iobase=0xf4,iosize=0x04 \
         || true
+
+    if [[ -f "$stage/debugcon.log" ]]; then
+        echo "    debugcon trace: $(tr -d '\0' < "$stage/debugcon.log")"
+    fi
 
     mcopy c:BUILD.LOG "$stage/build.log" 2>/dev/null || true
     mkdir -p "$stage/artifacts"

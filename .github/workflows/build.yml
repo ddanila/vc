@@ -43,5 +43,6 @@ jobs:
             build/${{ matrix.version }}/*.EXE
             build/${{ matrix.version }}/*.OVL
             build/${{ matrix.version }}/stage/build.log
+            build/${{ matrix.version }}/stage/debugcon.log
           retention-days: 14
           if-no-files-found: warn
