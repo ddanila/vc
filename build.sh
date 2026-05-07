@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 # Build VC source trees under versions/ using TASM 4.1 / TLINK 7.1 from the
-# third_party/tasm submodule, executed under MS-DOS 4.0 in QEMU inside the
-# ghcr.io/ddanila/msdos/ci container.
+# third_party/tasm submodule, executed under MS-DOS 4.0 in QEMU.
 #
 #   boot floppy : floppy-minimal.img from ddanila/msdos release 0.1
 #                  + our AUTOEXEC.BAT and EXIT.COM
 #   data disk   : 16 MB FAT16 image built with mtools, holding TASM, source
 #                  and a per-version BUILD.BAT
+#
+# The script is two-mode:
+#   - Outside the build container (default): docker-runs ghcr.io/ddanila/msdos/ci
+#     and re-execs itself inside with VC_BUILD_IN_CONTAINER=1.
+#   - Inside the container (CI workflows that already use container:): runs
+#     the build steps directly. Set VC_BUILD_IN_CONTAINER=1 to force this.
 #
 # Usage:
 #   ./build.sh              # build all known versions
@@ -25,14 +30,40 @@ FLOPPY_URL="https://github.com/ddanila/msdos/releases/download/0.1/floppy-minima
 [[ -d "$TASM_BIN" ]] || { echo "third_party/tasm not initialised. Run: git submodule update --init" >&2; exit 1; }
 mkdir -p "$CACHE"
 
+download() {
+    local url="$1" out="$2"
+    if command -v curl >/dev/null 2>&1; then
+        curl -fL --retry 3 -o "$out.tmp" "$url"
+    elif command -v wget >/dev/null 2>&1; then
+        wget -q -O "$out.tmp" "$url"
+    else
+        python3 -c "import sys,urllib.request as u; u.urlretrieve(*sys.argv[1:])" "$url" "$out.tmp"
+    fi
+    mv "$out.tmp" "$out"
+}
+
 if [[ ! -f "$CACHE/floppy-minimal.img" ]]; then
     echo "==> caching $FLOPPY_URL"
-    curl -fL --retry 3 -o "$CACHE/floppy-minimal.img.tmp" "$FLOPPY_URL"
-    mv "$CACHE/floppy-minimal.img.tmp" "$CACHE/floppy-minimal.img"
+    download "$FLOPPY_URL" "$CACHE/floppy-minimal.img"
 fi
 
+# When invoked outside the build container, wrap ourselves in docker.
+if [[ "${VC_BUILD_IN_CONTAINER:-0}" != "1" ]]; then
+    kvm_opts=()
+    [[ -e /dev/kvm ]] && kvm_opts=(--device /dev/kvm)
+    exec docker run --rm \
+        -v "$ROOT":/repo:rw \
+        -w /repo \
+        -e VC_BUILD_IN_CONTAINER=1 \
+        "${kvm_opts[@]}" \
+        "$IMAGE" \
+        ./build.sh "$@"
+fi
+
+# === From here we are running inside ghcr.io/ddanila/msdos/ci ===
+
 # Tiny DOS .COM that signals QEMU's isa-debug-exit device, falling back to a
-# normal DOS exit if the device isn't wired in. Assembled inside the container.
+# normal DOS exit if the device isn't wired in.
 cat > "$CACHE/exit.asm" <<'ASM'
         org     100h
         mov     dx, 0F4h
@@ -67,14 +98,11 @@ build_version() {
     rm -rf "$out"
     mkdir -p "$stage/source" "$stage/tasm"
     cp -R "$src"/. "$stage/source"/
-    # Only the binaries the recipes need; keeps the FAT16 image small.
     for f in TASMX.EXE TLINK.EXE TLINK.CFG; do
         cp "$TASM_BIN/$f" "$stage/tasm/"
     done
     cp "$CACHE/floppy-minimal.img" "$stage/boot.img"
 
-    # AUTOEXEC.BAT lives on the boot floppy. Switches to C:, runs the build,
-    # then shuts down QEMU via EXIT.COM.
     cat > "$stage/AUTOEXEC.BAT" <<'DOS'
 @ECHO OFF
 PATH=C:\TASM
@@ -89,49 +117,45 @@ DOS
         echo "$recipe"
     } > "$stage/BUILD.BAT"
 
-    docker run --rm \
-        -v "$stage":/stage:rw \
-        -v "$CACHE":/cache:ro \
-        -e MTOOLS_SKIP_CHECK=1 \
-        "$IMAGE" \
-        bash -eux -c '
-            cd /stage
+    export MTOOLS_SKIP_CHECK=1
+    cd "$stage"
 
-            nasm -f bin -o EXIT.COM /cache/exit.asm
+    nasm -f bin -o EXIT.COM "$CACHE/exit.asm"
 
-            # 16 MB raw HDD with one primary FAT16 partition starting at sector 63.
-            qemu-img create -f raw work.img 16M >/dev/null
-            mpartition -I -i work.img
-            mpartition -c -t 32 -h 16 -s 63 -b 63 -l 32193 -i work.img 1
-            mformat -F -i work.img@@32256 ::
+    # 16 MB raw HDD with one primary FAT16 partition starting at sector 63.
+    qemu-img create -f raw work.img 16M >/dev/null
+    mpartition -I -i work.img
+    mpartition -c -t 32 -h 16 -s 63 -b 63 -l 32193 -i work.img 1
+    mformat -F -i work.img@@32256 ::
 
-            mmd  -i work.img@@32256 ::SRC ::TASM
-            mcopy -i work.img@@32256 source/* ::SRC/
-            mcopy -i work.img@@32256 tasm/*   ::TASM/
-            mcopy -i work.img@@32256 BUILD.BAT ::
+    mmd  -i work.img@@32256 ::SRC ::TASM
+    mcopy -i work.img@@32256 source/* ::SRC/
+    mcopy -i work.img@@32256 tasm/*   ::TASM/
+    mcopy -i work.img@@32256 BUILD.BAT ::
 
-            # Overwrite AUTOEXEC.BAT and add EXIT.COM on the boot floppy.
-            mcopy -o -i boot.img AUTOEXEC.BAT ::
-            mcopy -o -i boot.img EXIT.COM     ::
+    # Overwrite AUTOEXEC.BAT and add EXIT.COM on the boot floppy.
+    mcopy -o -i boot.img AUTOEXEC.BAT ::
+    mcopy -o -i boot.img EXIT.COM     ::
 
-            # Run the build. isa-debug-exit makes QEMU exit cleanly when
-            # EXIT.COM writes to port 0xF4. The exit status will be (0<<1)|1=1,
-            # so a non-zero exit here is the success signal — we ignore it
-            # and judge success by whether artifacts came out.
-            timeout 180 qemu-system-i386 \
-                -nographic -display none -serial null \
-                -m 16 \
-                -drive if=floppy,format=raw,file=boot.img \
-                -drive if=ide,format=raw,file=work.img \
-                -boot a \
-                -no-reboot \
-                -device isa-debug-exit,iobase=0xf4,iosize=0x04 \
-                || true
+    # isa-debug-exit makes QEMU exit cleanly when EXIT.COM writes to port 0xF4.
+    # Exit status will be (0<<1)|1 = 1, so a non-zero exit here is the success
+    # signal; we ignore it and judge success by whether artifacts came out.
+    timeout 180 qemu-system-i386 \
+        -nographic -display none -serial null \
+        -accel kvm:tcg \
+        -m 16 \
+        -drive if=floppy,format=raw,file=boot.img \
+        -drive if=ide,format=raw,file=work.img \
+        -boot a \
+        -no-reboot \
+        -device isa-debug-exit,iobase=0xf4,iosize=0x04 \
+        || true
 
-            mcopy -i work.img@@32256 ::BUILD.LOG  /stage/build.log 2>/dev/null || true
-            mkdir -p /stage/artifacts
-            mcopy -s -i work.img@@32256 ::SRC /stage/artifacts/ 2>/dev/null || true
-        '
+    mcopy -i work.img@@32256 ::BUILD.LOG "$stage/build.log" 2>/dev/null || true
+    mkdir -p "$stage/artifacts"
+    mcopy -s -i work.img@@32256 ::SRC "$stage/artifacts/" 2>/dev/null || true
+
+    cd "$ROOT"
 
     # Promote freshly-built artifacts (anything that did not exist in the
     # original source tree) into out/.

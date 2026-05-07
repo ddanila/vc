@@ -1,0 +1,47 @@
+name: Build
+
+on:
+  push:
+    branches: [build, master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/ddanila/msdos/ci:latest
+      options: --device /dev/kvm
+    timeout-minutes: 15
+
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ['4.05', '4.99.09']
+
+    steps:
+      - name: Check out repo with submodules
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Grant KVM access
+        run: chmod 666 /dev/kvm
+
+      - name: Build VC ${{ matrix.version }}
+        env:
+          VC_BUILD_IN_CONTAINER: '1'
+        run: ./build.sh ${{ matrix.version }}
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: vc-${{ matrix.version }}
+          path: |
+            build/${{ matrix.version }}/*.COM
+            build/${{ matrix.version }}/*.EXE
+            build/${{ matrix.version }}/*.OVL
+            build/${{ matrix.version }}/stage/build.log
+          retention-days: 14
+          if-no-files-found: warn
