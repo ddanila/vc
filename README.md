@@ -2,6 +2,10 @@
 
 This repository preserves a small set of historical Volkov Commander artifacts.
 
+> **Note:** The `master` branch is frozen for historical reference and will
+> not be updated. Active work — including the build pipeline, fixes, and any
+> pull requests — happens on the [`build`](../../tree/build) branch.
+
 ## Historical context
 
 In correspondence with Danila Sukharev on May 1, 2026, Vsevolod Volkov
