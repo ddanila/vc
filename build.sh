@@ -124,18 +124,25 @@ DOS
 
     # 16 MB raw HDD with one primary FAT16 partition starting at sector 63.
     truncate -s 16M work.img
-    mpartition -I -i work.img
-    mpartition -c -t 32 -h 16 -s 63 -b 63 -l 32193 -i work.img 1
-    mformat -F -i work.img@@32256 ::
 
-    mmd  -i work.img@@32256 ::SRC ::TASM
-    mcopy -i work.img@@32256 source/* ::SRC/
-    mcopy -i work.img@@32256 tasm/*   ::TASM/
-    mcopy -i work.img@@32256 BUILD.BAT ::
+    cat > "$stage/mtoolsrc" <<EOF
+drive a: file="$stage/boot.img"
+drive c: file="$stage/work.img" partition=1
+EOF
+    export MTOOLSRC="$stage/mtoolsrc"
+
+    mpartition -I c:
+    mpartition -c -t 32 -h 16 -s 63 -b 63 -l 32193 c:
+    mformat -F c:
+
+    mmd c:SRC c:TASM
+    mcopy source/* c:SRC/
+    mcopy tasm/*   c:TASM/
+    mcopy BUILD.BAT c:
 
     # Overwrite AUTOEXEC.BAT and add EXIT.COM on the boot floppy.
-    mcopy -o -i boot.img AUTOEXEC.BAT ::
-    mcopy -o -i boot.img EXIT.COM     ::
+    mcopy -o AUTOEXEC.BAT a:
+    mcopy -o EXIT.COM     a:
 
     # isa-debug-exit makes QEMU exit cleanly when EXIT.COM writes to port 0xF4.
     # Exit status will be (0<<1)|1 = 1, so a non-zero exit here is the success
@@ -151,9 +158,9 @@ DOS
         -device isa-debug-exit,iobase=0xf4,iosize=0x04 \
         || true
 
-    mcopy -i work.img@@32256 ::BUILD.LOG "$stage/build.log" 2>/dev/null || true
+    mcopy c:BUILD.LOG "$stage/build.log" 2>/dev/null || true
     mkdir -p "$stage/artifacts"
-    mcopy -s -i work.img@@32256 ::SRC "$stage/artifacts/" 2>/dev/null || true
+    mcopy -s c:SRC "$stage/artifacts/" 2>/dev/null || true
 
     cd "$ROOT"
 
