@@ -1865,7 +1865,7 @@ PutTree		PROC	FAR
 		JCXZ	@@ChkNew
 		DEC	CX
 		JCXZ	@@PutBranch
-		MOV	AL,'≥'
+		MOV	AL,0B3h ; '‚îÇ'
   @@Branches:	CMP	SS:[BX],CH
 		JE	@@SkipBranch
 		MOV	SS:[DI],AL
@@ -1881,21 +1881,21 @@ PutTree		PROC	FAR
 		MOV	CX,DS:TreeLenH
 		SUB	CX,TreeCount
 		JBE	@@EndBranch
-		MOV	AL,'√'
+		MOV	AL,0C3h ; '‚îú'
 		MOV	AH,DS:[SI].DirLevel
   @@ChkBranch:	CALL	NextDirEntH
 		CMP	AH,DS:[SI].DirLevel
 		JA	@@EndBranch
 		JE	@@PutBranch1
 		LOOP	@@ChkBranch
-  @@EndBranch:	MOV	AL,'¿'
+  @@EndBranch:	MOV	AL,0C0h ; '‚îî'
 		MOV	BYTE PTR SS:[BX],0
   @@PutBranch1:	POP	SI
 		INC	BX
 		MOV	SS:[DI],AL
 		INC	DI
 		INC	DI
-		MOV	AL,'ƒ'
+		MOV	AL,0C4h ; '‚îÄ'
 		MOV	SS:[DI],AL
 		INC	DI
 		INC	DI
@@ -2001,7 +2001,7 @@ PutTree		PROC	FAR
 		JMP	@@PutName
   @@SetCursor:	MOV	BX,WCBsegment
 		CMP	BX,ES:WCBcrn
-		MOV	BX,'›ﬁ'
+		MOV	BX,0DDDEh ; '‚ñå‚ñê'
 		JNE	@@WriteCur
 		MOV	BX,'  '
 		MOV	AH,AL

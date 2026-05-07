@@ -202,15 +202,15 @@ DefInit		DB	07h,07h,1Bh,07h,07h,07h	;  0 - Main windows
 		DB	0			; SrchCase
 		DB	0			; NumbSort
 		DB	MiliSec, Sec		; DelayTm
-		DB	'��'			; StarTab
-		DB	'ɻ�ȼͺ�Ƕ�ѳ��'	; Borders
-		DB	'ڿ���ĳ��'		; MenuBords
+		DB	0FAh, 0F9h, 07h, 04h, 0Fh		; StarTab = '·∙•♦︎☼'
+		DB	0C9h, 0BBh, 0CDh, 0C8h, 0BCh, 0CDh, 0BAh, 0BAh, 0C7h, 0B6h, 0C4h, 0D1h, 0B3h, 0C1h, 0CFh	; Borders = '╔╗═╚╝═║║╟╢─╤│┴╧'
+		DB	0DAh, 0BFh, 0C4h, 0C0h, 0D9h, 0C4h, 0B3h, 0B3h, 0C4h	; MenuBords = '┌┐─└┘─││─'
 		DB	1Bh,1Ah			; Scrolls
-		DB	'��'			; ScrollBars
-		DB	'��'			; ProgressBars
-		DB	'�x�'		; Pointers
-		DB	'���'			; FileMarks
-		DB	'�'			; OnItem
+		DB	18h, 19h, 0B0h, 0B2h	; ScrollBars = '↑↓░▓'
+		DB	0B0h, 0DBh		; ProgressBars = '░█'
+		DB	18h, 19h, 12h, 1Dh, 0FBh, 78h, 0FEh	; Pointers = '↑↓↕︎↔︎√x■'
+		DB	0B0h, 0DEh, 0DBh	; FileMarks = '░▐█'
+		DB	0FBh		; OnItem = '√'
 		DW	LenBat			; LenCmdLn
 		DW	LenHist			; LenHistory
 		DW	MinFls			; MinFiles
@@ -2357,10 +2357,10 @@ Init86:		MOV	DS:OvlPrmPoint.Segm,CS
 DrvName		DB	'EMMXXXX0'
 NameCode_S	DB	'VC0 code'
 NameData_S	DB	'VC0 data'
-LoadEMS_S	DB	13,10, '� Using EMS',0
-LoadXMS_S	DB	13,10, '� Using XMS',0
-LoadSwap_S	DB	13,10, '� Using swap file',0
-TsrManager_S	DB	13,10, '� TSR manager is enabled'
+LoadEMS_S	DB	13,10, 0FEh, ' Using EMS',0
+LoadXMS_S	DB	13,10, 0FEh, ' Using XMS',0
+LoadSwap_S	DB	13,10, 0FEh, ' Using swap file',0
+TsrManager_S	DB	13,10, 0FEh, ' TSR manager is enabled'
 		DB	13,10, 0
 EMSnotPresent_S	DB	13,10, 'Expanded Memory Manager not present.'
 		DB	13,10, 0
@@ -3213,7 +3213,7 @@ Load81		PROC	NEAR
 		JAE	@@BlockSize
 		MOV	AX,DX
   @@BlockSize:	ADD	AX,10h
-		MOV	DS:DS:CodeSegLength,AX
+		MOV	DS:CodeSegLength,AX
 		MOV	AX,DS:[SI+8]
 		SUB	DX,AX
 		MOV	DS:RelocPoint,DX

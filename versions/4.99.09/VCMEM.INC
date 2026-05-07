@@ -655,7 +655,7 @@ MemItem		PROC	NEAR
 		JZ	@@Status
 		INC	BP
 		INC	BP
-		MOV	AL,'û'
+		MOV	AL, 0FBh ; 'âˆš'
   @@Status:	STOSB
 		ADD	DI,8
 		MOV	AX,DS:[SI].MemSize

@@ -5,7 +5,8 @@
 ;---------------------------------------------------------------
 
 		.MODEL	Medium,C
-		.STACK	3072
+;		.STACK	3072 ; 3K
+		.STACK	2304 ; 2.2K
 		LOCALS	@@
 		JUMPS
 Dgroup		GROUP	Subs,_DATA,CONST

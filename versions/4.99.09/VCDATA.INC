@@ -254,23 +254,23 @@ ZIPENDHD	STRUC
 ZIPENDHD	ENDS
 
 ;----------------------- WCB definition ------------------------
-;		      0 ÚÄÄÄÄÄÄÄ¿
-;			³	³ Vars saved in VC.INI
-;		 WCBini ÃÄÄÄÄÄÄÄ´
-;			³	³ Vars saved in memory when run command
-;		WCBsave ÃÄÄÄÄÄÄÄ´
-;			³	³ Other vars
-;	WCBdef=ArcFiles ÃÄÄÄÄÄÄÄ´
-;			³	³ Archive files
-;		DiskBuf ÃÄÄÄÄÄÄÄ´
-;			³	³ Visible files
-;		 EndBuf ÃÄÄÄÄÄÄÄ´
-;			³	³ Hidden files
-;		 EndFul ÃÄÄÄÄÄÄÄ´
-;			³	³ Local VC.EXT
-;			ÃÄÄÄÄÄÄÄ´
-;			³	³ Description
-;		SizeWCB ÀÄÄÄÄÄÄÄÙ
+;		      0 +-------+
+;			|	| Vars saved in VC.INI
+;		 WCBini +-------+
+;			|	| Vars saved in memory when run command
+;		WCBsave +-------+
+;			|	| Other vars
+;	WCBdef=ArcFiles +-------+
+;			|	| Archive files
+;		DiskBuf +-------+
+;			|	| Visible files
+;		 EndBuf +-------+
+;			|	| Hidden files
+;		 EndFul +-------+
+;			|	| Local VC.EXT
+;			+-------+
+;			|	| Description
+;		SizeWCB +-------+
 ;
 WCBdef		STRUC
 WinTyp		DB	?			; File/Tree/Info/View panel

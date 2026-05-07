@@ -2272,7 +2272,7 @@ SetCur		PROC	FAR
 		PUSH	AX
 		MOV	AH,Back_C
 		CALL	Color
-		MOV	AL,'Ä'
+		MOV	AL,0C4h ; 'â”€'
 		STOSW
 		POP	AX
 		DEC	DX
