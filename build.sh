@@ -237,9 +237,19 @@ EOF
     echo "    debugcon trace: $(tr -d '\0' < "$stage/debugcon.log" 2>/dev/null || true)"
     echo "    serial trace:   $(tr -d '\0\r' < "$stage/serial.log"   2>/dev/null || true)"
 
-    mcopy c:BUILD.LOG "$stage/build.log" 2>/dev/null || true
+    echo "--- post-run C: root ---" >&2
+    mdir -a c: >&2 || true
+    echo "--- post-run C:\\SRC ---" >&2
+    mdir -a c:SRC >&2 || true
+
+    mcopy c:BUILD.LOG "$stage/build.log" || true
+    if [[ -f "$stage/build.log" ]]; then
+        echo "--- BUILD.LOG ---" >&2
+        cat "$stage/build.log" >&2
+        echo "--- end BUILD.LOG ---" >&2
+    fi
     mkdir -p "$stage/artifacts"
-    mcopy -s c:SRC "$stage/artifacts/" 2>/dev/null || true
+    mcopy -s c:SRC "$stage/artifacts/" || true
 
     cd "$ROOT"
 

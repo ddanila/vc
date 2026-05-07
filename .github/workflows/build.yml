@@ -44,5 +44,6 @@ jobs:
             build/${{ matrix.version }}/*.OVL
             build/${{ matrix.version }}/stage/build.log
             build/${{ matrix.version }}/stage/debugcon.log
+            build/${{ matrix.version }}/stage/serial.log
           retention-days: 14
           if-no-files-found: warn
