@@ -159,11 +159,16 @@ build_version() {
     done
     cp "$CACHE/floppy-minimal.img" "$stage/boot.img"
 
-    # ISOLATION TEST: just probe whether DOS boots and runs AUTOEXEC at all.
-    # Once 'A' shows up via debugcon or serial, restore the real recipe.
     cat > "$stage/AUTOEXEC.BAT" <<'DOS'
 @ECHO OFF
 A:\MARK.COM A
+PATH=C:\TASM
+C:
+A:\MARK.COM C
+CD \SRC
+A:\MARK.COM S
+CALL C:\BUILD.BAT > C:\BUILD.LOG
+A:\MARK.COM B
 A:\EXIT.COM
 DOS
 
@@ -216,13 +221,14 @@ EOF
     # isa-debug-exit makes QEMU exit cleanly when EXIT.COM writes to port 0xF4.
     # Exit status will be (0<<1)|1 = 1, so a non-zero exit here is the success
     # signal; we ignore it and judge success by whether artifacts came out.
-    timeout 60 qemu-system-i386 \
+    timeout 240 qemu-system-i386 \
         -display none \
         -serial "file:$stage/serial.log" \
         -debugcon "file:$stage/debugcon.log" \
         -machine pc,accel=kvm:tcg \
-        -m 4 \
+        -m 16 \
         -drive if=floppy,index=0,format=raw,file=boot.img,cache=writethrough \
+        -drive if=ide,format=raw,file=work.img,cache=writethrough \
         -boot a \
         -no-reboot \
         -device isa-debug-exit,iobase=0xf4,iosize=0x04 \
