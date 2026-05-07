@@ -1,7 +1,5 @@
 # Volkov Commander — build branch
 
-## Building (this branch)
-
 The `build` branch adds a reproducible build pipeline on top of the master
 snapshot. It is intended for experimentation, not as a canonical history of
 the sources.
