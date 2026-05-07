@@ -167,6 +167,16 @@ EOF
     mcopy -o EXIT.COM     a:
     mcopy -o MARK.COM     a:
 
+    echo "--- floppy contents ---" >&2
+    mdir -a a: >&2 || true
+    echo "--- HDD contents ---" >&2
+    mdir -a c: >&2 || true
+    mdir -a c:SRC >&2 || true
+    mdir -a c:TASM >&2 || true
+    echo "--- AUTOEXEC.BAT on floppy ---" >&2
+    mtype a:AUTOEXEC.BAT >&2 || true
+    echo "--- end pre-boot dump ---" >&2
+
     # isa-debug-exit makes QEMU exit cleanly when EXIT.COM writes to port 0xF4.
     # Exit status will be (0<<1)|1 = 1, so a non-zero exit here is the success
     # signal; we ignore it and judge success by whether artifacts came out.
