@@ -129,11 +129,22 @@ cat > "$CACHE/exit.asm" <<'ASM'
         int     21h
 ASM
 
-# Per-version build recipe: DOS commands run from C:\SRC after PATH=C:\TASM.
-recipe_4_05='MAKE.BAT VC
-MAKE.BAT VCSETUP'
+# Per-version build recipe: list of DOS commands run from C:\SRC after
+# PATH=C:\TASM. Inlined into BUILD.BAT with line-by-line redirection so we
+# can capture each tool's output regardless of how MS-DOS 4.0 handles nested
+# redirected CALLs.
+recipe_4_05='TASMX /z/m9/kh10000 VC;
+TLINK /t/x VC;
+TASMX /z/m9/kh10000 VCSETUP;
+TLINK /t/x VCSETUP;
+DEL *.OBJ'
 
-recipe_4_99_09='MAKE.BAT'
+recipe_4_99_09='TASMX /z/m9/kh10000 /dOFFICIAL=1 vc.asm
+TLINK /t vc, VC.COM
+TASMX /z/m9/kh10000 /dOFFICIAL=1 vcovl.asm
+TLINK vcovl, VC.OVL
+DEL *.OBJ
+DEL *.MAP'
 
 build_version() {
     local version="$1"
@@ -167,14 +178,22 @@ C:
 A:\MARK.COM C
 CD \SRC
 A:\MARK.COM S
-CALL C:\BUILD.BAT > C:\BUILD.LOG
+CALL C:\BUILD.BAT
 A:\MARK.COM B
 A:\EXIT.COM
 DOS
 
     {
         echo '@ECHO OFF'
-        echo "$recipe"
+        printf 'ECHO ----- build %s start ----- > C:\\BUILD.LOG\n' "$version"
+        while IFS= read -r cmd; do
+            [[ -z "$cmd" ]] && continue
+            printf 'ECHO . %s >> C:\\BUILD.LOG\n' "$cmd"
+            printf '%s >> C:\\BUILD.LOG\n' "$cmd"
+        done <<< "$recipe"
+        printf 'ECHO ----- contents of C:\\SRC ----- >> C:\\BUILD.LOG\n'
+        printf 'DIR /B >> C:\\BUILD.LOG\n'
+        printf 'ECHO ----- build %s done ----- >> C:\\BUILD.LOG\n' "$version"
     } > "$stage/BUILD.BAT"
 
     export MTOOLS_SKIP_CHECK=1
@@ -248,8 +267,10 @@ EOF
         cat "$stage/build.log" >&2
         echo "--- end BUILD.LOG ---" >&2
     fi
-    mkdir -p "$stage/artifacts"
-    mcopy -s c:SRC "$stage/artifacts/" || true
+    mkdir -p "$stage/artifacts/SRC"
+    mcopy -s "c:SRC/*" "$stage/artifacts/SRC/" || true
+    echo "--- artifacts staged ---" >&2
+    find "$stage/artifacts" -type f >&2 || true
 
     cd "$ROOT"
 
