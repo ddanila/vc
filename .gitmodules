@@ -1,0 +1,3 @@
+[submodule "third_party/tasm"]
+	path = third_party/tasm
+	url = https://github.com/zajo/TASM
