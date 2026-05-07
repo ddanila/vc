@@ -148,7 +148,7 @@ EOF
     # Exit status will be (0<<1)|1 = 1, so a non-zero exit here is the success
     # signal; we ignore it and judge success by whether artifacts came out.
     timeout 180 qemu-system-i386 \
-        -nographic -display none -serial null \
+        -display none -monitor none -serial null \
         -machine pc,accel=kvm:tcg \
         -m 16 \
         -drive if=floppy,format=raw,file=boot.img \
