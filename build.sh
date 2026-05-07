@@ -123,7 +123,7 @@ DOS
     nasm -f bin -o EXIT.COM "$CACHE/exit.asm"
 
     # 16 MB raw HDD with one primary FAT16 partition starting at sector 63.
-    qemu-img create -f raw work.img 16M >/dev/null
+    truncate -s 16M work.img
     mpartition -I -i work.img
     mpartition -c -t 32 -h 16 -s 63 -b 63 -l 32193 -i work.img 1
     mformat -F -i work.img@@32256 ::
