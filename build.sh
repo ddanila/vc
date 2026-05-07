@@ -62,10 +62,11 @@ fi
 
 # === From here we are running inside ghcr.io/ddanila/msdos/ci ===
 
-# MARK.COM writes the first character of its tail (DOS PSP[80h]) to the QEMU
-# debugcon port (0xE9). EXIT.COM does the same and then triggers
-# isa-debug-exit (0xF4) so QEMU exits cleanly. The debugcon stream lets us
-# trace which AUTOEXEC steps actually ran when a build fails.
+# MARK.COM writes the first character of its tail (DOS PSP[80h]) to:
+#   - QEMU debugcon (port 0xE9) — captured via -debugcon
+#   - COM1 (port 0x3F8) after a quick UART init at 115200 8N1 — captured via -serial
+# EXIT.COM emits 'D' the same way and then triggers isa-debug-exit (0xF4) so
+# QEMU exits cleanly. Two channels gives us redundancy if one is misrouted.
 cat > "$CACHE/mark.asm" <<'ASM'
         org     100h
         mov     si, 81h         ; PSP cmdline (preceded by length at 80h)
@@ -73,15 +74,53 @@ cat > "$CACHE/mark.asm" <<'ASM'
         cmp     al, 20h         ; skip leading space
         jne     .have
         lodsb
-.have:  mov     dx, 0E9h
-        out     dx, al
+.have:  mov     bl, al
+        call    write_byte
         mov     ax, 4C00h
         int     21h
+
+write_byte:
+        mov     al, bl
+        mov     dx, 0E9h
+        out     dx, al          ; debugcon
+        ; UART init: divisor 1 = 115200 bps
+        mov     dx, 3FBh
+        mov     al, 80h
+        out     dx, al          ; LCR DLAB on
+        mov     dx, 3F8h
+        mov     al, 1
+        out     dx, al          ; DLL
+        mov     dx, 3F9h
+        xor     al, al
+        out     dx, al          ; DLM
+        mov     dx, 3FBh
+        mov     al, 03h
+        out     dx, al          ; LCR 8N1, DLAB off
+        mov     dx, 3F8h
+        mov     al, bl
+        out     dx, al          ; THR
+        ret
 ASM
 cat > "$CACHE/exit.asm" <<'ASM'
         org     100h
+        mov     bl, 'D'
         mov     dx, 0E9h
-        mov     al, 'D'
+        mov     al, bl
+        out     dx, al
+        mov     dx, 3FBh
+        mov     al, 80h
+        out     dx, al
+        mov     dx, 3F8h
+        mov     al, 1
+        out     dx, al
+        mov     dx, 3F9h
+        xor     al, al
+        out     dx, al
+        mov     dx, 3FBh
+        mov     al, 03h
+        out     dx, al
+        mov     dx, 3F8h
+        mov     al, bl
         out     dx, al
         mov     dx, 0F4h
         xor     al, al
@@ -120,16 +159,11 @@ build_version() {
     done
     cp "$CACHE/floppy-minimal.img" "$stage/boot.img"
 
+    # ISOLATION TEST: just probe whether DOS boots and runs AUTOEXEC at all.
+    # Once 'A' shows up via debugcon or serial, restore the real recipe.
     cat > "$stage/AUTOEXEC.BAT" <<'DOS'
 @ECHO OFF
 A:\MARK.COM A
-PATH=C:\TASM
-C:
-A:\MARK.COM C
-CD \SRC
-A:\MARK.COM S
-CALL C:\BUILD.BAT > C:\BUILD.LOG
-A:\MARK.COM B
 A:\EXIT.COM
 DOS
 
@@ -180,21 +214,20 @@ EOF
     # isa-debug-exit makes QEMU exit cleanly when EXIT.COM writes to port 0xF4.
     # Exit status will be (0<<1)|1 = 1, so a non-zero exit here is the success
     # signal; we ignore it and judge success by whether artifacts came out.
-    timeout 180 qemu-system-i386 \
-        -display none -monitor none -serial null \
+    timeout 60 qemu-system-i386 \
+        -display none \
+        -serial "file:$stage/serial.log" \
         -debugcon "file:$stage/debugcon.log" \
         -machine pc,accel=kvm:tcg \
-        -m 16 \
-        -drive if=floppy,format=raw,file=boot.img \
-        -drive if=ide,format=raw,file=work.img \
+        -m 4 \
+        -drive if=floppy,index=0,format=raw,file=boot.img,cache=writethrough \
         -boot a \
         -no-reboot \
         -device isa-debug-exit,iobase=0xf4,iosize=0x04 \
         || true
 
-    if [[ -f "$stage/debugcon.log" ]]; then
-        echo "    debugcon trace: $(tr -d '\0' < "$stage/debugcon.log")"
-    fi
+    echo "    debugcon trace: $(tr -d '\0' < "$stage/debugcon.log" 2>/dev/null || true)"
+    echo "    serial trace:   $(tr -d '\0\r' < "$stage/serial.log"   2>/dev/null || true)"
 
     mcopy c:BUILD.LOG "$stage/build.log" 2>/dev/null || true
     mkdir -p "$stage/artifacts"
