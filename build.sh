@@ -194,12 +194,14 @@ EOF
     mmd c:SRC c:TASM
     mcopy source/* c:SRC/
     mcopy tasm/*   c:TASM/
-    mcopy BUILD.BAT c:
+    mcopy -t BUILD.BAT c:
 
     # Overwrite AUTOEXEC.BAT and add EXIT.COM / MARK.COM on the boot floppy.
-    mcopy -o AUTOEXEC.BAT a:
-    mcopy -o EXIT.COM     a:
-    mcopy -o MARK.COM     a:
+    # -t translates LF to CRLF for the .BAT files; the .COM binaries are copied
+    # without -t so byte content is preserved.
+    mcopy -o -t AUTOEXEC.BAT a:
+    mcopy -o EXIT.COM        a:
+    mcopy -o MARK.COM        a:
 
     echo "--- floppy contents ---" >&2
     mdir -a a: >&2 || true
