@@ -149,7 +149,7 @@ EOF
     # signal; we ignore it and judge success by whether artifacts came out.
     timeout 180 qemu-system-i386 \
         -nographic -display none -serial null \
-        -accel kvm:tcg \
+        -machine pc,accel=kvm:tcg \
         -m 16 \
         -drive if=floppy,format=raw,file=boot.img \
         -drive if=ide,format=raw,file=work.img \
