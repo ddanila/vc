@@ -694,9 +694,9 @@ AddProg		PROC	FAR
 		XOR	DX,DX
 		MOV	DS,BX
 		MOV	SI,OFFSET IntTab
-  @@CmpVect:	LODS	CS:Wrd
+  @@CmpVect:	LODS	WORD PTR CS:[SI]
 		MOV	CX,AX
-		LODS	CS:Wrd
+		LODS	WORD PTR CS:[SI]
 		CMP	CX,DS:[BX].Offs
 		JNE	@@SaveVect
 		CMP	AX,DS:[BX].Segm
@@ -725,7 +725,7 @@ AddProg		PROC	FAR
 		XOR	SI,SI
 		XOR	BX,BX
 		MOV	AH,0
-  @@ChkSum:	LODS	ES:Byt
+  @@ChkSum:	LODS	BYTE PTR ES:[SI]
 		ADD	BX,AX
 		LOOP	@@ChkSum
 		MOV	AX,BX
@@ -756,7 +756,7 @@ FreeBlk		PROC	FAR
 		JCXZ	@@Exit
   @@Check:	MOV	DS,CS:[SI]
 		CALL	ChkBlk
-		LODS	CS:Wrd
+		LODS	WORD PTR CS:[SI]
 		JNE	@@Next
 		PUSH	AX
 		MOV	AX,ES

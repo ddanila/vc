@@ -993,7 +993,7 @@ ExecArcCmd	ENDP
 ExecArcChkName1	PROC	NEAR			; Check spaces in name
 		USES	SI
 		MOV	SI,DI
-  @@GetChar:	LODS	ES:Byt
+  @@GetChar:	LODS	BYTE PTR ES:[SI]
 		CMP	AL,' '
 		JE	@@Exit
 		CMP	AL,0
@@ -1509,7 +1509,7 @@ ExecArcInLine	PROC	NEAR
 		MOV	WORD PTR DS:TmpErr+50,0
 		MOV	DX,OFFSET ExecArc_T
 		MOV	BP,OFFSET ExecArcInLine_B
-		MOV	CS:[BP+SIZE BoxHd].mCtrl.Byt,CL
+		MOV	BYTE PTR CS:[BP+SIZE BoxHd].mCtrl,CL
 		ADD	CS:[BP+SIZE BoxHd].mBase,BX
 		OR	CS:ExecArcIntFlag,1
 		XOR	AX,AX

@@ -64,7 +64,7 @@ ReadDescription	PROC	FAR
 		USES	BX,DX,SI
 		LOCAL	DescrFileName:BYTE:512
 		MOV	SI,OFFSET DescrFiles
-  @@DescrName:	LODS	ES:Byt
+  @@DescrName:	LODS	BYTE PTR ES:[SI]
 		CMP	AL,' '
 		JE	@@DescrName
 		CMP	AL,';'

@@ -2415,7 +2415,7 @@ M63_10		PROC	FAR
   @@MoveLine:	MOV	CL,DL
 		MOV	CH,0
   @@MoveChar:	PUSH	BX
-		LODS	CS:Byt
+		LODS	BYTE PTR CS:[SI]
 		MOV	AH,0
 		ADD	BX,AX
 		CMP	AL,' '
@@ -2439,7 +2439,7 @@ M63_11		PROC	FAR
 		MOV	CL,DL
 		MOV	CH,0
   @@MoveChar:	PUSH	BX
-		LODS	CS:Byt
+		LODS	BYTE PTR CS:[SI]
 		MOV	AH,0
 		ADD	BX,AX
 		CMP	AL,' '
