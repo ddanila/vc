@@ -79,22 +79,27 @@ build-tests: $(TEST_BINS_ALL)
 PARALLEL_JOBS ?= 8
 
 # Pattern rule body for "run a list of test binaries against VC_BINARY".
-# $(1) = friendly version label, $(2) = path to VC.COM, $(3) = test bins.
+# $(1) = friendly version label, $(2) = path to VC.COM, $(3) = test bins,
+# $(4) = path to VC.OVL (optional, for versions that need an overlay).
 define run_kvikdos
 	@echo "--- kvikdos: $(1) ($(words $(3)) tests, max $(PARALLEL_JOBS) parallel) ---"
 	@if [ ! -f "$(2)" ]; then \
 	  echo "ERROR: $(2) not found — run ./build.sh $(1) first" >&2; exit 1; \
 	fi
+	@if [ -n "$(4)" ] && [ ! -f "$(4)" ]; then \
+	  echo "ERROR: $(4) not found — run ./build.sh $(1) first" >&2; exit 1; \
+	fi
 	@echo $(3) | tr ' ' '\n' | \
-	  VC_BINARY=$(2) xargs -P $(PARALLEL_JOBS) -I{} sh -c \
-	    'VC_BINARY=$(2) ./{} || exit 1'
+	  VC_BINARY=$(2) VC_OVL_PATH="$(4)" \
+	  xargs -P $(PARALLEL_JOBS) -I{} sh -c \
+	    'VC_BINARY=$(2) VC_OVL_PATH="$(4)" ./{} || exit 1'
 endef
 
 test-kvikdos-4.05: $(TEST_BINS_4_05)
-	$(call run_kvikdos,4.05,build/4.05/VC.COM,$(TEST_BINS_4_05))
+	$(call run_kvikdos,4.05,build/4.05/VC.COM,$(TEST_BINS_4_05),)
 
 test-kvikdos-4.99.09: $(TEST_BINS_4_99_09)
-	$(call run_kvikdos,4.99.09,build/4.99.09/VC.COM,$(TEST_BINS_4_99_09))
+	$(call run_kvikdos,4.99.09,build/4.99.09/VC.COM,$(TEST_BINS_4_99_09),build/4.99.09/VC.OVL)
 
 test-kvikdos: test-kvikdos-4.05 test-kvikdos-4.99.09
 

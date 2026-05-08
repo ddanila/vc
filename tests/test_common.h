@@ -169,11 +169,15 @@ static int find_vc_com(void) {
 }
 
 /* Copy master fixtures to a temporary directory.
- * Returns 0 on success. Sets *out_dir to allocated path (caller frees). */
+ * Returns 0 on success. Sets *out_dir to allocated path (caller frees).
+ * If VC_OVL_PATH is set in the environment, that file is copied into the
+ * temp dir as VC.OVL — VC 4.99.09 expects its overlay to live next to
+ * VC.COM. Harmless for 4.05 since the env var is unset there. */
 static int setup_fixtures(const char *master_dir, char **out_dir) {
   char tmpl[] = "/tmp/vc_test_XXXXXX";
   char *tmp = mkdtemp(tmpl);
   char cmd[512];
+  const char *ovl = getenv("VC_OVL_PATH");
   int ret;
   if (!tmp) { perror("mkdtemp"); return -1; }
   if (access(master_dir, R_OK) != 0) {
@@ -191,6 +195,22 @@ static int setup_fixtures(const char *master_dir, char **out_dir) {
     snprintf(cmd, sizeof(cmd), "rm -rf '%s'", tmp);
     system(cmd);
     return -1;
+  }
+  if (ovl && ovl[0]) {
+    /* kvikdos presents the program as C:\KVIKPROG.COM (kvikdos.c:2757),
+     * so 4.99.09 looks for KVIKPROG.OVL. Copy the overlay under that
+     * name AND under VC.OVL — VC.OVL handles any future host that
+     * preserves the real basename. */
+    snprintf(cmd, sizeof(cmd),
+             "cp '%s' '%s'/KVIKPROG.OVL && cp '%s' '%s'/VC.OVL",
+             ovl, tmp, ovl, tmp);
+    ret = system(cmd);
+    if (ret < 0 || !WIFEXITED(ret) || WEXITSTATUS(ret) != 0) {
+      fprintf(stderr, "setup_fixtures: failed to copy overlay from %s\n", ovl);
+      snprintf(cmd, sizeof(cmd), "rm -rf '%s'", tmp);
+      system(cmd);
+      return -1;
+    }
   }
   *out_dir = strdup(tmp);
   return 0;
