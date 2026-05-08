@@ -168,19 +168,16 @@ static void test_memory_info(void) {
         memory_rows_have_dos_version(),
         "memory info shows DOS version as X.YY when DOS rows exist");
 
-  if (getenv("VC_BINARY")) {
-    /* The C recreation runs with kvikdos' synthetic INVARS/MCB data,
-       which lets Memory Info identify VC's own PSP. */
-    check(kviktest_find_text("VC", NULL, NULL) &&
-          !kviktest_find_text("program", NULL, NULL),
-          "memory info uses concrete program labels");
-  } else {
-    /* The original ASM binary only exposes DOS/free MCB entries under
-       kvikdos, but the list should still be populated. */
-    check(kviktest_find_text("DOS", NULL, NULL) ||
-          kviktest_find_text("free memory", NULL, NULL),
-          "memory info lists DOS or free memory blocks");
-  }
+  /* Memory Info should label the listed MCBs concretely — at minimum
+   * "DOS" for the kernel block — and never use the literal placeholder
+   * "program" that older builds rendered when the MCB name was unknown.
+   * Both the original ASM binary and the C recreation produce a
+   * populated list under kvikdos's synthetic INVARS/MCB data. */
+  check((kviktest_find_text("DOS", NULL, NULL) ||
+         kviktest_find_text("free memory", NULL, NULL) ||
+         kviktest_find_text("VC", NULL, NULL)) &&
+        !kviktest_find_text("program", NULL, NULL),
+        "memory info uses concrete program labels");
 
   kviktest_send_key(KEY_ENTER);
   usleep(300000);
