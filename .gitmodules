@@ -1,3 +1,7 @@
 [submodule "third_party/tasm"]
 	path = third_party/tasm
 	url = https://github.com/zajo/TASM
+[submodule "vendor/kvikdos"]
+	path = vendor/kvikdos
+	url = https://github.com/ddanila/kvikdos.git
+	branch = improvements
