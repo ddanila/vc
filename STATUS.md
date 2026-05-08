@@ -64,6 +64,9 @@ For the in-flight kvikdos child-spawn work referenced below see
      against the resident stub.
   4. ✅ `kvikdos@3bae68c` — AH=06 ZF/key-pop, AH=44 AL=0F Set Drive
      Map, AH=44 AL=0D CL=0x66 Get Media ID.
+  5. ✅ `kvikdos@fb506ef` — DOS .exe loader zeroes the BSS up to the
+     end of the program's allocation, matching real-DOS behaviour
+     for `DB ?` data.
 
   After these the OVL completes its `Init00` / segment setup, jumps
   to its main code segment (cs:0d52), and starts driving INT 10h
@@ -73,21 +76,28 @@ For the in-flight kvikdos child-spawn work referenced below see
   successfully popped (verified) but the dialog re-appears on the
   next ReadDir attempt.
 
-  Real DOS+QEMU is fine — `make test-qemu-4.99.09` passes 5/5 — so
-  the gap is something kvikdos still doesn't model that VC's
-  `VCPANELS.INC:ReadDir` checks before issuing a directory read.
-  `findfirst.com` (kvikdos's own regression) works against the same
-  fixture dir, ruling out FindFirst itself.
+  The trailing `?` on the prompt comes from `PutPrompt` in
+  `VCSUBS.INC` whenever `PathEr != 0`. `PathEr` is declared `DB ?`
+  in `VCDATA.INC` (BSS), so it should be zero on startup; the only
+  call sites that set it to non-zero are `GetPath` on AH=47/Phantom
+  failure and `F20_13` on AH=3B failure. None of those fire in the
+  trace — yet `?` appears, suggesting the byte VC reads as
+  `PathEr` is non-zero from somewhere we haven't traced. Both
+  `findfirst.com` (kvikdos's own regression) and the QEMU smoke
+  test work against the same fixtures, so directory iteration and
+  the binary itself are fine.
 * **QEMU smoke:** ✅ passes 5/5.
 
 ## Open items
 
 ### ddanila_vc
 
-1. Diagnose what specific check inside VC 4.99.09's `ReadDir`
-   triggers `Can't read disk` before any AH=4Eh call. Likely an
-   in-memory check or an INT 21h call that returns the wrong code
-   (e.g. `AH=44 AL=0D CL=0x60`/`0x40`/etc., or a DOS-internals read).
+1. Identify the byte/state VC 4.99.09 inspects to set `PathEr` non-
+   zero before any DOS dir-read call. Likely candidates: a saved-
+   state byte the resident stub writes during the spawn handshake,
+   a DOS-internal/INVARS read, or a stack/register inheritance
+   that survives the in-place spawn. Once that's identified, fix
+   in kvikdos and 4.99 should reach the panel.
 
 ### vendor/kvikdos (branch `improvements`)
 
@@ -124,6 +134,8 @@ make test-kvikdos-4.99.09
 * `vendor/kvikdos@81dcdf8` — stamp DOS MCB program-name field from
   `prog_filename`'s basename (lets VC's Memory Info display the
   real program name).
+* `vendor/kvikdos@fb506ef` — DOS .exe loader zeroes BSS up to the
+  end of the program's allocation.
 * `ddanila_vc@db5e903` — add kvikdos submodule.
 * `ddanila_vc@ef65e0b` — import test suite + QEMU e2e from beta_kappa.
 * `ddanila_vc@2b9cff9` — Makefile + version-aware QEMU wrapper.
