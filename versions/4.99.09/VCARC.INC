@@ -100,7 +100,7 @@ ChkArcExt	PROC	FAR
   @@ArcExt1:	MOV	BX,DI
   @@ArcExt2:	CMP	DI,OFFSET ArchiveExt+3
 		JAE	@@ArcExt3
-		LODS	ES:Byt
+		LODS	BYTE PTR ES:[SI]
 		CMP	AL,':'
 		JE	@@ArcExt3
 		CMP	AL,';'
@@ -125,10 +125,10 @@ ChkArcExt	PROC	FAR
 		MOV	CX,SI			; Internal or external mode
 		OR	DL,DL
 		JNZ	@@ChkFile
-		LODS	ES:Byt
+		LODS	BYTE PTR ES:[SI]
 		CMP	AL,'-'
 		JNE	@@ChkFile
-  @@IsDefault:	LODS	ES:Byt
+  @@IsDefault:	LODS	BYTE PTR ES:[SI]
 		CMP	AL,' '
 		JE	@@IsDefault
 		CMP	AL,9
@@ -157,7 +157,7 @@ ChkArcExt	PROC	FAR
   @@IntExt:	CMP	BYTE PTR CS:[BX],1
 		JB	@@Exit
 		MOV	SI,OFFSET ArchiveExt
-  @@ExtChar:	LODS	ES:Byt
+  @@ExtChar:	LODS	BYTE PTR ES:[SI]
 		CMP	AL,CS:[BX]
 		JNE	@@NextExt
 		CMP	AL,0

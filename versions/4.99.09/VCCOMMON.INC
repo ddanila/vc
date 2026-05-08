@@ -669,12 +669,12 @@ NormPath	ENDP
 NormStr		PROC	FAR
 		USES	AX,BX,SI,DI
 		MOV	DI,SI
-  @@FndChar:	LODS	ES:Byt
+  @@FndChar:	LODS	BYTE PTR ES:[SI]
 		CMP	AL,' '
 		JE	@@FndChar
 		DEC	SI
   @@SaveEnd:	MOV	BX,DI
-  @@Next:	LODS	ES:Byt
+  @@Next:	LODS	BYTE PTR ES:[SI]
 		STOSB
 		CMP	AL,' '
 		JE	@@Next
@@ -1666,7 +1666,7 @@ GetLongNameEA	PROC	FAR
 		ADD	SI,AX
 		PUSH	DI
 		DEC	CX
-  @@EAMoveName:	LODS	ES:Wrd
+  @@EAMoveName:	LODS	WORD PTR ES:[SI]
 		CMP	CX,1
 		JBE	@@OneByte
 		DEC	CX

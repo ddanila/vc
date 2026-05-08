@@ -301,7 +301,7 @@ AddTreeEntry	PROC	FAR
 		OR	SI,SI
 		JE	@@NoLong
 		INC	DX
-  @@LongOffs:	LODS	ES:Byt
+  @@LongOffs:	LODS	BYTE PTR ES:[SI]
 		CMP	AL,0
 		JE	@@NoLong
 		CMP	AL,'\'
@@ -457,7 +457,7 @@ AddTreeEntry	ENDP
 AddTreeLenEnt	PROC	NEAR			; Length of dir entry
 		USES	SI
 		MOV	SI,DI
-  @@GetChar:	LODS	ES:Byt
+  @@GetChar:	LODS	BYTE PTR ES:[SI]
 		CMP	AL,0
 		JE	@@Exit
 		CMP	AL,'\'
@@ -1147,7 +1147,7 @@ ReadTreeInfo	PROC	FAR
 		POP	DS
 		JC	@@ErrFind
 		MOV	SI,OFFSET DTA.FilName
-  @@FindExt:	LODS	ES:Byt
+  @@FindExt:	LODS	BYTE PTR ES:[SI]
 		CMP	AL,0
 		JE	@@Next
 		CMP	AL,'.'
@@ -1829,7 +1829,7 @@ UpdateBranch	PROC	FAR
 		MOV	BP,AX
 		XOR	BX,BX
 		MOV	SI,DI
-  @@EndEntry:	LODS	ES:Byt
+  @@EndEntry:	LODS	BYTE PTR ES:[SI]
 		CMP	AL,0
 		JE	@@NameOS2
 		CMP	AL,'\'

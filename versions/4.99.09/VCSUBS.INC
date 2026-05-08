@@ -710,7 +710,7 @@ PanelTitle	PROC	NEAR
 		JE	@@Exit
 		LOOP	@@Space1
 		MOV	CL,AL
-  @@Next:	LODS	CS:Byt
+  @@Next:	LODS	BYTE PTR CS:[SI]
 		CMP	AL,0
 		JE	@@EndLine
 		STOSW
@@ -2047,7 +2047,7 @@ PutAttr		PROC	NEAR
 PutAttr		ENDP
 
 SetAttrib	PROC	NEAR
-		LODS	CS:Byt
+		LODS	BYTE PTR CS:[SI]
 		SHL	AH,1
 		JC	@@Put
 		MOV	AL,'.'
@@ -3200,7 +3200,7 @@ FindPath	ENDP
 
 FindPathMove	PROC	NEAR
 		MOV	AH,0
-  @@GetChar:	LODS	ES:Byt
+  @@GetChar:	LODS	BYTE PTR ES:[SI]
 		CMP	AL,'.'
 		JNE	@@SaveChar
 		MOV	AH,AL

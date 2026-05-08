@@ -37,11 +37,6 @@ InpModePoint	EQU	7		; Max size of input line when alt edit
 TblWidth	EQU	60		; Max length of table titles
 
 ;---------------------- Global structures ----------------------
-TYPES		UNION
-  Byt		DB	?		; Byte definition
-  Wrd		DW	?		; Word definition
-TYPES		ENDS
-
 ; Far address structure definition.
 FARAD		STRUC
   Offs		DW	?		; Offset
