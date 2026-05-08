@@ -1,1 +1,36 @@
 build/
+
+# kvikdos test artifacts
+*.o
+coverage_*.bin
+coverage.bin
+tests/test_*.o
+# Compiled test binaries (no extension; .c/.h/.sh/.py preserved by patterns)
+tests/test_basic
+tests/test_cmdline_edit
+tests/test_coverage_deep
+tests/test_coverage_gaps
+tests/test_coverage_gaps2
+tests/test_deep_editors
+tests/test_dialogs
+tests/test_editor
+tests/test_error_access
+tests/test_error_inject
+tests/test_event_keys
+tests/test_event_loop
+tests/test_fileops_adv
+tests/test_fileops_copy
+tests/test_fileops_nav
+tests/test_fileops_sel
+tests/test_gaps_editors
+tests/test_menu
+tests/test_menu_features
+tests/test_menu_nav
+tests/test_nav_edges
+tests/test_panel_adv
+tests/test_panel_keys
+tests/test_recovery
+tests/test_render_panel
+tests/test_select_filter
+tests/test_viewer
+tests/test_viewer_hex
