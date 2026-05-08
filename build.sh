@@ -16,14 +16,24 @@
 # at wrong clusters from mtools' perspective. mformat's default
 # "MTOO<version>" OEM ID trips this; we overwrite it with dd after mformat.
 #
-# The script is two-mode:
-#   - Outside the build container (default): docker-runs the CI image and
-#     re-execs itself with VC_BUILD_IN_CONTAINER=1.
-#   - Inside the container (CI): runs the build steps directly.
+# Two ways to run the build:
+#   - docker mode: wrap ourselves in the CI container image. Closest to CI.
+#   - native mode: run the build steps directly on the host using the host's
+#     nasm / qemu-system-i386 / mtools / coreutils. Useful when the CI image
+#     isn't reachable (e.g. corp-policy-blocked ghcr.io on macOS).
+# Selection:
+#   VC_BUILD_MODE=docker  - always wrap in docker
+#   VC_BUILD_MODE=native  - always run on the host (errors if a tool is missing)
+#   VC_BUILD_MODE=auto    - native if all NATIVE_TOOLS are present, else docker
+#                           (default)
+# Inside the docker wrap and inside the CI container we re-enter this script
+# with VC_BUILD_IN_CONTAINER=1, which means "skip mode selection, run build".
 #
 # Usage:
-#   ./build.sh              # build all known versions
-#   ./build.sh 4.05         # build a single version
+#   ./build.sh                          # build all known versions
+#   ./build.sh 4.05                     # build a single version
+#   VC_BUILD_MODE=native ./build.sh     # force native, fail if tools missing
+#   VC_BUILD_MODE=docker ./build.sh     # force docker
 #
 # Output: build/<version>/ contains the produced .COM/.EXE/.OVL artifacts.
 
@@ -55,20 +65,50 @@ if [[ ! -f "$CACHE/floppy-minimal.img" ]]; then
     download "$FLOPPY_URL" "$CACHE/floppy-minimal.img"
 fi
 
-# When invoked outside the build container, wrap ourselves in docker.
+# Tools the build steps need on the host (or inside the container).
+NATIVE_TOOLS=(nasm qemu-system-i386 mcopy mformat mpartition mmd truncate timeout dd)
+have_native_tools() {
+    local t
+    for t in "${NATIVE_TOOLS[@]}"; do
+        command -v "$t" >/dev/null 2>&1 || return 1
+    done
+}
+
+# Outer pass: pick docker or native unless the caller already opted in to
+# running build steps directly (VC_BUILD_IN_CONTAINER=1, set by the docker
+# wrap itself and by the GitHub Actions workflow).
 if [[ "${VC_BUILD_IN_CONTAINER:-0}" != "1" ]]; then
-    kvm_opts=()
-    [[ -e /dev/kvm ]] && kvm_opts=(--device /dev/kvm)
-    exec docker run --rm \
-        -v "$ROOT":/repo:rw \
-        -w /repo \
-        -e VC_BUILD_IN_CONTAINER=1 \
-        "${kvm_opts[@]}" \
-        "$IMAGE" \
-        ./build.sh "$@"
+    mode="${VC_BUILD_MODE:-auto}"
+    case "$mode" in
+        docker)
+            wrap=1 ;;
+        native)
+            have_native_tools || {
+                echo "VC_BUILD_MODE=native but missing one of: ${NATIVE_TOOLS[*]}" >&2
+                exit 1
+            }
+            wrap=0 ;;
+        auto)
+            if have_native_tools; then wrap=0; else wrap=1; fi ;;
+        *)
+            echo "VC_BUILD_MODE must be one of: docker, native, auto (got: $mode)" >&2
+            exit 1 ;;
+    esac
+    if [[ "$wrap" == 1 ]]; then
+        kvm_opts=()
+        [[ -e /dev/kvm ]] && kvm_opts=(--device /dev/kvm)
+        exec docker run --rm \
+            -v "$ROOT":/repo:rw \
+            -w /repo \
+            -e VC_BUILD_IN_CONTAINER=1 \
+            ${kvm_opts[@]+"${kvm_opts[@]}"} \
+            "$IMAGE" \
+            ./build.sh "$@"
+    fi
 fi
 
-# === From here we are running inside ghcr.io/ddanila/msdos/ci ===
+# === From here we run the build steps directly: either inside
+# === ghcr.io/ddanila/msdos/ci, or natively on a host with NATIVE_TOOLS.
 
 # MARK.COM writes the first character of its tail (DOS PSP[80h]) to QEMU's
 # debugcon (port 0xE9) and to COM1 after a 115200 8N1 UART init, giving us
