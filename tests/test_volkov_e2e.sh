@@ -1,46 +1,39 @@
 #!/bin/bash
+# QEMU smoke test: boot a built VC.COM under real DOS in qemu-system-i386
+# and verify the panel renders. Uses the same floppy image as build.sh
+# (build/.cache/floppy-minimal.img).
+#
+# Usage: test_volkov_e2e.sh <version>
+#   version: 4.05 | 4.99.09
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-OUT_DIR="$REPO_ROOT/out"
-BASE_IMG="${MSDOS_BASE_IMG:-$OUT_DIR/floppy-minimal.img}"
-E2E_TARGET="${1:-${VC_E2E_TARGET:-asm}}"
-case "$E2E_TARGET" in
-    asm|original)
-        E2E_NAME="asm"
-        E2E_TITLE="byte-identical ASM VC.COM"
-        E2E_BINARY="$REPO_ROOT/ORIG_VC/SRC/VCW.COM"
-        ;;
-    c|recreation|vc)
-        E2E_NAME="c"
-        E2E_TITLE="C recreation VC.COM"
-        E2E_BINARY="$REPO_ROOT/src/vc.com"
-        ;;
-    *)
-        echo "usage: $0 [asm|c]" >&2
-        exit 2
-        ;;
-esac
-BOOT_IMG="$OUT_DIR/volkov-e2e-$E2E_NAME.img"
-AUTOEXEC="$OUT_DIR/AUTOEXEC-$E2E_NAME.BAT"
-QMP_SOCK="$OUT_DIR/volkov-e2e-$E2E_NAME-qmp.sock"
-SCREEN_LOG="$OUT_DIR/volkov-e2e-$E2E_NAME-screen.log"
-DOS_RELEASE_TAG="${DOS_RELEASE_TAG:-0.1}"
-DOS_IMAGE_URL="${DOS_IMAGE_URL:-https://github.com/ddanila/msdos/releases/download/${DOS_RELEASE_TAG}/floppy-minimal.img}"
+
+VERSION="${1:-${VC_E2E_VERSION:-4.05}}"
+VC_BINARY="$REPO_ROOT/build/$VERSION/VC.COM"
+
+if [[ ! -f "$VC_BINARY" ]]; then
+    echo "ERROR: $VC_BINARY not found — run ./build.sh $VERSION first" >&2
+    exit 1
+fi
+
+CACHE="$REPO_ROOT/build/.cache"
+BASE_IMG="$CACHE/floppy-minimal.img"
+DOS_IMAGE_URL="${DOS_IMAGE_URL:-https://github.com/ddanila/msdos/releases/download/0.1/floppy-minimal.img}"
+
+OUT_DIR="$REPO_ROOT/build/$VERSION/stage/e2e"
+mkdir -p "$OUT_DIR"
+BOOT_IMG="$OUT_DIR/volkov-e2e.img"
+AUTOEXEC="$OUT_DIR/AUTOEXEC.BAT"
+QMP_SOCK="$OUT_DIR/volkov-e2e-qmp.sock"
+SCREEN_LOG="$OUT_DIR/volkov-e2e-screen.log"
 
 PASS=0
 FAIL=0
 QEMU_PID=""
 
-ok() {
-    echo "  PASS: $1"
-    PASS=$((PASS + 1))
-}
-
-fail() {
-    echo "  FAIL: $1"
-    FAIL=$((FAIL + 1))
-}
+ok()   { echo "  PASS: $1"; PASS=$((PASS + 1)); }
+fail() { echo "  FAIL: $1"; FAIL=$((FAIL + 1)); }
 
 cleanup() {
     if [[ -n "$QEMU_PID" ]]; then
@@ -50,42 +43,33 @@ cleanup() {
     rm -f "$QMP_SOCK" "$AUTOEXEC"
 }
 
-download_base_img() {
-    mkdir -p "$OUT_DIR"
-    if [[ -f "$BASE_IMG" ]]; then
-        return
-    fi
-
-    echo "Downloading minimal DOS floppy from $DOS_IMAGE_URL ..."
-    python3 - "$DOS_IMAGE_URL" "$BASE_IMG" <<'PY'
-import shutil
-import sys
-import urllib.request
-
-url, dest = sys.argv[1], sys.argv[2]
-with urllib.request.urlopen(url) as response, open(dest, "wb") as out:
-    shutil.copyfileobj(response, out)
-PY
-}
-
 trap cleanup EXIT
 
-mkdir -p "$OUT_DIR"
-download_base_img
-
-echo "=== Volkov Commander DOS e2e ($E2E_NAME) ==="
-
-if [[ "$E2E_NAME" == "asm" ]]; then
-    echo "Building byte-identical VC.COM ..."
-    KEEP_WASM_ARTIFACTS=1 "$REPO_ROOT/tools/verify_wasm_build.sh"
-else
-    echo "Building C recreation VC.COM ..."
-    make -C "$REPO_ROOT" vc
+if [[ ! -f "$BASE_IMG" ]]; then
+    echo "Downloading minimal DOS floppy from $DOS_IMAGE_URL ..."
+    mkdir -p "$CACHE"
+    python3 - "$DOS_IMAGE_URL" "$BASE_IMG" <<'PY'
+import shutil, sys, urllib.request
+url, dest = sys.argv[1], sys.argv[2]
+with urllib.request.urlopen(url) as r, open(dest, "wb") as out:
+    shutil.copyfileobj(r, out)
+PY
 fi
 
-echo "Preparing boot floppy ..."
+echo "=== Volkov Commander DOS e2e ($VERSION) ==="
+echo "VC.COM: $VC_BINARY"
+
 cp "$BASE_IMG" "$BOOT_IMG"
-mcopy -o -i "$BOOT_IMG" "$E2E_BINARY" ::VC.COM
+mcopy -o -i "$BOOT_IMG" "$VC_BINARY" ::VC.COM
+# 4.99.09 also needs VC.OVL on the boot floppy.
+if [[ "$VERSION" == "4.99.09" ]]; then
+    if [[ -f "$REPO_ROOT/build/$VERSION/VC.OVL" ]]; then
+        mcopy -o -i "$BOOT_IMG" "$REPO_ROOT/build/$VERSION/VC.OVL" ::VC.OVL
+    else
+        echo "ERROR: build/$VERSION/VC.OVL missing — 4.99.09 needs it" >&2
+        exit 1
+    fi
+fi
 printf '@ECHO OFF\r\nVC.COM\r\n' > "$AUTOEXEC"
 mcopy -o -i "$BOOT_IMG" "$AUTOEXEC" ::AUTOEXEC.BAT
 
@@ -113,16 +97,20 @@ if [[ ! -S "$QMP_SOCK" ]]; then
 fi
 
 echo "Waiting for Volkov Commander screen ..."
+# The function-key bar text and version-line banner differ across
+# 4.05 and 4.99.09; match on substrings present in both.
 python3 "$REPO_ROOT/tests/screen_expect.py" \
     "$QMP_SOCK" "$SCREEN_LOG" \
-    '1Help   2Menu   3View' ''
+    'Help' '' \
+    'View' '' \
+    'Quit' ''
 
 kill "$QEMU_PID" 2>/dev/null || true
 wait "$QEMU_PID" 2>/dev/null || true
 QEMU_PID=""
 
 echo ""
-echo "--- Volkov Commander checks ($E2E_TITLE) ---"
+echo "--- Volkov Commander checks ($VERSION) ---"
 
 if [[ -s "$SCREEN_LOG" ]]; then
     ok "Screen log created"
@@ -130,19 +118,19 @@ else
     fail "Screen log missing or empty"
 fi
 
-if grep -q "The Volkov Commander, Version 4.05" "$SCREEN_LOG"; then
-    ok "Startup banner rendered"
+if grep -q "Volkov Commander" "$SCREEN_LOG"; then
+    ok "Volkov Commander banner rendered"
 else
-    fail "Startup banner not found"
+    fail "Volkov Commander banner not found"
 fi
 
-if grep -q "1Help   2Menu   3View" "$SCREEN_LOG"; then
-    ok "Main function-key menu rendered"
+if grep -q "Help" "$SCREEN_LOG" && grep -q "Quit" "$SCREEN_LOG"; then
+    ok "Function-key bar rendered (Help…Quit)"
 else
-    fail "Main function-key menu not found"
+    fail "Function-key bar incomplete"
 fi
 
-if grep -q "vc       com" "$SCREEN_LOG"; then
+if grep -qi "vc *com" "$SCREEN_LOG"; then
     ok "Directory panel shows injected VC.COM"
 else
     fail "Directory panel does not show VC.COM"
