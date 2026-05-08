@@ -43,10 +43,10 @@ For the in-flight kvikdos child-spawn work referenced below see
 
 ### VC 4.99.09
 
-* **kvikdos:** **does not boot to the panel yet.** The 4.99.09
+* **kvikdos:** boots through the resident → OVL handshake. The 4.99.09
   resident-stub + swap-spawned-OVL architecture (see
-  `vendor/kvikdos/PLAN_INPLACE_SPAWN.md`) requires kvikdos's child
-  spawn to behave like real DOS:
+  `vendor/kvikdos/PLAN_INPLACE_SPAWN.md`) needed three fixes — all
+  landed:
   1. ✅ `kvikdos@4814e5f` — in-place spawn (parent memory not wiped,
      PSP[0x16] populated). Verified by
      `vendor/kvikdos/tests/inplace_spawn/run.sh` (COM child).
@@ -54,11 +54,23 @@ For the in-flight kvikdos child-spawn work referenced below see
      largest free block instead of `memsize_min_para`, so `VC.OVL`
      now receives ~640 KB. Verified by the EXE-child variant of the
      same test.
-  3. ⛔ Remaining: VC.OVL still exits `AL=0xFF` at `cs:ip=0x177:0x6c`
-     after running ~100 bytes of code with no INT 21h calls. Some
-     other in-memory check inside the OVL is not yet satisfied
-     (candidates: PSP fields beyond 0x16 / 0x02, INVARS, parent
-     image bytes outside the 0x66 paragraphs we kept).
+  3. ✅ `kvikdos@553d160` — AH=4B AL=00 preserves the binary command
+     tail across the spawn (was previously `strcpy()`-truncated at
+     the literal `\x00` inside Volkov's `OvlPrm` payload, which made
+     the OVL's CMPSB signature check fail). Found by reading
+     `versions/4.99.09/VCOVL.ASM:151-184` directly instead of
+     disassembling.
+
+  Status after the three fixes: the OVL completes its signature
+  check, performs `Init00` setup, switches to its main code segment,
+  and starts driving INT 10h video calls + INT 21h DOS calls. The
+  `test_basic` watchdog still trips because the harness waits for the
+  `C:\>` prompt at row 23 col 0 — VC 4.99.09's startup banner
+  ("Can not read the setup file: C:\VC.INI / Use Shift-F9 to create
+  a new setup file") may need a keypress to dismiss, or the prompt
+  lands at a different row. Diagnose by dumping the screen at
+  timeout, then either send a keypress in the harness or relax the
+  prompt-detection rule for 4.99.09.
 * **QEMU smoke:** not yet validated. Banner regex was loosened to
   match both versions; needs a one-time run to verify.
 
@@ -66,22 +78,23 @@ For the in-flight kvikdos child-spawn work referenced below see
 
 ### ddanila_vc
 
-1. Decide 4.99.09 strategy until kvikdos catches up:
-   * Run only the QEMU smoke for 4.99.09 (recommended), or
-   * Block on the kvikdos OVL-startup investigation.
-2. Run the QEMU e2e once for both versions and tighten the screen
+1. Diagnose VC 4.99.09's startup banner / prompt position so
+   `test_basic` can see the panel render. Likely a one-line tweak to
+   either feed a keypress or accept an alternative "ready" indicator.
+2. Run the kvikdos suite against 4.99.09 once the prompt is detected;
+   compare pass rate to 4.05's 25/28.
+3. Run the QEMU e2e once for both versions and tighten the screen
    assertions if needed.
-3. CI: extend `.github/workflows/build.yml` (or add an `e2e.yml`) to
+4. CI: extend `.github/workflows/build.yml` (or add an `e2e.yml`) to
    run `test-kvikdos-<ver>` and `test-qemu-<ver>` after the build per
    matrix entry.
 
 ### vendor/kvikdos (branch `improvements`)
 
-1. Diagnose what VC.OVL checks at `0x177:0x9..0x6c` and what
-   in-memory state we're missing. Likely tractable via `KVIKDOS_TRACE`
-   + a static disassembly of the first 0x70 bytes of `VC.OVL`.
-2. Once that's fixed, rerun `tests/inplace_spawn/run.sh` and the
-   ddanila_vc 4.99.09 kvikdos suite.
+* Three child-spawn fixes have landed and the synthetic
+  `tests/inplace_spawn/run.sh` regression covers both variants. No
+  open kvikdos work for VC 4.99.09 right now; reopen if the wider
+  test suite uncovers something new.
 
 ## How to reproduce
 
@@ -106,6 +119,8 @@ make test-kvikdos-4.99.09
 * `vendor/kvikdos@4814e5f` — in-place AH=4B AL=00 child spawn.
 * `vendor/kvikdos@8d199d0` — AH=4B AL=00 alloc fallback to largest
   free block + EXE-child regression.
+* `vendor/kvikdos@553d160` — AH=4B AL=00 preserves binary command
+  tail (NUL-safe). Lets VC 4.99.09's OVL pass its signature check.
 * `ddanila_vc@db5e903` — add kvikdos submodule.
 * `ddanila_vc@ef65e0b` — import test suite + QEMU e2e from beta_kappa.
 * `ddanila_vc@2b9cff9` — Makefile + version-aware QEMU wrapper.
