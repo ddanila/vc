@@ -162,6 +162,15 @@ static void test_ctrl_i_insert(void) {
   char buf[81];
   printf("\n--- Ctrl+I insert selected filenames ---\n");
 
+  if (test_is_vc_499()) {
+    /* Ctrl+I (ASCII 0x09 = Tab) doesn't carry the "insert filenames"
+     * binding under 4.99.09 — the panel handler treats it as a plain
+     * Tab and switches the active panel. There is no equivalent stable
+     * binding in 4.99. */
+    check(1, "skipped Ctrl+I (4.99 treats it as Tab)");
+    return;
+  }
+
   /* Ensure clean command line. */
   kviktest_send_key(CTRL_Y);
   usleep(200000);
