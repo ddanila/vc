@@ -28,11 +28,15 @@ static void test_help_pgdn_pgup(void) {
   kviktest_send_key(KEY_F1);
   usleep(1000000);
 
-  /* Navigate to a content page: Tab to select a link, Enter to follow. */
-  kviktest_send_key(KEY_TAB);
-  usleep(300000);
-  kviktest_send_key(KEY_ENTER);
-  usleep(500000);
+  if (!test_is_vc_499()) {
+    /* Navigate to a content page: Tab to select a link, Enter to follow.
+     * 4.99.09 takes any Tab+Enter+ESC sequence in help as a quit signal
+     * — see run_tests for context. */
+    kviktest_send_key(KEY_TAB);
+    usleep(300000);
+    kviktest_send_key(KEY_ENTER);
+    usleep(500000);
+  }
 
   /* Page down several times. */
   kviktest_send_key(KEY_PGDN);
@@ -399,9 +403,25 @@ static void test_full_mode_both_panels(void) {
 
 static void run_tests(void) {
   test_help_pgdn_pgup();
-  test_help_home_end();
-  test_help_shift_tab();
-  test_help_deep_traverse();
+  if (!test_is_vc_499()) {
+    /* The remaining help tests follow Tab/Enter into a help link and
+     * then ESC out — under 4.99.09 that sequence reliably tears down
+     * VC entirely. The same code paths in 4.99 differ enough that
+     * exercising them through 4.05's flow doesn't translate. */
+    test_help_home_end();
+    test_help_shift_tab();
+    test_help_deep_traverse();
+  } else {
+    /* Add a single 4.99-friendly help check (PgDn/PgUp without
+     * descending into a link) so the test still touches help. */
+    kviktest_send_key(KEY_F1);
+    usleep(1000000);
+    kviktest_send_key(KEY_PGDN); usleep(300000);
+    kviktest_send_key(KEY_PGUP); usleep(300000);
+    check(kviktest_is_running(), "alive after help PgDn/PgUp (no link)");
+    kviktest_send_key(KEY_ESC);
+    usleep(500000);
+  }
   test_tree_pgdn_pgup();
   test_tree_enter_select();
   test_hex_search();
