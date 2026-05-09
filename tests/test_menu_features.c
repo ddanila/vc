@@ -212,6 +212,13 @@ static void test_editor_quit_confirm(void) {
   char buf[81];
   printf("\n--- Editor quit confirmation ---\n");
 
+  if (test_is_vc_499()) {
+    /* 4.99.09 ships without an internal editor — F4 invokes whatever
+     * external editor VC.EXT points at. There is nothing to test here. */
+    check(1, "skipped (4.99 has no built-in editor)");
+    return;
+  }
+
   /* Re-read directory to ensure clean panel state. */
   kviktest_send_key(0x1312);  /* Ctrl+R */
   usleep(500000);

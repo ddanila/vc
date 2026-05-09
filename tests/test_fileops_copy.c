@@ -54,13 +54,13 @@ static void test_file_copy(void) {
   kviktest_send_key(KEY_F5);
   usleep(500000);
 
-  /* Copy dialog appears with destination path. Clear it and type new name. */
-  /* First, select all text in the input field, then type the new name. */
-  kviktest_send_key(0x4700);  /* Home in text field */
-  usleep(100000);
-  /* Shift+End to select all. */
-  kviktest_send_key(0x4F00 | 0x00);  /* End */
-  usleep(100000);
+  /* Copy dialog opens with the destination input pre-populated with the
+   * source filename. 4.05 starts the field with the text selected so a
+   * type replaces it; 4.99.09 leaves the cursor at the end with no
+   * selection, so the same type would append. Use Ctrl+Y (delete entire
+   * line) which behaves identically across both builds. */
+  kviktest_send_key(0x1519);  /* Ctrl+Y */
+  usleep(200000);
 
   /* Type the destination: COPY.TXT */
   type_string("COPY.TXT");

@@ -230,6 +230,15 @@ static int setup_fixtures(const char *master_dir, char **out_dir) {
   return 0;
 }
 
+/* Returns 1 when running against VC 4.99.09 (overlay-based), 0 for
+ * the original ASM 4.05. Tests that probe behaviour specific to
+ * either build can branch on this. We use VC_OVL_PATH as a proxy:
+ * 4.99.09's harness wires it through Makefile, 4.05 doesn't. */
+static int test_is_vc_499(void) {
+  const char *ovl = getenv("VC_OVL_PATH");
+  return ovl && ovl[0];
+}
+
 static void cleanup_fixtures(char *dir) {
   char cmd[512];
   if (!dir) return;

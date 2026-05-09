@@ -152,6 +152,13 @@ static void test_viewer_keybar_modes(void) {
   usleep(500000);  /* settle after previous test */
   navigate_to("hello", NULL);
   kviktest_send_key(KEY_F3);
+  /* 4.99.09 first opens a "View the file: hello.txt" confirmation
+   * dialog and only enters the viewer after Enter; 4.05 jumps straight
+   * to the viewer. Confirm if the dialog appears. */
+  if (kviktest_wait_for_text_anywhere("View the file", 1500, NULL, NULL)) {
+    kviktest_send_key(KEY_ENTER);
+    usleep(800000);
+  }
   /* Wait for viewer to render its keybar (Search label). */
   if (!kviktest_wait_for_text_anywhere("Search", 3000, NULL, NULL)) {
     /* Retry: F3 may have been lost during panel transition. */
@@ -159,6 +166,9 @@ static void test_viewer_keybar_modes(void) {
     usleep(500000);
     navigate_to("hello", NULL);
     kviktest_send_key(KEY_F3);
+    if (kviktest_wait_for_text_anywhere("View the file", 1500, NULL, NULL)) {
+      kviktest_send_key(KEY_ENTER);
+    }
     usleep(2000000);
   }
 

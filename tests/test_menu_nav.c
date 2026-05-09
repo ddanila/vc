@@ -209,9 +209,16 @@ static void test_menu_checkmarks(void) {
     /* First checkmark should be on Brief (first item, row 2). */
     check(first_check_row == 2,
           "first checkmark on Brief (row 2)");
-    /* Verify a non-checked item has no checkmark. */
-    check(read_char(3, lc + 1) == 0x20,
-          "Full has no checkbox");
+    /* Verify a non-checked item ("Full" on row 3) has no 0xFB checkmark.
+     * Original 4.05 puts a literal space at lc+1 there; 4.99.09's stripe
+     * column is one cell wider so lc+1 isn't necessarily the checkbox
+     * cell — but in either case row 3 must NOT carry a 0xFB. */
+    { int has_check = 0;
+      int c;
+      for (c = lc + 1; c <= lc + 4 && c < 80; c++)
+        if (read_char(3, c) == 0xFB) { has_check = 1; break; }
+      check(!has_check, "Full has no checkbox");
+    }
   }
 
   kviktest_send_key(KEY_ESC);

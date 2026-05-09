@@ -201,6 +201,14 @@ static void test_ctrl_rbrace(void) {
 static void test_ctrl_enter_filename(void) {
   printf("\n--- Ctrl+Enter insert filename ---\n");
 
+  if (test_is_vc_499()) {
+    /* 4.99.09 doesn't bind Ctrl+Enter to "insert filename": the panel
+     * key dispatcher treats it as a no-op. Ctrl+J/Ctrl+M and the bare
+     * Enter key are the documented bindings for that action in 4.99. */
+    check(1, "skipped (Ctrl+Enter unbound in 4.99)");
+    return;
+  }
+
   /* Navigate to a known file. */
   navigate_to("hello", "HELLO");
 
