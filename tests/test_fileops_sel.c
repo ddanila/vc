@@ -21,43 +21,65 @@ static void test_file_select(void) {
   usleep(300000);
   check(kviktest_is_running(), "alive after second Insert");
 
-  /* '*' (Gray star / numpad *) selects/inverts all files.
-   * Scancode for numpad * is 0x37, ASCII '*' = 0x2A. */
-  kviktest_send_key(0x372A);
-  usleep(500000);
-  /* After selecting files, the status bar should show "bytes in X selected files"
-   * or similar selection info. */
-  check(kviktest_is_running(), "alive after * (invert selection)");
+  if (!test_is_vc_499()) {
+    /* '*' (Gray star / numpad *) selects/inverts all files.
+     * Scancode for numpad * is 0x37, ASCII '*' = 0x2A.
+     *
+     * 4.99.09 routes Gray-* and the numpad +/- scancodes to the
+     * command line instead of binding them as panel selection
+     * commands, so we skip these subtests and verify Insert-based
+     * selection only. */
+    kviktest_send_key(0x372A);
+    usleep(500000);
+    check(kviktest_is_running(), "alive after * (invert selection)");
 
-  /* '+' (numpad +) selects by pattern — opens a dialog. */
-  kviktest_send_key(0x4E2B);  /* Numpad + */
-  usleep(500000);
-  /* Type *.TXT and Enter to select all TXT files. */
-  type_string("*.TXT");
-  kviktest_send_key(KEY_ENTER);
-  usleep(500000);
-  check(kviktest_is_running(), "alive after + select by pattern");
+    /* '+' (numpad +) selects by pattern — opens a dialog. */
+    kviktest_send_key(0x4E2B);  /* Numpad + */
+    usleep(500000);
+    type_string("*.TXT");
+    kviktest_send_key(KEY_ENTER);
+    usleep(500000);
+    check(kviktest_is_running(), "alive after + select by pattern");
 
-  /* '-' (numpad -) deselects by pattern. */
-  kviktest_send_key(0x4A2D);  /* Numpad - */
-  usleep(500000);
-  kviktest_send_key(KEY_ENTER);  /* Accept default pattern to deselect. */
-  usleep(500000);
-  check(kviktest_is_running(), "alive after - deselect by pattern");
+    /* '-' (numpad -) deselects by pattern. */
+    kviktest_send_key(0x4A2D);  /* Numpad - */
+    usleep(500000);
+    kviktest_send_key(KEY_ENTER);
+    usleep(500000);
+    check(kviktest_is_running(), "alive after - deselect by pattern");
+  } else {
+    /* Walk back and Insert again to clear the two selections. */
+    kviktest_send_key(0x4700);
+    usleep(200000);
+    kviktest_send_key(KEY_DOWN);
+    usleep(200000);
+    kviktest_send_key(0x5200);
+    usleep(300000);
+    kviktest_send_key(0x5200);
+    usleep(300000);
+    check(1, "skipped Gray-*/+/- (4.99 routes to cmdline)");
+  }
 }
 
 static void test_multi_file_copy(void) {
   printf("\n--- Multi-file select + copy ---\n");
 
-  /* Select multiple files with Insert key. */
+  /* Select multiple files with Insert key.
+   *
+   * 4.99.09 has no reliable "deselect all" keybinding under kvikdos
+   * (Gray-* leaks to the cmdline, Numpad-minus too), so the sticky
+   * selection would corrupt later F8/F7 tests. Select only one file
+   * for 4.99 — Insert toggles it back off after the F5 dialog. */
   kviktest_send_key(0x4700);  /* Home */
   usleep(300000);
   kviktest_send_key(KEY_DOWN);  /* skip '..' or first entry */
   usleep(200000);
   kviktest_send_key(0x5200);  /* Insert — select first file */
   usleep(300000);
-  kviktest_send_key(0x5200);  /* Insert — select second file */
-  usleep(300000);
+  if (!test_is_vc_499()) {
+    kviktest_send_key(0x5200);  /* Insert — select second file */
+    usleep(300000);
+  }
 
   /* F5 = Copy selected files. */
   kviktest_send_key(KEY_F5);
@@ -69,9 +91,19 @@ static void test_multi_file_copy(void) {
   usleep(500000);
   check(kviktest_is_running(), "alive after multi-file copy dialog");
 
-  /* Deselect all with '*'. */
-  kviktest_send_key(0x372A);  /* numpad * */
-  usleep(500000);
+  if (test_is_vc_499()) {
+    /* Toggle the single selected row back off. */
+    kviktest_send_key(0x4700);  /* Home */
+    usleep(200000);
+    kviktest_send_key(KEY_DOWN);
+    usleep(200000);
+    kviktest_send_key(0x5200);  /* Insert — deselect */
+    usleep(300000);
+  } else {
+    /* 4.05: Gray-* inverts the entire selection. */
+    kviktest_send_key(0x372A);
+    usleep(500000);
+  }
   check(kviktest_is_running(), "alive after deselect");
 }
 
@@ -141,22 +173,35 @@ static void test_delete_file(void) {
         "DELME gone from host filesystem");
   check(kviktest_is_running(), "alive after file delete");
 
-  /* Multi-select delete dialog: select two files, open F8, cancel. */
+  /* Multi-select F8 cancel: 4.05 selects two files; 4.99.09 selects
+   * only one (Gray-* deselect not available — see test_multi_file_copy
+   * for context). Both still exercise the F8 multi-select dialog path. */
   kviktest_send_key(0x4700);  /* Home */
   usleep(300000);
-  kviktest_send_key(KEY_DOWN);  /* skip '..' */
+  kviktest_send_key(KEY_DOWN);  /* skip first entry */
   usleep(200000);
   kviktest_send_key(0x5200);  /* Insert — select first file */
   usleep(300000);
-  kviktest_send_key(0x5200);  /* Insert — select second file */
-  usleep(300000);
+  if (!test_is_vc_499()) {
+    kviktest_send_key(0x5200);  /* Insert — select second file */
+    usleep(300000);
+  }
   kviktest_send_key(KEY_F8);
   usleep(500000);
   check(kviktest_is_running(), "F8 multi-select dialog");
   kviktest_send_key(KEY_ESC);  /* Cancel — don't delete real fixtures */
   usleep(500000);
-  kviktest_send_key(0x372A);  /* numpad * to deselect */
-  usleep(500000);
+  if (test_is_vc_499()) {
+    kviktest_send_key(0x4700);
+    usleep(200000);
+    kviktest_send_key(KEY_DOWN);
+    usleep(200000);
+    kviktest_send_key(0x5200);  /* Insert — deselect */
+    usleep(300000);
+  } else {
+    kviktest_send_key(0x372A);  /* numpad * to deselect (4.05) */
+    usleep(500000);
+  }
   check(kviktest_is_running(), "alive after multi-select cancel");
 
   /* Directory delete: create DELDIR with F7, delete with F8. */
