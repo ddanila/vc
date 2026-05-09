@@ -3,8 +3,10 @@ name: Build
 on:
   push:
     branches: [build]
+    paths-ignore: ['**.md']
   pull_request:
     branches: [build]
+    paths-ignore: ['**.md']
 
 jobs:
   build:

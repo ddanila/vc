@@ -3,8 +3,10 @@ name: E2E
 on:
   push:
     branches: [build]
+    paths-ignore: ['**.md']
   pull_request:
     branches: [build]
+    paths-ignore: ['**.md']
   workflow_dispatch:
 
 concurrency:

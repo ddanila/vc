@@ -1,25 +1,26 @@
-# E2E test adoption status
+# E2E test status
 
-Snapshot of where the kvikdos test suite + QEMU smoke adoption stand.
-For the in-flight kvikdos child-spawn work referenced below see
-`vendor/kvikdos/PLAN_INPLACE_SPAWN.md`.
+State of the kvikdos test suite + QEMU smoke pipeline on the `build`
+branch. Both VC builds are green end-to-end.
 
 ## What's in the tree
 
-* `vendor/kvikdos` — submodule pinned to `improvements` tip
-  (currently includes in-place AH=4B AL=00 child spawn, alloc
-  fallback, binary-safe command tail, AH=06 ZF/key fix, AH=44 AL=0F
-  Set Logical Drive Map, and AH=44 AL=0D CL=0x66 Get Media ID).
+* `vendor/kvikdos` — submodule pinned to the `improvements` tip
+  (in-place AH=4B AL=00 child spawn, command-tail NUL preservation,
+  EXE-alloc fallback, .exe BSS zeroing, MCB program-name stamping,
+  AH=06 two-call extended-key delivery, AH=44 AL=0F / AL=0D / INT 2Fh
+  stubs — all needed to host VC 4.99.09's overlay).
 * `tests/test_common.h`, `tests/fixtures/`, 28 `tests/test_*.c` —
-  ported from beta_kappa's `TEST_GROUPS` minus `test_screen_match`
-  (recreation-only). `setup_fixtures()` now also drops `KVIKPROG.OVL`
-  + `VC.OVL` into each per-test temp dir when `VC_OVL_PATH` is set.
+  shared harness plus per-feature test groups. `setup_fixtures()`
+  drops `KVIKPROG.OVL` + `VC.OVL` and the captured 4.99 INI into the
+  per-test temp dir when `VC_OVL_PATH` is set; `test_is_vc_499()`
+  exposes the version split to test code.
 * `tests/test_volkov_e2e.sh`, `tests/screen_expect.py` — QEMU smoke
-  test, takes `<version>` and uses prebuilt `build/<version>/VC.COM`
-  (+ `VC.OVL` for 4.99.09). Reuses the floppy image `build.sh`
-  caches under `build/.cache/`.
+  test. Takes `<version>` and uses `build/<version>/VC.COM` (+ `VC.OVL`
+  for 4.99.09). Reuses the floppy image `build.sh` caches under
+  `build/.cache/`.
 * `Makefile` — top-level. Targets:
-  * `make build-tests` — assembles the 28 kvikdos test binaries.
+  * `make build-tests` — assembles all kvikdos test binaries.
   * `make test-kvikdos-4.05` / `make test-kvikdos-4.99.09` — the
     4.99 group excludes editor tests (`test_editor`,
     `test_deep_editors`, `test_gaps_editors`) and sets `VC_OVL_PATH`.
@@ -33,13 +34,12 @@ For the in-flight kvikdos child-spawn work referenced below see
 
 ### VC 4.05
 
-* **kvikdos:** ✅ all 28/28 test groups pass against
-  `build/4.05/VC.COM`.
-* **QEMU smoke:** ✅ passes 5/5.
+* **kvikdos:** ✅ all test groups pass against `build/4.05/VC.COM`.
+* **QEMU smoke:** ✅ passes.
 
 ### VC 4.99.09
 
-* **kvikdos:** ✅ all 25/25 base test groups pass against
+* **kvikdos:** ✅ all base test groups pass against
   `build/4.99.09/VC.COM` + `VC.OVL`. (Editor groups don't apply —
   4.99 has no built-in editor; F4 invokes whatever `VC.EXT`
   configures.)
@@ -86,9 +86,9 @@ For the in-flight kvikdos child-spawn work referenced below see
 
 ```sh
 make build-tests
-make test-kvikdos-4.05      # 28/28 pass
-make test-kvikdos-4.99.09   # 25/25 pass
-make test-qemu-4.05         # 5/5 pass
-make test-qemu-4.99.09      # 5/5 pass
+make test-kvikdos-4.05
+make test-kvikdos-4.99.09
+make test-qemu-4.05
+make test-qemu-4.99.09
 make test                   # all of the above
 ```

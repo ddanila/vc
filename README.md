@@ -18,6 +18,11 @@ What's added beyond master:
 - `.github/workflows/build.yml` — CI matrix that runs the same build for
   4.05 and 4.99.09 inside `ghcr.io/ddanila/msdos/ci` with KVM, uploading
   `*.COM`/`*.EXE`/`*.OVL` as workflow artifacts.
+- `vendor/kvikdos`, `tests/`, top-level `Makefile`,
+  `.github/workflows/e2e.yml` — end-to-end test pipeline. Two layers per
+  version: a kvikdos suite that drives the built binaries through a soft
+  8086 + DOS-syscall emulator, and a QEMU smoke test that boots real DOS
+  with the same artifacts.
 
 Local quick start:
 
@@ -30,3 +35,16 @@ cd vc
 
 Output lands in `build/<version>/`. The script docker-runs the same CI image
 used by GitHub Actions, so local and CI builds share an environment.
+
+Testing the built artifacts:
+
+```sh
+make test                  # both layers, both versions
+make test-kvikdos-4.05     # kvikdos suite per version
+make test-kvikdos-4.99.09
+make test-qemu-4.05        # QEMU smoke per version
+make test-qemu-4.99.09
+```
+
+See `STATUS.md` for the current pass/fail state and the version-specific
+quirks the harness branches on.
