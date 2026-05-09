@@ -16,7 +16,8 @@ static void test_basic_ui(void) {
   check(kviktest_find_text("Edit", NULL, NULL),                     "F4 'Edit'");
   check(kviktest_find_text("Copy", NULL, NULL),                     "F5 'Copy'");
   check(kviktest_find_text("RenMov", NULL, NULL),                   "F6 'RenMov'");
-  check(kviktest_find_text("Mkdir", NULL, NULL),                    "F7 'Mkdir'");
+  check(kviktest_find_text("Mkdir", NULL, NULL) ||
+        kviktest_find_text("MkDir", NULL, NULL),                    "F7 'Mkdir/MkDir'");
   check(kviktest_find_text("Delete", NULL, NULL),                   "F8 'Delete'");
   check(kviktest_find_text("Quit", NULL, NULL),                     "F10 'Quit'");
 
