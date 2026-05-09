@@ -46,5 +46,5 @@ make test-qemu-4.05        # QEMU smoke per version
 make test-qemu-4.99.09
 ```
 
-See `STATUS.md` for the current pass/fail state and the version-specific
+See `TESTING.md` for the current pass/fail state and the version-specific
 quirks the harness branches on.
