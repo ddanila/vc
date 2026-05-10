@@ -102,130 +102,216 @@ FindFile1_K	EQU	37
 FindFile2_K	EQU	38
 Empty_K		EQU	0FFh
 
-		.DATA
-KeyB_T		DB	 1, 0, 0, 0		;  0
-		DB	 2, 0, 0, 0		;  1
-		DB	 3, 4, 5, 6		;  2
-		DB	 3, 4, 5, 7		;  3
-		DB	 3, 4, 5, 8		;  4
-		DB	 3, 4, 5, 9		;  5
-		DB	10,11,17, 6		;  6
-		DB	10,11,17, 7		;  7 
-		DB	10,12,17, 6		;  8
-		DB	10,12,17, 7		;  9
-		DB	13,15,17, 6		; 10
-		DB	13,15,17, 7		; 11
-		DB	13,16,17, 6		; 12
-		DB	13,16,17, 7		; 13
-		DB	14,15,17, 6		; 14
-		DB	14,15,17, 7		; 15
-		DB	14,16,17, 6		; 16
-		DB	14,16,17, 7		; 17
-		DB	18,24,26, 0		; 18
-		DB	19,24,26, 0		; 19
-		DB	20,24,26, 0		; 20
-		DB	18,25,26, 0		; 21
-		DB	18,25,26, 0		; 22
-		DB	20,25,26, 0		; 23
-		DB	21,24,26, 0		; 24
-		DB	22,24,26, 0		; 25
-		DB	23,24,26, 0		; 26
-		DB	21,25,26, 0		; 27
-		DB	22,25,26, 0		; 28
-		DB	23,25,26, 0		; 29
-		DB	27,30, 0, 0		; 30
-		DB	28,30, 0, 0		; 31
-		DB	29,30, 0, 0		; 32
-		DB	 3, 3, 3, 3		; 33
-		DB	31, 0, 0, 0		; 34
-		DB	32, 0, 0, 0		; 35
-		DB	33, 0, 0,34		; 36
-		DB	35, 0, 0, 0		; 37
-		DB	36, 0, 0,37		; 38
-LenKeyB		=	$ - KeyB_T
+b_Help		EQU	1
+b_Menu		EQU	2
+bView		EQU	3
+bAView		EQU	4
+bEdit		EQU	5
+bAEdit		EQU	6
+bCopy		EQU	7
+bRenMov		EQU	8
+bMkDir		EQU	9
+bDelete		EQU	10
+bPullDn		EQU	11
+bQuit		EQU	12
+bMain		EQU	13
+bSavSet		EQU	14
+bLeft		EQU	15
+bRight		EQU	16
+bLabel		EQU	17
+bMkArc		EQU	18
+bMode		EQU	19
+bMemory		EQU	20
+bDirSiz		EQU	21
+bFind		EQU	22
+bHistory	EQU	23
+bEGALn		EQU	24
+bTree		EQU	25
+bWrap		EQU	26
+bUnwrap		EQU	27
+bZoom		EQU	28
+bUnzoom		EQU	29
+bText		EQU	30
+bHex		EQU	31
+bGoto		EQU	32
+bSearch		EQU	33
+bNext		EQU	34
+bPrev		EQU	35
+bTable		EQU	36
+bShift		EQU	37
+bSave		EQU	38
+bASave		EQU	39
+bQSave		EQU	40
+bRescan		EQU	41
 
-KeyC_T		DB	 0,  0,  0,  0,  0,  0,  0,  0,  0,  0	;  0
-		DB	 0,  0,  0,  0,  0,  0,  0,  0,  0, 12	;  1
-		DB	 1,  0,  0,  0,  0,  0,  0,  0,  0, 12	;  2
-		DB	 1,  2,  3,  5,  7,  8,  9, 10, 11, 12	;  3
-		DB	 0, 13,  3,  5,  7,  8,  9, 10, 14, 11	;  4
-		DB	15, 16,  0, 17,  7,  8, 18, 10, 19,  0	;  5
-		DB	15, 16,  4,  6, 20,  0, 22, 23,  0, 25	;  6
-		DB	15, 16,  4,  6, 20,  0, 22, 23, 24, 25	;  7
-		DB	15, 16,  4,  6, 20, 21, 22, 23,  0, 25	;  8
-		DB	15, 16,  4,  6, 20, 21, 22, 23, 24, 25	;  9
-		DB	 1,  2, 28,  5,  0,  0, 33, 36, 11, 12	; 10
-		DB	 0, 13,  3,  5,  0,  0, 34,  0, 14, 11	; 11
-		DB	 0, 13,  3,  5,  0,  0, 34, 37, 14, 11	; 12
-		DB	 1,  2, 28, 31,  0,  0, 33, 36, 11, 12	; 13
-		DB	 1,  2, 28, 30, 32,  0, 33, 36, 11, 12	; 14
-		DB	 0, 13,  3,  5,  0,  0, 34,  0, 14, 11	; 15
-		DB	 0, 13,  3,  5,  0,  0, 34, 37, 14, 11	; 16
-		DB	15, 16,  0, 17,  0,  0, 35,  0, 19,  0	; 17
-		DB	 1,  0, 29, 30, 32,  0, 33, 36,  0, 12	; 18
-		DB	 1, 26, 29, 31,  0,  0, 33, 36,  0, 12	; 19
-		DB	 1, 27, 29, 31,  0,  0, 33, 36,  0, 12	; 20
-		DB	 1,  0, 12, 30, 32,  0, 33, 36,  0, 12	; 21
-		DB	 1, 26, 12, 31,  0,  0, 33, 36,  0, 12	; 22
-		DB	 1, 27, 12, 31,  0,  0, 33, 36,  0, 12	; 23
-		DB	 0,  0,  0,  0,  0,  0, 34,  0,  0,  0	; 24
-		DB	 0,  0,  0,  0,  0,  0, 34, 37,  0,  0	; 25
-		DB	 0,  0,  0,  0,  0,  0, 35,  0,  0,  0	; 26
-		DB	 1, 38,  0,  0,  0,  0, 33,  0,  0, 12	; 27
-		DB	 1, 38,  0, 31,  0,  0, 33,  0,  0, 12	; 28
-		DB	 1, 38,  0, 30,  0,  0, 33,  0,  0, 12	; 29
-		DB	 0, 39,  0,  0,  0,  0, 34,  0,  0, 40	; 30
-		DB	 1,  0,  0,  0,  0,  0,  0, 34,  0, 12	; 31
-		DB	 1, 41,  0,  0,  0,  0,  0,  0,  0, 12	; 32
-		DB	 1,  0,  0,  0,  0,  0,  0,  0,  0, 25	; 33
-		DB	 0,  0,  0,  0,  0,  0,  0,  0,  0, 25	; 34
-		DB	 1,  0,  0,  0,  0,  0,  0, 36,  0, 12	; 35
-		DB	 1,  0,  3,  0, 32,  0,  0,  0,  0, 12	; 36
-		DB	 0,  0,  4,  0,  0,  0,  0,  0,  0,  0	; 37
+KbQuit		EQU	1
+KbPopup		EQU	2
+KbPan		EQU	3
+KbPan_shift	EQU	4
+KbPan_ctrl	EQU	5
+KbQView_alt_cga	EQU	6
+KbQView_alt	EQU	7
+KbPan_alt_cga	EQU	8
+KbPan_alt	EQU	9
+KbQViewX	EQU	10
+KbQView_shift	EQU	11
+KbQView_shiftX  EQU	12
+KbQView		EQU	13
+KbQView_hex	EQU	14
+KbQView_shift2  EQU	15
+KbQView_shiftX2	EQU	16
+KbQView_ctrl	EQU	17
+KbQView_hex_zm	EQU	18
+KbQVw_zm_unwrp	EQU	19
+KbQView_zoom	EQU	20
+KbView_hex	EQU	21
+KbView_unwrp	EQU	22
+KbView		EQU	23
+KbView_shift	EQU	24
+KbView_shiftX	EQU	25
+KbView_ctrl	EQU	26
+KbEditX		EQU	27
+KbEdit		EQU	28
+KbEdit_hex	EQU	29
+KbEdit_alt	EQU	30
+KbTable		EQU	31
+KbTree		EQU	32
+KbCopyMov	EQU	33
+KbCopyMov_alt	EQU	34
+KbFind		EQU	35
+KbFind_res	EQU	36
+KbFind_res_alt	EQU	37
+
+NmbKeyBar	EQU	10
+LenKeyText	EQU	6
+LenKeyCell	EQU	8		; F-key number + label + separator
+
+		.DATA
+; prefixes: Kbs - keybar set, Kb - keybar, b - button
+; keybars with X in their name are unused
+KeyB_T		DB KbQuit        ,0              ,0           ,0		; 0
+		DB KbPopup       ,0              ,0           ,0		; 1
+KbsInfo_cga	DB KbPan         ,KbPan_shift    ,KbPan_ctrl  ,KbQView_alt_cga	; 2
+KbsInfo		DB KbPan         ,KbPan_shift    ,KbPan_ctrl  ,KbQView_alt	; 3
+KbsMain_cga	DB KbPan         ,KbPan_shift    ,KbPan_ctrl  ,KbPan_alt_cga	; 4
+KbsMain		DB KbPan         ,KbPan_shift    ,KbPan_ctrl  ,KbPan_alt	; 5
+		DB KbQViewX      ,KbQView_shift  ,KbQView_ctrl,KbQView_alt_cga	; 6
+		DB KbQViewX      ,KbQView_shift  ,KbQView_ctrl,KbQView_alt	; 7
+		DB KbQViewX      ,KbQView_shiftX ,KbQView_ctrl,KbQView_alt_cga	; 8
+		DB KbQViewX      ,KbQView_shiftX ,KbQView_ctrl,KbQView_alt	; 9
+KbsQView_cga	DB KbQView       ,KbQView_shift2 ,KbQView_ctrl,KbQView_alt_cga	; 10
+KbsQView	DB KbQView       ,KbQView_shift2 ,KbQView_ctrl,KbQView_alt	; 11
+		DB KbQView       ,KbQView_shiftX2,KbQView_ctrl,KbQView_alt_cga	; 12
+		DB KbQView       ,KbQView_shiftX2,KbQView_ctrl,KbQView_alt	; 13
+KbsQVw_hex_cga	DB KbQView_hex   ,KbQView_shift2 ,KbQView_ctrl,KbQView_alt_cga	; 14
+KbsQView_hex	DB KbQView_hex   ,KbQView_shift2 ,KbQView_ctrl,KbQView_alt	; 15
+		DB KbQView_hex   ,KbQView_shiftX2,KbQView_ctrl,KbQView_alt_cga	; 16
+		DB KbQView_hex   ,KbQView_shiftX2,KbQView_ctrl,KbQView_alt	; 17
+KbsQView_hex_zm	DB KbQView_hex_zm,KbView_shift   ,KbView_ctrl ,0		; 18
+KbsQVw_zm_unwrp	DB KbQVw_zm_unwrp,KbView_shift   ,KbView_ctrl ,0		; 19
+KbsQView_zoom	DB KbQView_zoom  ,KbView_shift   ,KbView_ctrl ,0		; 20
+		DB KbQView_hex_zm,KbView_shiftX  ,KbView_ctrl ,0		; 21
+		DB KbQView_hex_zm,KbView_shiftX  ,KbView_ctrl ,0		; 22
+		DB KbQView_zoom  ,KbView_shiftX  ,KbView_ctrl ,0		; 23
+KbsView_hex	DB KbView_hex    ,KbView_shift   ,KbView_ctrl ,0		; 24
+KbsView_unwrp	DB KbView_unwrp  ,KbView_shift   ,KbView_ctrl ,0		; 25
+KbsView		DB KbView        ,KbView_shift   ,KbView_ctrl ,0		; 26
+		DB KbView_hex    ,KbView_shiftX  ,KbView_ctrl ,0		; 27
+		DB KbView_unwrp  ,KbView_shiftX  ,KbView_ctrl ,0		; 28
+		DB KbView        ,KbView_shiftX  ,KbView_ctrl ,0		; 29
+		DB KbEditX       ,KbEdit_alt     ,0           ,0		; 30
+KbsEdit		DB KbEdit        ,KbEdit_alt     ,0           ,0		; 31
+KbsEdit_hex	DB KbEdit_hex    ,KbEdit_alt     ,0           ,0		; 32
+		DB KbPan         ,KbPan          ,KbPan       ,KbPan		; 33
+KbsTable	DB KbTable       ,0              ,0           ,0		; 34
+KbsTree		DB KbTree        ,0              ,0           ,0		; 35
+KbsCopyMov	DB KbCopyMov     ,0              ,0           ,KbCopyMov_alt	; 36
+KbsFind		DB KbFind        ,0              ,0           ,0		; 37
+KbsFind_res	DB KbFind_res    ,0              ,0           ,KbFind_res_alt	; 38
+LenKeyB = $ - KeyB_T
+
+KeyC_T	DB 0     ,0      ,0      ,0     ,0      ,0      ,0      ,0       ,0      ,0	; 0
+	DB 0     ,0      ,0      ,0     ,0      ,0      ,0      ,0       ,0      ,bQuit	; KbQuit
+	DB b_Help,0      ,0      ,0     ,0      ,0      ,0      ,0       ,0      ,bQuit	; KbPopup
+	DB b_Help,b_Menu ,bView  ,bEdit ,bCopy  ,bRenMov,bMkDir ,bDelete ,bPullDn,bQuit	; KbPan
+	DB 0     ,bMain  ,bView  ,bEdit ,bCopy  ,bRenMov,bMkDir ,bDelete ,bSavSet,bPullDn ; KbPan_shift
+	DB bLeft ,bRight ,0      ,bLabel,bCopy  ,bRenMov,bMkArc ,bDelete ,bMode  ,0	; KbPan_ctrl
+	DB bLeft ,bRight ,bAView ,bAEdit,bMemory,0      ,bFind  ,bHistory,0      ,bTree	; KbQView_alt_cga
+	DB bLeft ,bRight ,bAView ,bAEdit,bMemory,0      ,bFind  ,bHistory,bEGALn ,bTree	; KbQView_alt
+	DB bLeft ,bRight ,bAView ,bAEdit,bMemory,bDirSiz,bFind  ,bHistory,0      ,bTree	; KbPan_alt_cga
+	DB bLeft ,bRight ,bAView ,bAEdit,bMemory,bDirSiz,bFind  ,bHistory,bEGALn ,bTree	; KbPan_alt
+	DB b_Help,b_Menu ,bZoom  ,bEdit ,0      ,0      ,bSearch,bTable  ,bPullDn,bQuit	; KbQViewX
+	DB 0     ,bMain  ,bView  ,bEdit ,0      ,0      ,bNext  ,0       ,bSavSet,bPullDn ; KbQView_shift
+	DB 0     ,bMain  ,bView  ,bEdit ,0      ,0      ,bNext  ,bShift  ,bSavSet,bPullDn ; KbQView_shiftX
+	DB b_Help,b_Menu ,bZoom  ,bHex  ,0      ,0      ,bSearch,bTable  ,bPullDn,bQuit	; KbQView
+	DB b_Help,b_Menu ,bZoom  ,bText ,bGoto  ,0      ,bSearch,bTable  ,bPullDn,bQuit	; KbQView_hex
+	DB 0     ,bMain  ,bView  ,bEdit ,0      ,0      ,bNext  ,0       ,bSavSet,bPullDn ; KbQView_shift2 == KbQView_shift
+	DB 0     ,bMain  ,bView  ,bEdit ,0      ,0      ,bNext  ,bShift  ,bSavSet,bPullDn ; KbQView_shiftX2 == KbQView_shiftX
+	DB bLeft ,bRight ,0      ,bLabel,0      ,0      ,bPrev  ,0       ,bMode  ,0	; KbQView_ctrl
+	DB b_Help,0      ,bUnzoom,bText ,bGoto  ,0      ,bSearch,bTable  ,0      ,bQuit	; KbQView_hex_zm
+	DB b_Help,bWrap  ,bUnzoom,bHex  ,0      ,0      ,bSearch,bTable  ,0      ,bQuit	; KbQVw_zm_unwrp
+	DB b_Help,bUnwrap,bUnzoom,bHex  ,0      ,0      ,bSearch,bTable  ,0      ,bQuit	; KbQView_zoom
+	DB b_Help,0      ,bQuit  ,bText ,bGoto  ,0      ,bSearch,bTable  ,0      ,bQuit	; KbView_hex
+	DB b_Help,bWrap  ,bQuit  ,bHex  ,0      ,0      ,bSearch,bTable  ,0      ,bQuit	; KbView_unwrp
+	DB b_Help,bUnwrap,bQuit  ,bHex  ,0      ,0      ,bSearch,bTable  ,0      ,bQuit	; KbView
+	DB 0     ,0      ,0      ,0     ,0      ,0      ,bNext  ,0       ,0      ,0	; KbView_shift
+	DB 0     ,0      ,0      ,0     ,0      ,0      ,bNext  ,bShift  ,0      ,0	; KbView_shiftX
+	DB 0     ,0      ,0      ,0     ,0      ,0      ,bPrev  ,0       ,0      ,0	; KbView_ctrl
+	DB b_Help,bSave  ,0      ,0     ,0      ,0      ,bSearch,0       ,0      ,bQuit	; KbEditX
+	DB b_Help,bSave  ,0      ,bHex  ,0      ,0      ,bSearch,0       ,0      ,bQuit	; KbEdit
+	DB b_Help,bSave  ,0      ,bText ,0      ,0      ,bSearch,0       ,0      ,bQuit	; KbEdit_hex
+	DB 0     ,bASave ,0      ,0     ,0      ,0      ,bNext  ,0       ,0      ,bQSave ; KbEdit_alt
+	DB b_Help,0      ,0      ,0     ,0      ,0      ,0      ,bNext   ,0      ,bQuit	; KbTable
+	DB b_Help,bRescan,0      ,0     ,0      ,0      ,0      ,0       ,0      ,bQuit	; KbTree
+	DB b_Help,0      ,0      ,0     ,0      ,0      ,0      ,0       ,0      ,bTree	; KbCopyMov
+	DB 0     ,0      ,0      ,0     ,0      ,0      ,0      ,0       ,0      ,bTree	; KbCopyMov_alt
+	DB b_Help,0      ,0      ,0     ,0      ,0      ,0      ,bTable  ,0      ,bQuit	; KbFind
+	DB b_Help,0      ,bView  ,0     ,bGoto  ,0      ,0      ,0       ,0      ,bQuit	; KbFind_res
+	DB 0     ,0      ,bAView ,0     ,0      ,0      ,0      ,0       ,0      ,0	; KbFind_res_alt
 
 		.CONST
 Key_S		DB	'      '		;  0
-		DB	'Help  '		;  1
-		DB	'Menu  '		;  2
-		DB	'View  '		;  3
-		DB	'View..'		;  4
-		DB	'Edit  '		;  5
-		DB	'Edit..'		;  6
-		DB	'Copy  '		;  7
-		DB	'RenMov'		;  8
-		DB	'MkDir '		;  9
-		DB	'Delete'		; 10
-		DB	'PullDn'		; 11
-		DB	'Quit  '		; 12
-		DB	'Main  '		; 13
-		DB	'SavSet'		; 14
-		DB	'Left  '		; 15
-		DB	'Right '		; 16
-		DB	'Label '		; 17
-		DB	'MkArc '		; 18
-		DB	'Mode  '		; 19
-		DB	'Memory'		; 20
-		DB	'DirSiz'		; 21
-		DB	'Find  '		; 22
-		DB	'Histry'		; 23
-		DB	'EGA Ln'		; 24
-		DB	'Tree  '		; 25
-		DB	'Wrap  '		; 26
-		DB	'Unwrap'		; 27
-		DB	'Zoom  '		; 28
-		DB	'Unzoom'		; 29
-		DB	'Text  '		; 30
-		DB	'Hex   '		; 31
-		DB	'Goto  '		; 32
-		DB	'Search'		; 33
-		DB	'Next  '		; 34
-		DB	'Prev  '		; 35
-		DB	'Table '		; 36
-		DB	'Shift '		; 37
-		DB	'Save  '		; 38
-		DB	'Save..'		; 39
-		DB	'Q&Save'		; 40
-		DB	'Rescan'		; 41
+		DB	'Help  '
+		DB	'Menu  '
+		DB	'View  '
+		DB	'View..'
+		DB	'Edit  '
+		DB	'Edit..'
+		DB	'Copy  '
+		DB	'RenMov'
+		DB	'MkDir '
+		DB	'Delete'
+		DB	'PullDn'
+		DB	'Quit  '
+		DB	'Main  '
+		DB	'SavSet'
+		DB	'Left  '
+		DB	'Right '
+		DB	'Label '
+		DB	'MkArc '
+		DB	'Mode  '
+		DB	'Memory'
+		DB	'DirSiz'
+		DB	'Find  '
+		DB	'Histry'
+		DB	'EGA Ln'
+		DB	'Tree  '
+		DB	'Wrap  '
+		DB	'Unwrap'
+		DB	'Zoom  '
+		DB	'Unzoom'
+		DB	'Text  '
+		DB	'Hex   '
+		DB	'Goto  '
+		DB	'Search'
+		DB	'Next  '
+		DB	'Prev  '
+		DB	'Table '
+		DB	'Shift '
+		DB	'Save  '
+		DB	'Save..'
+		DB	'Q&Save'
+		DB	'Rescan'
 
 		.CODE	Subs
 PutKey		PROC	FAR
@@ -238,13 +324,13 @@ PutKey		PROC	FAR
 		MOV	BL,AL
 		CALL	KeybStat
 		MOV	AH,3
-		TEST	AL,8
+		TEST	AL,KbdAltMask
 		JNZ	@@Output
 		DEC	AH
-		TEST	AL,4
+		TEST	AL,KbdCtrlMask
 		JNZ	@@Output
 		DEC	AH
-		TEST	AL,3
+		TEST	AL,KbdShiftMask
 		JNZ	@@Output
 		DEC	AH
   @@Output:	MOV	AL,BL
@@ -266,11 +352,11 @@ PutKey0		PROC	FAR
 		MOV	AL,0
 		CMP	BL,LenKeyB
 		JAE	@@CmpBar
-		MOV	AL,DS:KeyB_T[BX]
+		MOV	AL,DS:KeyB_T[BX] ; KeyB_T[IKeyBar][keybar_mod]
   @@CmpBar:	CMP	AL,ES:BarPrev
-		JE	@@Exit
+		JE	@@Exit ; keybar not changed
 		MOV	ES:BarPrev,AL
-		MOV	AH,10
+		MOV	AH,NmbKeyBar
 		MUL	AH
 		MOV	SI,AX
 		MOV	BH,ES:Lines
@@ -278,7 +364,7 @@ PutKey0		PROC	FAR
 		MOV	BL,0
 		MOV	AL,ES:Columns
 		MOV	AH,0
-		MOV	DH,10
+		MOV	DH,NmbKeyBar
 		DIV	DH
 		MOV	CX,AX
 		MOV	AH,KeyTi_C
@@ -309,10 +395,10 @@ PutKey0		PROC	FAR
 		PUSH	SI
 		PUSH	CX
 		PUSH	AX
-		MOV	AL,DS:KeyC_T[SI]
-		MOV	CL,6
+		MOV	AL,DS:KeyC_T[SI] ; Fn_desc = KeyC_T[KeyB_T[IKeyBar][keybar_mod]]
+		MOV	CL,LenKeyText
 		MUL	CL
-		ADD	AX,OFFSET Key_S
+		ADD	AX,OFFSET Key_S ; Key_S[Fn_desc++]
 		MOV	SI,AX
 		POP	AX
   @@Write:	LODSB
@@ -321,7 +407,7 @@ PutKey0		PROC	FAR
 		POP	CX
 		MOV	AL,' '
 		PUSH	CX
-		SUB	CL,8
+		SUB	CL,LenKeyCell
 		JBE	@@Number
 		REP	STOSW
   @@Number:	POP	CX
@@ -332,15 +418,15 @@ PutKey0		PROC	FAR
 		JA	@@Output
 		XCHG	AH,DH
 		STOSW
-		JB	@@Next
+		JB	@@Next ; for F1..F10
 		MOV	AL,'1'
 		STOSW
 		MOV	AL,'0'
 		JMP	@@F10
   @@Output:	POP	ES
-		MOV	DL,ES:Columns
-		MOV	DH,1
-		CALL	Window
+		MOV	DL,ES:Columns ; Wnd.w = Columns
+		MOV	DH,1 ; Wnd.h = 1
+		CALL	Window ; display keybar
   @@Exit:	RET
 PutKey0		ENDP
 
