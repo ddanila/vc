@@ -36,6 +36,10 @@ ExpandSize	EQU	2000		; Expand size of segments
 InpModePoint	EQU	7		; Max size of input line when alt edit
 TblWidth	EQU	60		; Max length of table titles
 
+KbdShiftMask	EQU	03h		; Right/left Shift status bits
+KbdCtrlMask	EQU	04h
+KbdAltMask	EQU	08h
+
 ;---------------------- Global structures ----------------------
 ; Far address structure definition.
 FARAD		STRUC

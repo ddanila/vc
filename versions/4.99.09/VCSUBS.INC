@@ -320,16 +320,16 @@ PutKey		PROC	FAR
 		MOV	BL,AL
 		CALL	KeybStat
 		MOV	AH,3
-		TEST	AL,8
-		JNZ	@@Output ; Alt keybar
+		TEST	AL,KbdAltMask
+		JNZ	@@Output
 		DEC	AH
-		TEST	AL,4
-		JNZ	@@Output ; Ctrl keybar
+		TEST	AL,KbdCtrlMask
+		JNZ	@@Output
 		DEC	AH
-		TEST	AL,3
-		JNZ	@@Output ; Shift keybar
+		TEST	AL,KbdShiftMask
+		JNZ	@@Output
 		DEC	AH
-  @@Output:	MOV	AL,BL ; IKeyBar
+  @@Output:	MOV	AL,BL
 		CALL	PutKey0
 		POP	AX
 		POP	BX
