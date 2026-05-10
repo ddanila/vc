@@ -245,7 +245,6 @@ ZIPENDHD	STRUC
 					; directory with respect to
 					; the starting disk number
 		DW	?		; zipfile comment length
-  ZipComment	LABEL	BYTE		; zipfile comment (variable size)
 ZIPENDHD	ENDS
 
 ;----------------------- WCB definition ------------------------
