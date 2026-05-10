@@ -182,6 +182,10 @@ KbFind		EQU	35
 KbFind_res	EQU	36
 KbFind_res_alt	EQU	37
 
+NmbKeyBar	EQU	10
+LenKeyText	EQU	6
+LenKeyCell	EQU	8		; F-key number + label + separator
+
 		.DATA
 ; prefixes: Kbs - keybar set, Kb - keybar, b - button
 ; keybars with X in their name are unused
@@ -352,7 +356,7 @@ PutKey0		PROC	FAR
   @@CmpBar:	CMP	AL,ES:BarPrev
 		JE	@@Exit ; keybar not changed
 		MOV	ES:BarPrev,AL
-		MOV	AH,10
+		MOV	AH,NmbKeyBar
 		MUL	AH
 		MOV	SI,AX
 		MOV	BH,ES:Lines
@@ -360,7 +364,7 @@ PutKey0		PROC	FAR
 		MOV	BL,0
 		MOV	AL,ES:Columns
 		MOV	AH,0
-		MOV	DH,10
+		MOV	DH,NmbKeyBar
 		DIV	DH
 		MOV	CX,AX
 		MOV	AH,KeyTi_C
@@ -392,7 +396,7 @@ PutKey0		PROC	FAR
 		PUSH	CX
 		PUSH	AX
 		MOV	AL,DS:KeyC_T[SI] ; Fn_desc = KeyC_T[KeyB_T[IKeyBar][keybar_mod]]
-		MOV	CL,6
+		MOV	CL,LenKeyText
 		MUL	CL
 		ADD	AX,OFFSET Key_S ; Key_S[Fn_desc++]
 		MOV	SI,AX
@@ -403,7 +407,7 @@ PutKey0		PROC	FAR
 		POP	CX
 		MOV	AL,' '
 		PUSH	CX
-		SUB	CL,8
+		SUB	CL,LenKeyCell
 		JBE	@@Number
 		REP	STOSW
   @@Number:	POP	CX
