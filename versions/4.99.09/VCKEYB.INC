@@ -6,74 +6,81 @@
 
 ;---------------------------------------------------------------
 ;	Get keystroke
-;	Return:	NZ - AX = key
+;	Return:	NZ - AL - ascii char, AH - scancode
 ;		ZF - none
 ;---------------------------------------------------------------
 		.DATA
-ScanCodes	DB	03h,1Eh,30h,3Eh, 20h,12h,21h,22h
-		DB	0Eh,0Fh,1Ch,25h, 26h,1Ch,31h,18h
-		DB	19h,10h,13h,1Fh, 14h,16h,2Fh,11h
-		DB	2Dh,15h,2Ch,01h, 2Bh,1Bh,07h,0Ch
+; BUG ^C should be 2E (see also TstBrk)
+;			nop ^A  ^B  ^C      ^D  ^E  ^F  ^G
+ScanCodes	DB	03h,1Eh,30h,3Eh,    20h,12h,21h,22h
+;			\b  \t  ^Enter ^K   ^L  Enter ^N  ^O
+		DB	0Eh,0Fh,1Ch,   25h, 26h,1Ch,  31h,18h
+;			^P  ^Q  ^R  ^S      ^T  ^U  ^V  ^W
+		DB	19h,10h,13h,1Fh,    14h,16h,2Fh,11h
+;			^X  ^Y  ^Z  Esc     ^\  ^]  ^^  ^_
+		DB	2Dh,15h,2Ch,01h,    2Bh,1Bh,07h,0Ch
 
 		.CODE	Subs
 GetKey		PROC	FAR
 		USES	BX,DX
-		CMP	ES:WinClose,0
+		CMP	ES:WinClose,0 ; skip Close command (Win9x) check
 		JE	@@ChkKey
 		MOV	DX,100h
 		MOV	AX,168Fh
-		INT	2Fh
+		INT	2Fh ; Win9x - query Close (window)
 		CMP	AX,1
-		MOV	AX,4400h
-		JB	@@Exit
+		MOV	AX,4400h ; F10
+		JB	@@Exit ; Close selected / Close confirmed
   @@ChkKey:	XOR	AX,AX
-		XCHG	AX,ES:KeyStroke
+		XCHG	AX,ES:KeyStroke ; hack for Find File command
 		OR	AX,AX
-		JNE	@@Ready
-		CMP	ES:StdIn,1
-		JE	@@GetStd
-		JA	@@GetExt
-		MOV	AH,ES:ExtKeyb
-		INC	AH
+		JNE	@@Ready ; F10 was pressed in Find File command
+		CMP	ES:StdIn,1 ; use DOS CharIO function to get key input.
+		JE	@@GetStd ; set when there are no BIOS extended
+		JA	@@GetExt ; functions (0x10 / 0x11)
+  @@GetKeyBIOS:	MOV	AH,ES:ExtKeyb ; BIOS_GetKey (0 or 0x10)
+		INC	AH ; BIOS_ChkKey (1 or 0x11)
 		INT	16h
-		JZ	@@Exit
+		JZ	@@Exit ; no key pressed
 		MOV	AH,ES:ExtKeyb
-		INT	16h
+		INT	16h ; get key
 		CMP	ES:ExtKeyb,0
-		JE	@@Ready
+		JE	@@Ready ; no extended keys for BIOS_GetKey(0)
 		CMP	AL,0E0h
-		JNE	@@Ready
+		JNE	@@Ready ; not extended key
 		CMP	AH,3Bh
-		JB	@@Ready
-		MOV	AL,0
+		JB	@@Ready ; not functional (F1 - F12) key
+		MOV	AL,0 ; zero ascii character
 		JMP	@@Ready
-  @@GetStd:	MOV	DL,0FFh
-		MOV	AH,6
+  @@GetStd:	MOV	DL,0FFh ; DOS_GetKey branch, makes a little sense
+		MOV	AH,6 ; as DOS internaly uses the same BIOS funcs
 		INT	21h
-		JZ	@@Exit
+		JZ	@@Exit ; no key pressed
 		CMP	AL,0
-		JE	@@GetExt
+		JE	@@GetExt ; extended key
 		MOV	AH,0
 		CMP	AL,20h
 		JAE	@@Ready
+
+  @@TranslateAsciiCtrlChars:
 		MOV	BX,AX
-		MOV	AH,CS:ScanCodes[BX]
+		MOV	AH,CS:ScanCodes[BX] ; scancode from ascii char
 		JMP	@@Ready
   @@GetExt:	MOV	ES:StdIn,2
 		MOV	DL,0FFh
 		MOV	AH,6
 		INT	21h
-		JZ	@@Exit
-		MOV	ES:StdIn,1
+		JZ	@@Exit ; no key pressed
+		MOV	ES:StdIn,1 ; extended key has been processed
 		MOV	AH,AL
-		MOV	AL,0
-  @@Ready:	OR	SP,SP
+		MOV	AL,0 ; zero ascii character
+  @@Ready:	OR	SP,SP ; success -> clear ZF
   @@Exit:	PUSHF
-		CMP	AX,0E00Dh
+		CMP	AX,0E00Dh ; KeypadEnter
 		JE	@@Convert
-		CMP	AX,0E00Ah
+		CMP	AX,0E00Ah ; Ctrl-KeypadEnter
 		JNE	@@NoEnter
-  @@Convert:	MOV	AH,1Ch
+  @@Convert:	MOV	AH,1Ch ; Enter scancode
   @@NoEnter:	POPF
 		RET
 GetKey		ENDP
@@ -87,8 +94,8 @@ KeybStat	PROC	FAR
 		MOV	DS,CS:DataSegment
 		MOV	AL,0
 		CMP	AL,DS:StdIn
-		JNE	@@Exit
-		MOV	AH,2
+		JNE	@@Exit ; using DOS_GetKey
+		MOV	AH,2 ; get shift flags
 		INT	16h
   @@Exit:	RET
 KeybStat	ENDP
@@ -99,9 +106,9 @@ KeybStat	ENDP
 ClrKbd		PROC	FAR
 		USES	AX
 		CMP	ES:StdIn,0
-		JNZ	@@Exit
+		JNZ	@@Exit ; using DOS_GetKey
 		CMP	ES:ClrBuf,0
-		JZ	@@Exit
+		JZ	@@Exit ; 'Clear Keyboard Buffer' option is off
   @@GetChar:	CALL	GetKey
 		JNZ	@@GetChar
   @@Exit:	RET
@@ -113,33 +120,33 @@ ClrKbd		ENDP
 ;---------------------------------------------------------------
 TstBrk		PROC	FAR
 		USES	AX,BX
-		MOV	BL,1
+		MOV	BL,1 ; return no break by default
 		CMP	ES:TaskStack,0
-		JNE	@@Exit
+		JNE	@@Exit ; background sub-task (Find File) running
   @@ChkKbd:	CMP	ES:StdIn,0
-		JNZ	@@ChkStdIn
-		MOV	AH,ES:ExtKeyb
+		JNZ	@@ChkStdIn ; use DOS_ChkBrk
+  @@ChkBrkBIOS:	MOV	AH,ES:ExtKeyb ; BIOS_GetKey
 		INC	AH
-		INT	16h
+		INT	16h ; BIOS_ChkKey
 		JMP	@@ChkKey
   @@ChkStdIn:	CMP	ES:StdFile,0
-		JZ	@@Exit
+		JZ	@@Exit ; stdin was redirected
 		CALL	GetKey
-  @@ChkKey:	JZ	@@Exit
+  @@ChkKey:	JZ	@@Exit ; no key pressed
 		OR	AX,AX
+		JE	@@GetChar ; error (treat as break ??)
+		CMP	AX,2E03h ; Ctrl-C
 		JE	@@GetChar
-		CMP	AX,2E03h
+		CMP	AX,011Bh ; Esc
 		JE	@@GetChar
-		CMP	AX,011Bh
-		JE	@@GetChar
-		CMP	AX,4400h
+		CMP	AX,4400h ; F10
 		JNE	@@Exit
-  @@GetChar:	MOV	BL,0
+  @@GetChar:	MOV	BL,0 ; return break
 		CMP	ES:StdIn,0
 		JNZ	@@ChkKbd
 		MOV	AH,ES:ExtKeyb
 		INT	16h
-		JMP	@@ChkKbd
+		JMP	@@ChkKbd ; remove break keystroke(s)
   @@Exit:	CMP	BL,1
 		RET
 TstBrk		ENDP
@@ -576,4 +583,3 @@ Input0		PROC	FAR
 		STC
   @@Exit:	RET
 Input0		ENDP
-

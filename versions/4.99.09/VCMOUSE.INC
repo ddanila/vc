@@ -118,29 +118,29 @@ GetMous		PROC	FAR
 		XOR	AX,AX
 		CMP	ES:Mouse,AL
 		STC
-		JZ	@@Exit
+		JZ	@@Exit ; no mouse
 		MOV	AX,3
-		INT	33h
+		INT	33h ; get mouse position and buttons status
 		MOV	AX,CX
 		MOV	CL,3
 		SHR	AX,CL
 		SHR	DX,CL
-		MOV	CL,AL
-		MOV	CH,DL
-		MOV	AX,BX
+		MOV	CL,AL ; column = cell_x / 8
+		MOV	CH,DL ; row = cell_y / 8
+		MOV	AX,BX ; buttons status
 		CMP	ES:LftMous,0
 		JZ	@@ClearKbd
-		MOV	BH,BL
+		MOV	BH,BL ; swap L and R buttons
 		SHR	BL,1
 		SHL	BH,1
 		AND	BX,201h
 		AND	AL,4
 		OR	AL,BL
 		OR	AL,BH
-  @@ClearKbd:	AND	AX,7
+  @@ClearKbd:	AND	AX,7 ; only L,R,M buttons
 		JZ	@@Exit
 		PUSHF
-		CALL	ClrKbd
+		CALL	ClrKbd ; discard all typed-ahead keys if the corresponding option is set
 		POPF
   @@Exit:	RET
 GetMous		ENDP
