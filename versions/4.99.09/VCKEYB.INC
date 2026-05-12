@@ -11,13 +11,13 @@
 ;---------------------------------------------------------------
 		.DATA
 ; BUG ^C should be 2E (see also TstBrk)
-;                       nop ^A  ^B  ^C      ^D  ^E  ^F  ^G
+;			nop ^A  ^B  ^C      ^D  ^E  ^F  ^G
 ScanCodes	DB	03h,1Eh,30h,3Eh,    20h,12h,21h,22h
-;                       \b  \t  ^Enter ^K   ^L  Enter ^N  ^O
+;			\b  \t  ^Enter ^K   ^L  Enter ^N  ^O
 		DB	0Eh,0Fh,1Ch,   25h, 26h,1Ch,  31h,18h
-;                       ^P  ^Q  ^R  ^S      ^T  ^U  ^V  ^W
+;			^P  ^Q  ^R  ^S      ^T  ^U  ^V  ^W
 		DB	19h,10h,13h,1Fh,    14h,16h,2Fh,11h
-;                       ^X  ^Y  ^Z  Esc     ^\  ^]  ^^  ^_
+;			^X  ^Y  ^Z  Esc     ^\  ^]  ^^  ^_
 		DB	2Dh,15h,2Ch,01h,    2Bh,1Bh,07h,0Ch
 
 		.CODE	Subs
@@ -583,4 +583,3 @@ Input0		PROC	FAR
 		STC
   @@Exit:	RET
 Input0		ENDP
-
