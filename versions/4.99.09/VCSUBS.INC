@@ -145,14 +145,14 @@ bQSave		EQU	40
 bRescan		EQU	41
 
 KbQuit		EQU	1
-KbPopup		EQU	2
-KbPan		EQU	3
-KbPan_shift	EQU	4
-KbPan_ctrl	EQU	5
+KbDialog	EQU	2
+KbMain		EQU	3
+KbMain_shift	EQU	4
+KbMain_ctrl	EQU	5
 KbQView_alt_cga	EQU	6
 KbQView_alt	EQU	7
-KbPan_alt_cga	EQU	8
-KbPan_alt	EQU	9
+KbMain_alt_cga	EQU	8
+KbMain_alt	EQU	9
 KbQViewX	EQU	10
 KbQView_shift	EQU	11
 KbQView_shiftX  EQU	12
@@ -188,13 +188,13 @@ LenKeyCell	EQU	8		; F-key number + label + separator
 
 		.DATA
 ; prefixes: Kbs - keybar set, Kb - keybar, b - button
-; keybars with X in their name are unused
-KeyB_T		DB KbQuit        ,0              ,0           ,0		; 0
-		DB KbPopup       ,0              ,0           ,0		; 1
-KbsInfo_cga	DB KbPan         ,KbPan_shift    ,KbPan_ctrl  ,KbQView_alt_cga	; 2
-KbsInfo		DB KbPan         ,KbPan_shift    ,KbPan_ctrl  ,KbQView_alt	; 3
-KbsMain_cga	DB KbPan         ,KbPan_shift    ,KbPan_ctrl  ,KbPan_alt_cga	; 4
-KbsMain		DB KbPan         ,KbPan_shift    ,KbPan_ctrl  ,KbPan_alt	; 5
+; keybars with X in their prefix are unused
+KeyB_T		DB KbQuit        ,0              ,0           ,0		; 0 (error dialog)
+KbsDialog	DB KbDialog      ,0              ,0           ,0		; 1
+KbsInfo_cga	DB KbMain        ,KbMain_shift   ,KbMain_ctrl ,KbQView_alt_cga	; 2
+KbsInfo		DB KbMain        ,KbMain_shift   ,KbMain_ctrl ,KbQView_alt	; 3
+KbsMain_cga	DB KbMain        ,KbMain_shift   ,KbMain_ctrl ,KbMain_alt_cga	; 4
+KbsMain		DB KbMain        ,KbMain_shift   ,KbMain_ctrl ,KbMain_alt	; 5
 		DB KbQViewX      ,KbQView_shift  ,KbQView_ctrl,KbQView_alt_cga	; 6
 		DB KbQViewX      ,KbQView_shift  ,KbQView_ctrl,KbQView_alt	; 7
 		DB KbQViewX      ,KbQView_shiftX ,KbQView_ctrl,KbQView_alt_cga	; 8
@@ -219,10 +219,10 @@ KbsView		DB KbView        ,KbView_shift   ,KbView_ctrl ,0		; 26
 		DB KbView_hex    ,KbView_shiftX  ,KbView_ctrl ,0		; 27
 		DB KbView_unwrp  ,KbView_shiftX  ,KbView_ctrl ,0		; 28
 		DB KbView        ,KbView_shiftX  ,KbView_ctrl ,0		; 29
-		DB KbEditX       ,KbEdit_alt     ,0           ,0		; 30
-KbsEdit		DB KbEdit        ,KbEdit_alt     ,0           ,0		; 31
+KbsEdit		DB KbEditX       ,KbEdit_alt     ,0           ,0		; 30
+		DB KbEdit        ,KbEdit_alt     ,0           ,0		; 31
 KbsEdit_hex	DB KbEdit_hex    ,KbEdit_alt     ,0           ,0		; 32
-		DB KbPan         ,KbPan          ,KbPan       ,KbPan		; 33
+		DB KbMain        ,KbMain         ,KbMain      ,KbMain	; 33
 KbsTable	DB KbTable       ,0              ,0           ,0		; 34
 KbsTree		DB KbTree        ,0              ,0           ,0		; 35
 KbsCopyMov	DB KbCopyMov     ,0              ,0           ,KbCopyMov_alt	; 36
@@ -232,14 +232,14 @@ LenKeyB = $ - KeyB_T
 
 KeyC_T	DB 0     ,0      ,0      ,0     ,0      ,0      ,0      ,0       ,0      ,0	; 0
 	DB 0     ,0      ,0      ,0     ,0      ,0      ,0      ,0       ,0      ,bQuit	; KbQuit
-	DB b_Help,0      ,0      ,0     ,0      ,0      ,0      ,0       ,0      ,bQuit	; KbPopup
-	DB b_Help,b_Menu ,bView  ,bEdit ,bCopy  ,bRenMov,bMkDir ,bDelete ,bPullDn,bQuit	; KbPan
-	DB 0     ,bMain  ,bView  ,bEdit ,bCopy  ,bRenMov,bMkDir ,bDelete ,bSavSet,bPullDn ; KbPan_shift
-	DB bLeft ,bRight ,0      ,bLabel,bCopy  ,bRenMov,bMkArc ,bDelete ,bMode  ,0	; KbPan_ctrl
+	DB b_Help,0      ,0      ,0     ,0      ,0      ,0      ,0       ,0      ,bQuit	; KbDialog
+	DB b_Help,b_Menu ,bView  ,bEdit ,bCopy  ,bRenMov,bMkDir ,bDelete ,bPullDn,bQuit	; KbMain
+	DB 0     ,bMain  ,bView  ,bEdit ,bCopy  ,bRenMov,bMkDir ,bDelete ,bSavSet,bPullDn ; KbMain_shift
+	DB bLeft ,bRight ,0      ,bLabel,bCopy  ,bRenMov,bMkArc ,bDelete ,bMode  ,0	; KbMain_ctrl
 	DB bLeft ,bRight ,bAView ,bAEdit,bMemory,0      ,bFind  ,bHistory,0      ,bTree	; KbQView_alt_cga
 	DB bLeft ,bRight ,bAView ,bAEdit,bMemory,0      ,bFind  ,bHistory,bEGALn ,bTree	; KbQView_alt
-	DB bLeft ,bRight ,bAView ,bAEdit,bMemory,bDirSiz,bFind  ,bHistory,0      ,bTree	; KbPan_alt_cga
-	DB bLeft ,bRight ,bAView ,bAEdit,bMemory,bDirSiz,bFind  ,bHistory,bEGALn ,bTree	; KbPan_alt
+	DB bLeft ,bRight ,bAView ,bAEdit,bMemory,bDirSiz,bFind  ,bHistory,0      ,bTree	; KbMain_alt_cga
+	DB bLeft ,bRight ,bAView ,bAEdit,bMemory,bDirSiz,bFind  ,bHistory,bEGALn ,bTree	; KbMain_alt
 	DB b_Help,b_Menu ,bZoom  ,bEdit ,0      ,0      ,bSearch,bTable  ,bPullDn,bQuit	; KbQViewX
 	DB 0     ,bMain  ,bView  ,bEdit ,0      ,0      ,bNext  ,0       ,bSavSet,bPullDn ; KbQView_shift
 	DB 0     ,bMain  ,bView  ,bEdit ,0      ,0      ,bNext  ,bShift  ,bSavSet,bPullDn ; KbQView_shiftX
