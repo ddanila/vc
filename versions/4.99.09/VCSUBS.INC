@@ -219,8 +219,8 @@ KbsView		DB KbView        ,KbView_shift   ,KbView_ctrl ,0		; 26
 		DB KbView_hex    ,KbView_shiftX  ,KbView_ctrl ,0		; 27
 		DB KbView_unwrp  ,KbView_shiftX  ,KbView_ctrl ,0		; 28
 		DB KbView        ,KbView_shiftX  ,KbView_ctrl ,0		; 29
-KbsEdit		DB KbEditX       ,KbEdit_alt     ,0           ,0		; 30
-		DB KbEdit        ,KbEdit_alt     ,0           ,0		; 31
+		DB KbEditX       ,KbEdit_alt     ,0           ,0		; 30
+KbsEdit		DB KbEdit        ,KbEdit_alt     ,0           ,0		; 31
 KbsEdit_hex	DB KbEdit_hex    ,KbEdit_alt     ,0           ,0		; 32
 		DB KbMain        ,KbMain         ,KbMain      ,KbMain	; 33
 KbsTable	DB KbTable       ,0              ,0           ,0		; 34
