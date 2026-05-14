@@ -153,7 +153,7 @@ KbQView_alt_cga	EQU	6
 KbQView_alt	EQU	7
 KbMain_alt_cga	EQU	8
 KbMain_alt	EQU	9
-KbQViewX	EQU	10
+KbInfo_dir	EQU	10
 KbQView_shift	EQU	11
 KbQView_shiftX  EQU	12
 KbQView		EQU	13
@@ -162,8 +162,8 @@ KbQView_shift2  EQU	15
 KbQView_shiftX2	EQU	16
 KbQView_ctrl	EQU	17
 KbQView_hex_zm	EQU	18
-KbQVw_zm_unwrp	EQU	19
-KbQView_zoom	EQU	20
+KbQVw_unwrp_zm	EQU	19
+KbQView_zm	EQU	20
 KbView_hex	EQU	21
 KbView_unwrp	EQU	22
 KbView		EQU	23
@@ -189,16 +189,25 @@ LenKeyCell	EQU	8		; F-key number + label + separator
 		.DATA
 ; prefixes: Kbs - keybar set, Kb - keybar, b - button
 ; keybars with X in their prefix are unused
-KeyB_T		DB KbQuit        ,0              ,0           ,0		; 0 (error dialog)
+;
+; KbsInfo_dir is keybar set for the active Info panel if dirinfo file present
+; KbsMainAltSrch is for AltSearch feature in the main panel
+; KbsFind is for Find Files request dialog
+; KbsFind_res is for Find Files results panel
+; KbsTable is used in Viewer, Editor(disabled) and Find Files request dialog
+; KbsQView*_zm are for zoomed in QuickView
+; KbsEdit is for the internal editor(WIP / disabled)
+
+KeyB_T		DB KbQuit        ,0              ,0           ,0		; 0 (KbsError)
 KbsDialog	DB KbDialog      ,0              ,0           ,0		; 1
 KbsInfo_cga	DB KbMain        ,KbMain_shift   ,KbMain_ctrl ,KbQView_alt_cga	; 2
 KbsInfo		DB KbMain        ,KbMain_shift   ,KbMain_ctrl ,KbQView_alt	; 3
 KbsMain_cga	DB KbMain        ,KbMain_shift   ,KbMain_ctrl ,KbMain_alt_cga	; 4
 KbsMain		DB KbMain        ,KbMain_shift   ,KbMain_ctrl ,KbMain_alt	; 5
-		DB KbQViewX      ,KbQView_shift  ,KbQView_ctrl,KbQView_alt_cga	; 6
-		DB KbQViewX      ,KbQView_shift  ,KbQView_ctrl,KbQView_alt	; 7
-		DB KbQViewX      ,KbQView_shiftX ,KbQView_ctrl,KbQView_alt_cga	; 8
-		DB KbQViewX      ,KbQView_shiftX ,KbQView_ctrl,KbQView_alt	; 9
+KbsInfo_dir_cga	DB KbInfo_dir    ,KbQView_shift  ,KbQView_ctrl,KbQView_alt_cga	; 6
+KbsInfo_dir	DB KbInfo_dir    ,KbQView_shift  ,KbQView_ctrl,KbQView_alt	; 7
+		DB KbInfo_dir    ,KbQView_shiftX ,KbQView_ctrl,KbQView_alt_cga	; 8
+		DB KbInfo_dir    ,KbQView_shiftX ,KbQView_ctrl,KbQView_alt	; 9
 KbsQView_cga	DB KbQView       ,KbQView_shift2 ,KbQView_ctrl,KbQView_alt_cga	; 10
 KbsQView	DB KbQView       ,KbQView_shift2 ,KbQView_ctrl,KbQView_alt	; 11
 		DB KbQView       ,KbQView_shiftX2,KbQView_ctrl,KbQView_alt_cga	; 12
@@ -208,21 +217,21 @@ KbsQView_hex	DB KbQView_hex   ,KbQView_shift2 ,KbQView_ctrl,KbQView_alt	; 15
 		DB KbQView_hex   ,KbQView_shiftX2,KbQView_ctrl,KbQView_alt_cga	; 16
 		DB KbQView_hex   ,KbQView_shiftX2,KbQView_ctrl,KbQView_alt	; 17
 KbsQView_hex_zm	DB KbQView_hex_zm,KbView_shift   ,KbView_ctrl ,0		; 18
-KbsQVw_zm_unwrp	DB KbQVw_zm_unwrp,KbView_shift   ,KbView_ctrl ,0		; 19
-KbsQView_zoom	DB KbQView_zoom  ,KbView_shift   ,KbView_ctrl ,0		; 20
+KbsQVw_unwrp_zm	DB KbQVw_unwrp_zm,KbView_shift   ,KbView_ctrl ,0		; 19
+KbsQView_zm	DB KbQView_zm    ,KbView_shift   ,KbView_ctrl ,0		; 20
 		DB KbQView_hex_zm,KbView_shiftX  ,KbView_ctrl ,0		; 21
 		DB KbQView_hex_zm,KbView_shiftX  ,KbView_ctrl ,0		; 22
-		DB KbQView_zoom  ,KbView_shiftX  ,KbView_ctrl ,0		; 23
+		DB KbQView_zm    ,KbView_shiftX  ,KbView_ctrl ,0		; 23
 KbsView_hex	DB KbView_hex    ,KbView_shift   ,KbView_ctrl ,0		; 24
 KbsView_unwrp	DB KbView_unwrp  ,KbView_shift   ,KbView_ctrl ,0		; 25
 KbsView		DB KbView        ,KbView_shift   ,KbView_ctrl ,0		; 26
 		DB KbView_hex    ,KbView_shiftX  ,KbView_ctrl ,0		; 27
 		DB KbView_unwrp  ,KbView_shiftX  ,KbView_ctrl ,0		; 28
 		DB KbView        ,KbView_shiftX  ,KbView_ctrl ,0		; 29
-KbsEdit		DB KbEditX       ,KbEdit_alt     ,0           ,0		; 30
+KbsEditX	DB KbEditX       ,KbEdit_alt     ,0           ,0		; 30
 		DB KbEdit        ,KbEdit_alt     ,0           ,0		; 31
 KbsEdit_hex	DB KbEdit_hex    ,KbEdit_alt     ,0           ,0		; 32
-		DB KbMain        ,KbMain         ,KbMain      ,KbMain	; 33
+KbsMainAltSrch	DB KbMain        ,KbMain         ,KbMain      ,KbMain		; 33
 KbsTable	DB KbTable       ,0              ,0           ,0		; 34
 KbsTree		DB KbTree        ,0              ,0           ,0		; 35
 KbsCopyMov	DB KbCopyMov     ,0              ,0           ,KbCopyMov_alt	; 36
@@ -240,7 +249,7 @@ KeyC_T	DB 0     ,0      ,0      ,0     ,0      ,0      ,0      ,0       ,0      
 	DB bLeft ,bRight ,bAView ,bAEdit,bMemory,0      ,bFind  ,bHistory,bEGALn ,bTree	; KbQView_alt
 	DB bLeft ,bRight ,bAView ,bAEdit,bMemory,bDirSiz,bFind  ,bHistory,0      ,bTree	; KbMain_alt_cga
 	DB bLeft ,bRight ,bAView ,bAEdit,bMemory,bDirSiz,bFind  ,bHistory,bEGALn ,bTree	; KbMain_alt
-	DB b_Help,b_Menu ,bZoom  ,bEdit ,0      ,0      ,bSearch,bTable  ,bPullDn,bQuit	; KbQViewX
+	DB b_Help,b_Menu ,bZoom  ,bEdit ,0      ,0      ,bSearch,bTable  ,bPullDn,bQuit	; KbInfo_dir
 	DB 0     ,bMain  ,bView  ,bEdit ,0      ,0      ,bNext  ,0       ,bSavSet,bPullDn ; KbQView_shift
 	DB 0     ,bMain  ,bView  ,bEdit ,0      ,0      ,bNext  ,bShift  ,bSavSet,bPullDn ; KbQView_shiftX
 	DB b_Help,b_Menu ,bZoom  ,bHex  ,0      ,0      ,bSearch,bTable  ,bPullDn,bQuit	; KbQView
@@ -249,8 +258,8 @@ KeyC_T	DB 0     ,0      ,0      ,0     ,0      ,0      ,0      ,0       ,0      
 	DB 0     ,bMain  ,bView  ,bEdit ,0      ,0      ,bNext  ,bShift  ,bSavSet,bPullDn ; KbQView_shiftX2 == KbQView_shiftX
 	DB bLeft ,bRight ,0      ,bLabel,0      ,0      ,bPrev  ,0       ,bMode  ,0	; KbQView_ctrl
 	DB b_Help,0      ,bUnzoom,bText ,bGoto  ,0      ,bSearch,bTable  ,0      ,bQuit	; KbQView_hex_zm
-	DB b_Help,bWrap  ,bUnzoom,bHex  ,0      ,0      ,bSearch,bTable  ,0      ,bQuit	; KbQVw_zm_unwrp
-	DB b_Help,bUnwrap,bUnzoom,bHex  ,0      ,0      ,bSearch,bTable  ,0      ,bQuit	; KbQView_zoom
+	DB b_Help,bWrap  ,bUnzoom,bHex  ,0      ,0      ,bSearch,bTable  ,0      ,bQuit	; KbQVw_unwrp_zm
+	DB b_Help,bUnwrap,bUnzoom,bHex  ,0      ,0      ,bSearch,bTable  ,0      ,bQuit	; KbQView_zm
 	DB b_Help,0      ,bQuit  ,bText ,bGoto  ,0      ,bSearch,bTable  ,0      ,bQuit	; KbView_hex
 	DB b_Help,bWrap  ,bQuit  ,bHex  ,0      ,0      ,bSearch,bTable  ,0      ,bQuit	; KbView_unwrp
 	DB b_Help,bUnwrap,bQuit  ,bHex  ,0      ,0      ,bSearch,bTable  ,0      ,bQuit	; KbView
