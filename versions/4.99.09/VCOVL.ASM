@@ -876,21 +876,21 @@ Init60:		MOV	DS:Lines,DL
 		MOV	AX,3306h
 		INT	21h
 		CMP	AL,0FFh
-		JE	Init61
+		JE	Init61                  ; true DOS version < 5.0
 		MOV	AX,BX
 		CMP	AX,0FFFFh
-		JE	Init61
+		JE	Init61                  ; DOS version -1
 		CMP	AH,100
-		JAE	Init61
+		JAE	Init61                  ; DOS minor version >= 100
 		CMP	AL,5
-		JB	Init61
+		JB	Init61                  ; DOS major version <= 5
 		PUSH	AX
 		MOV	AH,0
 		MOV	BL,10
 		DIV	BL
 		OR	AH,AH
 		POP	AX
-		JNE	Init62
+		JNE	Init62                  ; DOS.major != 10 && DOS.major != 20
 		MOV	DS:OS2Box,1
 		JMP	Init62
 Init61:		MOV	AH,30h
