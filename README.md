@@ -6,6 +6,15 @@ This repository preserves a small set of historical Volkov Commander artifacts.
 > not be updated. Active work — including the build pipeline, fixes, and any
 > pull requests — happens on the [`build`](../../tree/build) branch.
 
+## Authorship and disclaimer
+
+All source code and other work present on the `master` branch was created
+solely by **Vsevolod Volkov**, the original author of Volkov Commander. The
+owner of this repository is not an author or contributor to that work and
+has only published the existing sources on GitHub to preserve them as
+historical artifacts. No claim of authorship is made over any material on
+the `master` branch.
+
 ## Historical context
 
 In correspondence with Danila Sukharev on May 1, 2026, Vsevolod Volkov
