@@ -1965,11 +1965,11 @@ ChooseDir	PROC	FAR
 		DEC	AX
 		MOV	CS:ChooseDir_B.BoxBase.X,AL
 		MOV	DS,ES:WCB1seg
-		CMP	DS:WinTyp,1
+		CMP	DS:WinTyp,p_Tree
 		JNE	@@LeftPan
 		MOV	DS:ChgFlg,1
   @@LeftPan:	MOV	DS,ES:WCB2seg
-		CMP	DS:WinTyp,1
+		CMP	DS:WinTyp,p_Tree
 		JNE	@@RightPan
 		MOV	DS:ChgFlg,1
   @@RightPan:	PUSH	SI
@@ -1983,7 +1983,7 @@ ChooseDir	PROC	FAR
 		MOV	DS,ES:WorkBuffer
 		MOV	BP,OFFSET ArcFiles
 		CALL	AllocateBlock
-		MOV	DS:WinTyp,1
+		MOV	DS:WinTyp,p_Tree
 		MOV	DS:LongNames,1
 		PUSH	DS
 		PUSH	ES
@@ -2333,4 +2333,3 @@ ChDirCtrlPgDn:	MOV	AX,1C0Dh		; ^PgDn
   @@NotFound:	STC
   @@Exit:	RET
 ChDirHotKey	ENDP
-

@@ -688,9 +688,9 @@ Panel		PROC	FAR
 		XOR	SI,SI
 		MOV	CX,WORD PTR ES:Borders[8]
 		MOV	AL,ES:Borders[10]
-		CMP	DS:WinTyp,2
+		CMP	DS:WinTyp,p_Info
 		JE	@@InfoPanel
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	@@DevLine
 		CMP	ES:MiniSta,0
 		JZ	@@FilePanel
@@ -729,7 +729,7 @@ Panel		PROC	FAR
 		ADD	BH,7
   @@DevLine:	CALL	BoxLine
   @@FilePanel:	POP	BX
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	@@Exit
 		ADD	BX,101h
 		MOV	AH,Title_C
@@ -1616,7 +1616,7 @@ PutPath		PROC	FAR
 		POP	ES
 		POP	DS
 		MOV	SI,OFFSET Tree_S
-		CMP	AL,2
+		CMP	AL,p_Info
 		JB	@@EndFlt1
 		MOV	SI,OFFSET Info_S
 		JE	@@EndFlt1
@@ -2238,8 +2238,8 @@ HexDec		ENDP
 ;---------------------------------------------------------------
 CorPar		PROC	FAR
 		USES	AX,BX,CX,DX,SI,DI
-		CMP	DS:WinTyp,1
-		JA	@@Exit
+		CMP	DS:WinTyp,p_Tree
+		JA	@@Exit			; Info or QuickView panel
 		CALL	AdrNum
 		CMP	SI,DI
 		JAE	@@ChkFirst
@@ -2281,10 +2281,10 @@ SetCur		PROC	FAR
 		POP	AX
 		MOV	CX,SI
 		SUB	CX,DI
-		CMP	DS:WinTyp,1
-		JA	@@Exit
+		CMP	DS:WinTyp,p_Tree
+		JA	@@Exit			; Info or QuickView panel
 		JE	@@TreeCur
-		MOV	SI,DS:FileCur
+		MOV	SI,DS:FileCur		; File panel
 		CALL	Numb2Addr
 		CMP	SI,DS:EndBuf
 		JAE	@@Exit
@@ -3432,4 +3432,3 @@ GetDiskInfo	PROC	FAR
 		MOV	ES:[SI+0].Lo,1
   @@Exit:	RET
 GetDiskInfo	ENDP
-

@@ -1146,7 +1146,7 @@ Panels10:	OR	CL,CL
 		OR	CH,CH
 		JZ	Panels11
 		MOV	AL,1
-Panels11:	CMP	DS:WinTyp,0
+Panels11:	CMP	DS:WinTyp,p_File
 		JNE	Panels12
 		MOV	ES:BlocEr,1
 Panels12:	CALL	ReadDir
@@ -1161,7 +1161,7 @@ Panels14:	CALL	PutPath
 		OR	AH,AH
 		JE	Panels20
 		CALL	Window
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	Panels20
 		MOV	AL,DS:WinShortPath[0]
 		CALL	ErrorDrive
@@ -1199,7 +1199,7 @@ Panels24:	CALL	ReadDir
 Panels25:	MOV	AH,1
 Panels26:	CALL	PutPath
 		CALL	PutFls
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	Panels30
 		OR	AH,AH
 		JE	Panels30
@@ -1262,7 +1262,7 @@ Panels40	PROC	NEAR
 		MOV	DS:EndFul,DI
 Panels41:	POP	ES
 		JMP	Panels45
-Panels42:	CMP	DS:WinTyp,2		; Tree
+Panels42:	CMP	DS:WinTyp,p_Info	; Tree panel
 		JAE	Panels43
 		MOV	DS:TreeFirst,AX
 		MOV	DS:TreeCur,AX
@@ -1276,7 +1276,7 @@ Panels42:	CMP	DS:WinTyp,2		; Tree
 		CALL	TreeRoot
 		POP	DS
 		JMP	Panels45
-Panels43:	JA	Panels44		; Info
+Panels43:	JA	Panels44		; Info panel
 		MOV	ES:ClusterSize.Lo,1
 		MOV	ES:ClusterSize.Hi,AX
 		MOV	ES:TotalClusters.Lo,AX
@@ -1289,7 +1289,7 @@ Panels43:	JA	Panels44		; Info
 		XCHG	BX,ES:DirinfoSeg
 		CALL	CompressBlock
 		JMP	Panels45
-Panels44:	XCHG	BX,ES:ViewSeg		; Quick View
+Panels44:	XCHG	BX,ES:ViewSeg		; QuickView panel
 		CALL	CompressBlock
 Panels45:	RET
 Panels40	ENDP
@@ -1403,9 +1403,9 @@ Func10:		CALL	Cursor1			; Set cursor
 		CALL	InvWCB
 		MOV	BH,DS:WinTyp
 		POP	DS
-		CMP	DS:WinTyp,1
-		JB	Func11
-		JA	Func19
+		CMP	DS:WinTyp,p_Tree
+		JB	Func11			; File panel
+		JA	Func19			; Info or QuickView panel
 		MOV	SI,OFFSET CrnPath
 		CMP	ES:AutoCD,0
 		JZ	Func15
@@ -1515,8 +1515,8 @@ Func21:		CMP	DS:Visible,0
 		STOSW
 		MOV	AL,ES:Pointers[2]
 		STOSB
-		CMP	DS:WinTyp,1
-		JA	Func27
+		CMP	DS:WinTyp,p_Tree
+		JA	Func27			; Info or QuickView panel
 		MOV	CX,2
 		JE	Func22
 		MOV	CH,1
@@ -1545,7 +1545,7 @@ Func23:		OR	CL,CL
 		STOSW
 		MOV	AL,ES:Pointers[1]
 		STOSB
-Func24:		CMP	DS:WinTyp,0
+Func24:		CMP	DS:WinTyp,p_File
 		JNE	Func27
 		CMP	DS:LongNames,0
 		JZ	Func27
@@ -1602,12 +1602,12 @@ Func27:		CALL	InvWCB
 		CMP	DS:Visible,0
 		JZ	Func30
 		MOV	AL,MainFile_K
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JE	Func30
 		MOV	AL,MainNone_K
-		CMP	DS:WinTyp,2
-		JB	Func30
-		JA	Func28
+		CMP	DS:WinTyp,p_Info
+		JB	Func30                  ; File or Tree panel
+		JA	Func28			; QuickView panel
 		MOV	BX,ES:DirInfoSeg
 		OR	BX,BX
 		JE	Func30
@@ -1645,9 +1645,9 @@ Func31:		POP	DS
 		JE	Mouse00
 		CMP	DS:Visible,0
 		JZ	Func40
-		CMP	DS:WinTyp,2
+		CMP	DS:WinTyp,p_Info
 		JE	Func32
-		JA	Func33
+		JA	Func33			; QuickView panel
 		CMP	AL,0			; File/Tree panel
 		JNE	Func40
 		XCHG	AL,AH
@@ -1753,8 +1753,8 @@ Mouse25:	TEST	AL,3
 		JZ	Mouse47
 		CMP	DS:Visible,0
 		JZ	Mouse47
-		CMP	DS:WinTyp,2
-		JB	Mouse30
+		CMP	DS:WinTyp,p_Info
+		JB	Mouse30			; File/Tree panel
 		MOV	AH,0FCh
 		JA	Func33
 		CALL	SizDX			; Edit dirinfo
@@ -1775,7 +1775,7 @@ Mouse26:	CALL	InWind
 Mouse30:	MOV	BP,AX			; Change width of long name
 		CMP	ES:MouseWin,0
 		JNZ	Mouse40
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	Mouse40
 		CMP	DS:LongNames,0
 		JZ	Mouse40
@@ -1860,7 +1860,7 @@ Mouse40:	OR	ES:MouseWin,1		; Move the cursor
 		CMP	CL,BL
 		JAE	Mouse46
 		INC	BH
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	Mouse41
 		INC	BH
 Mouse41:	DEC	BX
@@ -2230,7 +2230,7 @@ Run_27:		POP	DX
 Run_29		PROC	NEAR
 		INC	AX
 		JE	@@Exit
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	@@Exit
 		CMP	DS:Visible,0
 		JE	@@Exit
@@ -2300,7 +2300,7 @@ Run_36:		CMP	AL,':'			; !:
 		MOV	AL,DS:WinShortPath[0]
 		CMP	DS:Visible,0
 		JZ	Run_37
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JE	Run_13
 Run_37:		MOV	DS,BX
 		MOV	AL,DS:DosPath[0]
@@ -2327,10 +2327,10 @@ Run_42:		AND	AH,80h
 		PUSH	BX
 		CMP	DS:Visible,0
 		JZ	Run_45
-		CMP	DS:WinTyp,1
-		JA	Run_45
+		CMP	DS:WinTyp,p_Tree
+		JA	Run_45			; Info or QuickView panel
 		JE	Run_44
-		CMP	DS:ArcPnt,0
+		CMP	DS:ArcPnt,0		; File panel
 		JNE	Run_43
 		MOV	SI,OFFSET WinShortPath
 		PUSH	DS
@@ -2487,7 +2487,7 @@ Run_61:		PUSH	SI
 		JMP	Run_64
 Run_62:		CMP	DS:Visible,0
 		JZ	Run_11
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	Run_11
 		MOV	SI,DS:FileCur
 		CALL	Numb2Addr
@@ -3209,4 +3209,3 @@ CallEMS		ENDP
 		ENDIF
 
 		END	Start
-

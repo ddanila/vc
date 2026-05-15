@@ -2162,7 +2162,7 @@ InpStrFile:	PUSH	DS			; Insert file
 		MOV	DS,ES:WCBcrn
 		CMP	DS:Visible,0
 		JZ	@@File2
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	@@File2
 		MOV	SI,DS:FileCur
 		CALL	Numb2Addr
@@ -2186,11 +2186,11 @@ InpStrPath1:	MOV	AX,ES:WCB1seg		; Insert path
 InpStrPath2:	MOV	AX,ES:WCB2seg
   @@Path1:	PUSH	DS
 		MOV	DS,AX
-		CMP	DS:WinTyp,1
-		JA	@@File2
+		CMP	DS:WinTyp,p_Tree
+		JA	@@File2         	; Info or QuickView panel
 		MOV	AX,OFFSET CrnPath
 		JE	@@Path2
-		MOV	AX,OFFSET ArcPath
+		MOV	AX,OFFSET ArcPath	; File panel
 		CMP	DS:ArcPnt,0
 		JNE	@@Path2
 		CALL	KeybStat
@@ -2894,4 +2894,3 @@ SaveHistory	PROC	FAR
 		MOV	ES:[SI],AL
   @@Exit:	RET
 SaveHistory	ENDP
-

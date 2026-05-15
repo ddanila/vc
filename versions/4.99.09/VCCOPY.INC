@@ -359,9 +359,9 @@ F35_01:		MOV	ES:CopyMove,AL
 		MOV	ES:HlpPage,AH
 		CMP	DS:Visible,0
 		JZ	F45_01
-		CMP	DS:WinTyp,1
-		JA	F45_01
-		JNE	F35_02
+		CMP	DS:WinTyp,p_Tree
+		JA	F45_01			; Info or QuickView panel
+		JNE	F35_02                  ; File panel
 		CMP	DS:CrnPath[3],0		; Tree panel
 		JE	Func04
 		MOV	SI,OFFSET CrnPath
@@ -490,7 +490,7 @@ F35_09:		MOV	DS,CS:SubsSeg
 		CALL	F35_Init
 		MOV	DS:CopyBegName,OFFSET LineBuf1
 		MOV	DS,DS:WCBcrn
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	F35_20
 		CMP	DS:ArcPnt,0
 		JNE	F35_30
@@ -893,10 +893,10 @@ F35_Target	PROC	NEAR
 		PUSH	DI
 		CMP	DS:Visible,0
 		JZ	@@Default
-		CMP	DS:WinTyp,1
-		JA	@@Default
+		CMP	DS:WinTyp,p_Tree
+		JA	@@Default		; Info or QuickView panel
 		JE	@@Tree
-		CALL	WinPath
+		CALL	WinPath			; File panel
 		CMP	DS:ArcPnt,0
 		JE	@@Path
 		MOV	SI,OFFSET ArcExt	; Archive descriptor
@@ -3194,4 +3194,3 @@ C00_81:		MOV	ES:SftErr,0
 		CMC
 		RET
 C00_00		ENDP
-

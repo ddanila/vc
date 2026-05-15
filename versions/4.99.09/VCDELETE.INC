@@ -172,9 +172,9 @@ DelAllSkip_D	DB	8, 0
 F38_00:		MOV	ES:FncAddr,OFFSET F38_40 ; F8 - delete
 		CMP	DS:Visible,0
 		JZ	F48_00
-		CMP	DS:WinTyp,1
-		JB	F38_03
-		JNE	F48_00
+		CMP	DS:WinTyp,p_Tree
+		JB	F38_03			; File panel
+		JNE	F48_00                  ; Info or QuickView panel
 		MOV	SI,OFFSET CrnPath	; Delete from tree panel
 		CMP	BYTE PTR DS:[SI+3],0
 		JE	Func04
@@ -808,4 +808,3 @@ F38_86:		MOV	AX,BX
 		MOV	AX,BX
 F38_87:		RET
 F38_80		ENDP
-

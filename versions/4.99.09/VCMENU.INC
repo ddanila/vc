@@ -677,11 +677,11 @@ F39_59:		POP	DS			; Files
 		JNE	F39_66
 		CMP	AH,DS:Visible
 		JE	F39_62
-		CMP	AH,DS:WinTyp
+		CMP	AH,DS:WinTyp		; p_File
 		JE	F39_63
-		CMP	DS:WinTyp,2
-		JB	F39_62
-		JA	F39_60
+		CMP	DS:WinTyp,p_Info
+		JB	F39_62			; Tree panel
+		JA	F39_60			; QuickView panel
 		CMP	ES:DirInfoSeg,0
 		JNE	F39_61
 		JMP	F39_62
@@ -711,9 +711,9 @@ F39_62:		MOV	AL,12
 		CALL	F40_30
 		CMP	AH,DS:Visible
 		JE	F39_64
-		CMP	DS:WinTyp,1
-		JA	F39_64
-		JB	F39_63
+		CMP	DS:WinTyp,p_Tree
+		JA	F39_64			; Info or QuickView panel
+		JB	F39_63			; File panel
 		CMP	DS:CrnPath[3],0
 		JNE	F39_65
 		JMP	F39_64
@@ -785,7 +785,7 @@ F39_73:		PUSH	BX
 		JZ	F39_76
 		SUB	BH,6
 		MOV	AL,DS:WinTyp
-		CMP	AL,0
+		CMP	AL,0			; p_File
 		JNE	F39_74
 		CMP	DS:BrfFul,AL
 		JE	F39_76
@@ -812,9 +812,9 @@ F39_76:		CALL	BasAdr
 		STOSB
 F39_77:		CMP	DS:Visible,AH
 		JZ	F39_80
-		CMP	DS:WinTyp,1
+		CMP	DS:WinTyp,p_Tree
 		JAE	F39_80
-		PUSH	BX
+		PUSH	BX			; File panel
 		PUSH	AX
 		MOV	AL,DS:SortTyp
 		CMP	AL,4
@@ -850,7 +850,7 @@ F39_83:		MOV	AH,0
 		CALL	InvWCB
 		CMP	DS:Visible,AH
 		JZ	F39_84
-		CMP	DS:WinTyp,1
+		CMP	DS:WinTyp,p_Tree
 		JNE	F39_84
 		MOV	AL,5
 		CALL	F40_30
@@ -1053,7 +1053,7 @@ F40_50		ENDP
 M01_00:		DEC	CH			; Brief / Full
 		MOV	CL,DS:SortTyp
 M01_01:		CALL	HidCur
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JE	M01_03
 		MOV	BP,DS
 		CMP	BP,ES:WCBcrn
@@ -1062,7 +1062,7 @@ M01_01:		CALL	HidCur
 		JNC	M01_02
 		POP	DS
 		JMP	Panels00
-M01_02:		MOV	DS:WinTyp,0
+M01_02:		MOV	DS:WinTyp,p_File
 		MOV	DS:ChgFlg,1
 M01_03:		MOV	AL,CL
 		XCHG	DS:SortTyp,AL
@@ -1104,7 +1104,7 @@ M04_00:		CALL	HidCur			; Info / Tree
 		MOV	CL,3
 M04_01:		CMP	DS:Visible,0
 		JZ	M04_02
-		CMP	CL,DS:WinTyp
+		CMP	CL,DS:WinTyp		; p_QView
 		JE	M04_04
 M04_02:		MOV	DI,DS
 		CMP	DI,ES:WCBcrn
@@ -1112,7 +1112,7 @@ M04_02:		MOV	DI,DS
 		CALL	InvWCB
 		CMP	DS:Visible,0
 		JZ	M04_03
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	M04_03
 		CALL	M02_10
 		JNC	M04_03
@@ -1185,12 +1185,12 @@ M07_12:		POP	DS
 
 M08_00:		CMP	DS:Visible,0		; Long names
 		JZ	Func04
-		CMP	DS:WinTyp,1
-		JA	Func04
+		CMP	DS:WinTyp,p_Tree
+		JA	Func04			; Info or QuickView panel
 		PUSH	DS
 M08_01:		MOV	BX,OFFSET LongNames
 		CALL	InvPanelVar
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	M04_05
 		CMP	ES:OS2box,0
 		JE	M18_20
@@ -1327,7 +1327,7 @@ FilterSub	ENDP
 		.CODE
 M18_00:		CMP	DS:Visible,0		; Filter...
 		JZ	Func04
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	Func04
 		PUSH	DS
 M18_01:		MOV	DI,OFFSET TmpBuf
@@ -1507,7 +1507,7 @@ DirSize_T	DW	TmpBuf
 		.CODE
 F66_00:		CMP	DS:Visible,0		; Alt F6 - Directory sizes
 		JZ	F66_03
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	F66_03
 		CMP	DS:ArcPnt,0
 		JNE	F66_03
@@ -2042,10 +2042,10 @@ CmpDi_B		BOXHD	< CmpDi_P, 700h, 0, Dialog_K, Cmd_M, CompDirs_H, 0 >
 		DB	0
 
 		.CODE
-M52_00:		CMP	DS:WinTyp,0		; Compare directories
+M52_00:		CMP	DS:WinTyp,p_File	; Compare directories
 		JNE	Func04
 		CALL	InvWCB
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	Func04
 		CMP	DS:Visible,0
 		JZ	Func04
@@ -2931,4 +2931,3 @@ F49_00:		PUSH	ES			; Save setup
 		MOV	BP,OFFSET SetEr_B
 		CALL	Dialog
 F49_01:		JMP	M61_02
-
