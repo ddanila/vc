@@ -197,9 +197,9 @@ SetCancel_D	DB	 7,  0
 		.CODE
 F87_00:		CMP	DS:Visible,0		; Attributes...
 		JZ	Func04
-		CMP	DS:WinTyp,1
-		JA	Func04
-		JB	F87_20
+		CMP	DS:WinTyp,p_Tree
+		JA	Func04			; Info or QuickView panel
+		JB	F87_20                  ; File panel
 		MOV	ES:AttribEA,0
 		MOV	SI,OFFSET CrnPath	; Directory
 		CMP	BYTE PTR DS:[SI+3],0
@@ -874,4 +874,3 @@ F87_DelEAs	PROC	NEAR
 		CALL	Intr21
   @@Exit:	RET
 F87_DelEAs	ENDP
-

@@ -40,6 +40,11 @@ KbdShiftMask	EQU	03h		; Right/left Shift status bits
 KbdCtrlMask	EQU	04h
 KbdAltMask	EQU	08h
 
+p_File		EQU	0		; File (main) panel type
+p_Tree		EQU	1		; Tree panel type
+p_Info		EQU	2		; Info panel type
+p_QView		EQU	3		; QuickView panel type
+
 ;---------------------- Global structures ----------------------
 ; Far address structure definition.
 FARAD		STRUC
@@ -656,4 +661,3 @@ LoadSwap_E	EQU	7
 InitEMS_E	EQU	8
 InitXMS_E	EQU	9
 LoadEMS_E	EQU	10
-

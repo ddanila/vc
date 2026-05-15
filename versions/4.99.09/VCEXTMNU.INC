@@ -107,7 +107,7 @@ F33_00:		XOR	AX,AX			; View
 F34_00:		MOV	AX,1			; Edit
 F34_01:		CMP	DS:Visible,0
 		JZ	F44_01
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	F34_03
 		MOV	SI,DS:FileCur
 		CALL	Numb2Addr
@@ -137,10 +137,10 @@ F34_02:		MOV	SI,DS:FileCur
 		POP	DS
 		JMP	F34_20
 F34_03:		MOV	BP,DS			; Quick View
-		CMP	DS:WinTyp,2
-		JB	F44_01
+		CMP	DS:WinTyp,p_Info
+		JB	F44_01			; File or Tree panel
 		JE	F34_10
-		CALL	InvWCB
+		CALL	InvWCB                  ; QuickView panel
 		MOV	CL,DS:LongNames
 		MOV	BX,ES:ViewSeg
 		OR	BX,BX
@@ -178,7 +178,7 @@ F34_10:		MOV	BX,ES:DirinfoSeg	; Create dirinfo
 		CALL	InvWCB
 		CMP	DS:Visible,0
 		JE	F34_11
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	F34_11
 		CMP	DS:ArcPnt,0
 		JNE	F44_01

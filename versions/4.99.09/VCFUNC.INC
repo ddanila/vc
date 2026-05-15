@@ -6,7 +6,7 @@
 
 		.CODE
 AdrNum		PROC	FAR
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	@@Tree
 		MOV	SI,DS:EndBuf
 		CALL	Addr2Numb
@@ -33,7 +33,7 @@ AdrNum		PROC	FAR
 AdrNum		ENDP
 
 ChgAdr		PROC	FAR
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	@@ChgTree
 		XCHG	SI,DS:FileCur
 		XCHG	DI,DS:FileFirst
@@ -77,7 +77,7 @@ F00_50		PROC	NEAR
 		MOV	CX,DI
 		MOV	BX,DS:FileFirst
 		MOV	DX,DS:FileCur
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JE	F00_51
 		MOV	BX,DS:TreeFirst
 		MOV	DX,DS:TreeCur
@@ -114,7 +114,7 @@ F00_55:		CALL	ChgAdr
 		PUSH	DX
 		PUSH	AX
 		SUB	DH,4
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JE	F00_56
 		DEC	CH
 		DEC	DH
@@ -159,7 +159,7 @@ F00_50		ENDP
 
 F00_70:		TEST	BP,2			; Scroll & select
 		JZ	F00_73
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	F00_75
 		PUSH	SI
 		CALL	Numb2Addr
@@ -195,8 +195,8 @@ F00_75:		CALL	F00_50
 
 F00_00:		CMP	DS:Visible,0		; Up
 		JZ	F25_00
-		CMP	DS:WinTyp,1
-		JA	Func10
+		CMP	DS:WinTyp,p_Tree
+		JA	Func10			; Info or QuickView panel
 		CALL	AdrNum
 		XOR	BP,BP
 F00_05:		OR	SI,SI
@@ -206,8 +206,8 @@ F00_05:		OR	SI,SI
 
 F01_00:		CMP	DS:Visible,0		; Down
 		JZ	F26_00
-F01_01:		CMP	DS:WinTyp,1
-		JA	Func10
+F01_01:		CMP	DS:WinTyp,p_Tree
+		JA	Func10			; Info or QuickView panel
 		CALL	AdrNum
 		XOR	BP,BP
 F01_05:		CMP	SI,DX
@@ -277,8 +277,8 @@ F03_30		ENDP
 
 F04_00:		CMP	DS:Visible,0		; PgUp
 		JZ	Func10
-		CMP	DS:WinTyp,1
-		JA	Func10
+		CMP	DS:WinTyp,p_Tree
+		JA	Func10			; Info or QuickView panel
 		CALL	F04_30
 		OR	DI,DI
 		JE	F06_01
@@ -304,8 +304,8 @@ F04_30		ENDP
 
 F05_00:		CMP	DS:Visible,0		; PgDn
 		JZ	Func10
-		CMP	DS:WinTyp,1
-		JA	Func10
+		CMP	DS:WinTyp,p_Tree
+		JA	Func10			; Info or QuickView panel
 		CALL	F04_30
 		MOV	CX,DI
 		XCHG	SI,DI
@@ -327,8 +327,8 @@ F05_02:		CMP	DI,CX
 
 F06_00:		CMP	DS:Visible,0		; Home
 		JZ	F73_00
-		CMP	DS:WinTyp,1
-		JA	F73_00
+		CMP	DS:WinTyp,p_Tree
+		JA	F73_00			; Info or QuickView Panel
 		CALL	AdrNum
 F06_01:		XOR	SI,SI
 		XOR	DI,DI
@@ -336,8 +336,8 @@ F06_01:		XOR	SI,SI
 
 F07_00:		CMP	DS:Visible,0		; End
 		JZ	F73_00
-		CMP	DS:WinTyp,1
-		JA	F73_00
+		CMP	DS:WinTyp,p_Tree
+		JA	F73_00			; Info or QuickView panel
 		CALL	AdrNum
 F07_01:		MOV	SI,DX
 		MOV	DI,DX
@@ -345,7 +345,7 @@ F07_01:		MOV	SI,DX
 
 F08_00:		CMP	DS:Visible,0		; Ins
 		JZ	Func10
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	Func10
 		MOV	SI,DS:FileCur
 		CALL	Numb2Addr
@@ -491,8 +491,8 @@ F10_03:		MOV	DX,OFFSET Unsl_T
 		OR	CL,1
 F10_04:		CMP	DS:Visible,0
 		JZ	F73_00
-		CMP	DS:WinTyp,1
-		JA	F73_00
+		CMP	DS:WinTyp,p_Tree
+		JA	F73_00			; Info or QuickView panel
 		JE	F10_20
 		TEST	CL,2
 		JNZ	F10_06
@@ -607,7 +607,7 @@ F10_35		ENDP
 
 F78_00:		CMP	DS:Visible,0		; ^M - restore marks
 		JZ	Func04
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	Func04
 		MOV	SI,DS:DiskBuf
 F78_01:		CMP	SI,DS:EndBuf
@@ -717,9 +717,9 @@ F16_02:		MOV	DS:KeyBar,1
 
 F17_00:		PUSH	DS			; ^R
 F17_01:		MOV	AL,DS:WinTyp
-		CMP	AL,1
-		JB	F17_04
-		JNE	F17_02
+		CMP	AL,p_Tree
+		JB	F17_04			; File panel
+		JNE	F17_02			; Info or QuickView panel
 		MOV	ES:RescanTree,1
 F17_02:		MOV	CH,4
 		CMP	AL,2
@@ -774,10 +774,10 @@ F20_10		PROC	NEAR
 		XOR	BX,BX
 		MOV	DH,ES:Lines
 		MOV	DL,ES:Columns
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		MOV	DS,ES:WCBsec
 		JNE	F20_11
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	F20_11
 		CMP	ES:PathEr,0
 		JNZ	F20_12
@@ -842,7 +842,7 @@ F21_00:		CMP	ES:DosBuf,0		; Enter
 		JNE	F21_43
 		CMP	DS:Visible,0
 		JZ	F21_43
-F21_10:		CMP	DS:WinTyp,1		; Tree
+F21_10:		CMP	DS:WinTyp,p_Tree
 		JNE	F21_20
 		CALL	HidCur
 		MOV	AL,ES:DosPath[0]
@@ -1033,10 +1033,10 @@ F21_44:		JMP	RunCmd00
 
 F22_00:		CMP	DS:Visible,0		; ^PgUp
 		JZ	F22_01
-		CMP	DS:WinTyp,1
-		JA	F22_01
+		CMP	DS:WinTyp,p_Tree
+		JA	F22_01			; Info or QuickView panel
 		JE	F22_10
-		MOV	DI,OFFSET TmpBuf
+		MOV	DI,OFFSET TmpBuf	; File panel
 		PUSH	DI
 		MOV	AX,'.'
 		STOSB
@@ -1063,10 +1063,10 @@ ChDir_T		DW	ChDir_S, LineBuf1, ExecArcProgram
 		.CODE
 F23_00:		CMP	DS:Visible,0		; ^PgDn
 		JZ	F22_01
-		CMP	DS:WinTyp,1
-		JA	F22_01
+		CMP	DS:WinTyp,p_Tree
+		JA	F22_01			; Info or QuickView panel
 		JE	F21_10
-		MOV	SI,DS:FileCur
+		MOV	SI,DS:FileCur		; File panel
 		CALL	Numb2Addr
 		CMP	SI,DS:EndBuf
 		JAE	F22_01
@@ -1338,7 +1338,7 @@ F24_01:		POP	DS
 		MOV	DS:DiskBuf,AX
 		MOV	DS:EndBuf,AX
 		MOV	DS:ArcPnt,0
-		CMP	DS:WinTyp,1
+		CMP	DS:WinTyp,p_Tree
 		JNE	F24_02
 		CMP	ES:TreeSeg,0
 		JE	F24_02
@@ -1358,7 +1358,7 @@ F24_03:		LODSB
 F24_10:		CALL	GetPath
 F24_11:		MOV	AH,0
 		MOV	AL,DS:WinTyp
-		CMP	AL,1
+		CMP	AL,p_Tree
 		JE	F24_12
 		MOV	DS:ChgFlg,1
 		JMP	F24_13
@@ -1368,7 +1368,7 @@ F24_12:		CMP	DS:ChgFlg,0
 F24_13:		CALL	InvWCB
 		OR	AL,DS:WinTyp
 		JZ	F24_16
-		CMP	DS:WinTyp,1
+		CMP	DS:WinTyp,p_Tree
 		JE	F24_14
 		MOV	DS:ChgFlg,1
 		JMP	F24_15
@@ -1456,7 +1456,7 @@ F27_05:		OR	DL,DL
 		JNE	F27_12
 F27_06:		CMP	DS:Visible,0
 		JZ	F27_12
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	F27_12
 		MOV	SI,DS:FileCur
 		CALL	Numb2Addr
@@ -1517,7 +1517,7 @@ F27_12:		JMP	Func05
 
 F80_00:		CMP	DS:Visible,0		; ^I - insert files
 		JZ	F27_12
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	F27_12
 		CALL	KeybStat
 		AND	AL,3
@@ -1833,12 +1833,12 @@ F62_22:		PUSH	DS
 		CALL	InvWCB
 		CMP	DS:Visible,0
 		JZ	F62_23
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JE	F62_24
 F62_23:		MOV	AH,0Eh
 		INT	21h
 F62_24:		POP	DS
-		MOV	DS:WinTyp,0
+		MOV	DS:WinTyp,p_File
 		MOV	DS:ChgFlg,1
 		MOV	ES:BlocEr,1
 		MOV	AX,DS:DiskBuf
@@ -2157,8 +2157,8 @@ F82_00:		MOV	DS,ES:WCB2seg		; ^] - insert right path
 F82_01:		CMP	DS:Visible,0
 		JZ	Func04
 		CALL	KeybStat
-		CMP	DS:WinTyp,1
-		JA	Func04
+		CMP	DS:WinTyp,p_Tree
+		JA	Func04			; Info or QuickView panel
 		MOV	DI,OFFSET LineBuf1
 		JB	F82_02
 		MOV	SI,OFFSET CrnPath
@@ -2320,7 +2320,7 @@ F85_00:		MOV	AH,0FFh			; Change width of long name
 F85_01:		MOV	AH,1
 F85_02:		CMP	DS:Visible,0
 		JZ	Func04
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	Func04
 		CMP	DS:LongNames,0
 		JZ	Func04
@@ -2343,11 +2343,11 @@ F85_02:		CMP	DS:Visible,0
 
 F86_00:		CMP	DS:Visible,0		; Hidden files
 		JZ	Func04
-		CMP	DS:WinTyp,1
-		JA	Func04
+		CMP	DS:WinTyp,p_Tree
+		JA	Func04			; Info or QuickView panel
 		PUSH	DS
 		JE	F86_02
-		TEST	DS:FiltAttr,2
+		TEST	DS:FiltAttr,2		; File panel
 		JZ	F86_01
 		AND	DS:FiltAttr,0F9h
 		JMP	M18_20
@@ -2359,7 +2359,7 @@ F86_02:		CALL	F86_10
 		CALL	SetTreeParms
 		PUSH	DS
 		CALL	InvWCB
-		CMP	DS:WinTyp,1
+		CMP	DS:WinTyp,p_Tree
 		JNE	F86_03
 		CALL	SetTreeParms
 F86_03:		POP	DS
@@ -2516,14 +2516,14 @@ F77_10:		PUSH	BP
 		MOV	DX,SIZE FilEnt
 		MOV	SI,DS:FileCur
 		CALL	Numb2Addr
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JE	F77_11
 		MOV	SI,DS:TreeCur
 		CALL	F77_30
 F77_11:		CALL	SpeedSearch
 		POP	DS
 		JZ	F77_14
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	F77_12
 		CALL	Addr2Numb
 		MOV	DI,DS:FileFirst
@@ -2659,4 +2659,3 @@ SearchAdd	PROC	NEAR
 		MOV	SI,BX
   @@Exit:	RET
 SearchAdd	ENDP
-

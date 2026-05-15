@@ -23,7 +23,7 @@ ReadDir		PROC	FAR
 		USES	AX,BX,CX,DX,SI,DI,ES
 		PUSH	BP
 		MOV	DS:ChgFlg,1
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	ReadTree
 		MOV	BX,DS:EndBuf		; Compress old WCB
 		DEC	BX
@@ -818,7 +818,7 @@ DirTwoNames	PROC	NEAR			; Set short and long path
   @@Exit:	RET
 DirTwoNames	ENDP
 
-ReadTree:	CMP	DS:WinTyp,1
+ReadTree:	CMP	DS:WinTyp,p_Tree
 		JNE	ReadInfo
 		CALL	ScanTree
 		JC	RdTree1
@@ -837,7 +837,7 @@ DirInfo_T	DW	DirInfo_S, LineBuf2, ExecArcProgram
 
 		.CODE	Subs
 ReadInfo	PROC	FAR
-		CMP	DS:WinTyp,2
+		CMP	DS:WinTyp,p_Info
 		JNE	ReadQuickView
 		XOR	BX,BX			; Remove DirInfo segment
 		XCHG	BX,ES:DirinfoSeg
@@ -879,7 +879,7 @@ ReadInfo	PROC	FAR
 		CALL	InvWCB
 		CMP	DS:Visible,0
 		JZ	@@Parse
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	@@Parse
 		CMP	DS:ArcPnt,0
 		JZ	@@Parse
@@ -1060,8 +1060,8 @@ ReadQuickView	PROC	FAR
 		CALL	InvWCB
 		XOR	BX,BX
 		MOV	AL,DS:WinTyp
-		CMP	AL,1
-		JA	@@DelOld
+		CMP	AL,p_Tree
+		JA	@@DelOld		; Info or QuickView panel
 		MOV	BX,ES:ViewSeg
 		MOV	CX,ES:WorkBuffer
 		CMP	DS:Visible,0
@@ -1437,7 +1437,7 @@ BytIn_D		DW	TmpErr, TmpErr+4, TmpErr+6
 		.CODE	Subs
 PutFls		PROC	FAR
 		USES	AX,BX,CX,DX,SI,DI,BP,DS
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	PutTre
 		CALL	CorPar
 		CALL	LnsAX
@@ -1724,7 +1724,7 @@ PutFls		ENDP
 PutTr_P		DB	Back_C, Cursr_C, Slct_C, CurSl_C
 
 		.CODE	Subs
-PutTre:		CMP	DS:WinTyp,1
+PutTre:		CMP	DS:WinTyp,p_Tree
 		JNE	PutInf
 		CALL	CorPar
 		MOV	BP,OFFSET PutTr_P
@@ -2147,7 +2147,7 @@ Line5_D		DW	TmpBuf, TmpBuf+8, TmpBuf+10, PtIn5_S
 
 		.CODE	Subs
 PutInf		PROC	FAR
-		CMP	DS:WinTyp,2
+		CMP	DS:WinTyp,p_Info
 		JNE	PutView
 		MOV	BP,OFFSET PtIn_P
 		CALL	BegBX
@@ -2201,7 +2201,7 @@ PutInf		PROC	FAR
 		CALL	InvWCB
 		CMP	DS:Visible,0
 		JZ	@@Dirinfo
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	@@Dirinfo
 		XOR	CX,CX
 		MOV	WORD PTR ES:TmpBuf[0],CX
@@ -2851,4 +2851,3 @@ DirSiz1		PROC	NEAR
 		XOR	AX,AX
   @@Exit:	RET
 DirSiz1		ENDP
-

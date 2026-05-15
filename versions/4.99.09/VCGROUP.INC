@@ -674,7 +674,7 @@ FileListLong	EQU	BYTE PTR TmpBuf[6]
 
 FileList	PROC	FAR
 		USES	AX,BX,CX,DX,SI,DI,DS
-		CMP	DS:WinTyp,0
+		CMP	DS:WinTyp,p_File
 		JNE	@@List10
 		CMP	DS:Visible,0
 		JE	@@List10
@@ -803,4 +803,3 @@ FncList		PROC	NEAR
   @@FncLst4:	MOV	AX,100h
   @@FncLst5:	RET
 FncList		ENDP
-

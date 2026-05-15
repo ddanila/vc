@@ -33,10 +33,10 @@ MkDirError_B	BOXHD	< MkDirError_P, 900h, 0, Dialog_K, Def_M, Default_H, 6 >
 F37_00:		CMP	DS:Visible,0		; F7 - make directory
 		JZ	F47_00
 		MOV	CL,1
-		CMP	DS:WinTyp,1
-		JA	F47_00
+		CMP	DS:WinTyp,p_Tree
+		JA	F47_00			; Info or QuickView panel
 		JE	F47_01
-		CMP	DS:ArcPnt,0
+		CMP	DS:ArcPnt,0             ; File panel
 		JNE	Func04
 
 F47_00:		MOV	CL,0			; Shift F7 - make directory
@@ -210,4 +210,3 @@ F47_20:		PUSH	DS			; Update TREEINFO
 		JNC	F47_21
 		CALL	SaveTreeInfo
 F47_21:		JMP	FuncExit2
-
