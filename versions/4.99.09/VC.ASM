@@ -619,7 +619,7 @@ ExeProg		PROC	FAR
 		MOV	CX,256*2
 		CLI
 		REP	MOVSW
-		MOV	SI,4A8h
+		MOV	SI,4A8h			; BDA:A8 - Video Save/Override ptr table
 		MOVSW
 		MOVSW
 		STI
@@ -662,7 +662,7 @@ AddProg		PROC	FAR
 		CLD
 		CLI
 		REP	MOVSW
-		MOV	DI,4A8h
+		MOV	DI,4A8h			; BDA:A8 - Video Save/Override ptr table
 		MOVSW
 		MOVSW
 		STI
@@ -823,7 +823,7 @@ Release		PROC	FAR
 		MOVSW
 		MOVSW
 		LOOP	@@RestVect
-  @@RestPtr:	MOV	DI,4A8h			; Restore SAVE PTR
+  @@RestPtr:	MOV	DI,4A8h			; BDA:A8 - Video Save/Override ptr table
 		MOVSW
 		MOVSW
 		STI
