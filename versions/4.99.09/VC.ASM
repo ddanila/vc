@@ -2193,13 +2193,13 @@ Init77:		LODSB
 		JMP	Init71
 Init78:		DEC	SI
 		JMP	Init79
-KeyStd:		MOV	DS:rLocation,0
+KeyStd:		MOV	DS:rLocation,BASEMEM
 		JMP	Init77
-KeySwap:	MOV	DS:rLocation,1
+KeySwap:	MOV	DS:rLocation,SWAP
 		JMP	Init77
-KeyEMS:		MOV	DS:rLocation,3
+KeyEMS:		MOV	DS:rLocation,EMS
 		JMP	Init77
-KeyXMS:		MOV	DS:rLocation,2
+KeyXMS:		MOV	DS:rLocation,XMS
 		JMP	Init77
 KeyNoSwap:	MOV	DS:TmpData.ComnIni.UseSwap,0
 		JMP	Init77
@@ -2387,10 +2387,10 @@ ErrorInOvl_S	DB	13,10, 'Error reading overlay file.'
 		MOV	BP,BX
 		XOR	DI,DI
 		MOV	DS:TmpCode,DI
-		CMP	DS:rLocation,1
+		CMP	DS:rLocation,SWAP
 		JB	Load40
 		JE	Load31
-		CMP	DS:rLocation,3
+		CMP	DS:rLocation,EMS
 		JB	Load21
 		JE	Load00
 
@@ -2535,7 +2535,7 @@ Load12:		MOV	DX,DS:DataHandle
 		MOV	AH,45h
 		CALL	CallEMS
 Load13:		POP	DX
-		CMP	DS:rLocation,3
+		CMP	DS:rLocation,EMS
 		JNE	Load20
 		MOV	AL,InitEMS_E
 		JMP	Load37
@@ -2647,7 +2647,7 @@ Load26:		MOV	DS:[SI].DestOffset.Lo,AX
 Load27:		PUSH	DX			; Error
 		CALL	DoExitXMS
 		POP	DX
-		CMP	DS:rLocation,2
+		CMP	DS:rLocation,XMS
 		JNE	Load30
 		MOV	AL,InitXMS_E
 		JMP	Load37
@@ -2702,7 +2702,7 @@ Load34:		MOV	BX,AX			; Write data to swap file
 Load35:		MOV	DX,OFFSET TmpPath	; Delete swap file
 		MOV	AH,41h
 		INT	21h
-Load36:		CMP	DS:rLocation,1
+Load36:		CMP	DS:rLocation,SWAP
 		JNE	Load40
 		MOV	DX,OFFSET SwapError_S
 		MOV	AL,InitSwap_E
@@ -2714,7 +2714,7 @@ Load37:		PUSH	AX			; Error
 Load40:		MOV	DX,OFFSET Empty_S
 		MOV	SI,OFFSET SubsRAM
 		MOV	CX,LenSubsRAM
-		MOV	AL,0
+		MOV	AL,BASEMEM
 
 Load41:		MOV	DS:rLocation,AL
 		CALL	OutStd			; Output status
@@ -2722,7 +2722,7 @@ Load41:		MOV	DS:rLocation,AL
 		CMP	DS:rChkTSR,0
 		JNZ	Load42
 		MOV	DX,OFFSET CrLf_S
-		CMP	DS:rLocation,0
+		CMP	DS:rLocation,BASEMEM
 		JNZ	Load42
 		MOV	DX,OFFSET Empty_S
 Load42:		CALL	OutStd
@@ -2798,7 +2798,7 @@ Load45:		REP	MOVSB
 Load46:		POP	AX
 
 ;----------------------- Start EMS mode ------------------------
-		CMP	DS:rLocation,2
+		CMP	DS:rLocation,XMS
 		JBE	Load60
 		PUSH	AX			; Init vars in conv memory
 		MOV	DI,OFFSET Vect21EMS
@@ -3044,7 +3044,7 @@ Load63:		MOV	BX,DI
 		RETN
 
 ;----------------------- Start swap mode ------------------------
-Load65:		CMP	DS:rLocation,1
+Load65:		CMP	DS:rLocation,SWAP
 		JNE	Load70
 		MOV	SI,OFFSET TmpPath
 		MOV	DI,AX
@@ -3455,4 +3455,3 @@ CmpLines	PROC	NEAR
 CmpLines	ENDP
 
 		END
-
