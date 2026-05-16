@@ -457,7 +457,7 @@ NotFound	PROC	NEAR
 NotFound	ENDP
 
 ;---------------------------------------------------------------
-;	Output to StdError
+;	Output to StdOut
 ;		DS:DX - string
 ;---------------------------------------------------------------
 OutStd		PROC	NEAR
@@ -465,6 +465,10 @@ OutStd		PROC	NEAR
 		JMP	OutDev
 OutStd		ENDP
 
+;---------------------------------------------------------------
+;	Output to StdError
+;		DS:DX - string
+;---------------------------------------------------------------
 OutErr		PROC	NEAR
 		MOV	BX,2
 OutDev:		PUSH	CX
