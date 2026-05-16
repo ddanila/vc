@@ -962,7 +962,7 @@ Exec2ESwap	ENDP
 LoadNextSwap	PROC	NEAR
   @@Retry:	MOV	WORD PTR DS:[DI],0
 		MOV	DX,DS:DataPoint
-		MOV	AX,3D40h
+		MOV	AX,3D40h		; sharing mode = DENY NONE
 		INT	21h
 		JC	@@Error
 		PUSH	CX
@@ -1424,8 +1424,8 @@ Init00:		CLD
 		MOV	DS,AX
 		MOV	AX,DS:[3]
 		CMP	AH,10h
-		JB	Init01
-		MOV	AX,0FFFh
+		JB	Init01			; mcb.size < 64k
+		MOV	AX,0FFFh                ; no, set stack top to 64k - sizeof(mcb)
 Init01:		MOV	CL,4
 		SHL	AX,CL
 		MOV	SP,AX
@@ -3287,7 +3287,7 @@ Load82		ENDP
 ;	Return:	   CY - if error
 ;---------------------------------------------------------------
 ReadFile	PROC	NEAR
-		MOV	AX,3D40h
+		MOV	AX,3D40h		; sharing mode = DENY NONE
 		INT	21h
 		JC	@@Exit
 		MOV	BX,AX
