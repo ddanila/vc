@@ -45,6 +45,12 @@ p_Tree		EQU	1		; Tree panel type
 p_Info		EQU	2		; Info panel type
 p_QView		EQU	3		; QuickView panel type
 
+; Memory modes
+BASEMEM		EQU	0
+SWAP		EQU	1
+XMS		EQU	2
+EMS		EQU	3
+
 ;---------------------- Global structures ----------------------
 ; Far address structure definition.
 FARAD		STRUC
