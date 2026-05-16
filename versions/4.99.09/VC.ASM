@@ -1917,7 +1917,7 @@ Init50:		LODSB
 		JNE	Init57
 		PUSH	DI
 		MOV	DI,OFFSET IniKey_S
-		CALL	CmpLines
+		CALL	stricmp
 		POP	DI
 		MOV	BP,SI
 		JE	Init52
@@ -2160,7 +2160,7 @@ Init71:		LODSB
 		JNE	Init78
 		MOV	DI,OFFSET Keys_S
 		MOV	BX,OFFSET KeyTable
-Init72:		CALL	CmpLines
+Init72:		CALL	stricmp
 		JE	Init74
 		ADD	BX,8
 		MOV	AL,0
@@ -3432,12 +3432,12 @@ EnvVar		PROC	NEAR
 EnvVar		ENDP
 
 ;---------------------------------------------------------------
-;	Compare lines
+;	Compare strings case-insensitively
 ;		ES:DI - ASCIIZ line
 ;		DS:SI - buffer to compare
 ;	Return:	   ZR - equal
 ;---------------------------------------------------------------
-CmpLines	PROC	NEAR
+stricmp		PROC	NEAR
 		PUSH	DI
 		PUSH	SI
   @@Next:	CMP	BYTE PTR ES:[DI],0
@@ -3456,6 +3456,6 @@ CmpLines	PROC	NEAR
   @@Equal:	POP	DI
 		POP	DI
 		RET
-CmpLines	ENDP
+stricmp		ENDP
 
 		END
