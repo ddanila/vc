@@ -192,7 +192,7 @@ ExecArcCmd	PROC	FAR
 		MOV	DI,OFFSET ExecArcProgram
 		PUSH	DI
 		PUSH	SI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		POP	DI
 		CALL	FindPath		; Find file in PATH
@@ -212,7 +212,7 @@ ExecArcCmd	PROC	FAR
 		MOV	DI,OFFSET ExecArcArchive ; Canonize archive name
 		CMP	ES:ExecArcCommand,1
 		JNE	@@NormArc
-		CALL	MvzLine
+		CALL	strcpy
 		JMP	@@ChkCmdLn0
   @@NormArc:	CALL	NormPath
 		JC	@@ExecError1
@@ -581,7 +581,7 @@ ExecArcCmd	PROC	FAR
 		CALL	Intr21
   @@ChgDir1:	MOV	DX,OFFSET ExecArcCmdLine
 		MOV	DI,DX
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	SI,DX
 		CALL	CutPath
 		CMP	BYTE PTR DS:[SI],0
@@ -2247,7 +2247,7 @@ ExecArcChar	PROC	NEAR
 		MOV	DS:ExecArcPathEnd,0
 		CALL	ExecArcMoveName
 		JNC	@@SkipEntry
-		CALL	AddFile
+		CALL	AddPathSep
 		CMP	DI,OFFSET ExecArcNameEnd
 		JAE	@@SkipEntry
   @@MakeName1:	MOV	AX,DI
@@ -2300,7 +2300,7 @@ ExecArcChar	PROC	NEAR
   @@GetName4:	MOV	AL,'.'
 		STOSB
 		LEA	SI,[BP+9]
-		CALL	MvzLine
+		CALL	strcpy
 
   @@CheckDir0:	MOV	ES,DS:ExecArcBufSeg	; Save entry
 		CALL	ExecArcSetEntry

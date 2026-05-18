@@ -323,7 +323,7 @@ F39_02:		CALL	F40_40
 F39_03:		MOV	AL,None_M
 		CALL	PutMnu1
 		MOV	CH,0
-F39_04:		CALL	LeaveTm
+F39_04:		CALL	Yield
 		CALL	F40_40
 		JZ	F39_07
 		OR	AH,AH
@@ -401,7 +401,7 @@ F39_17:		OR	CH,CH
 		JE	F39_12
 F39_18:		CMP	AL,CH
 		JNE	F39_41
-		CALL	LeaveTm
+		CALL	Yield
 		JMP	F39_10
 F39_19:		MOV	AL,Dialog_K
 		CALL	Input
@@ -1435,14 +1435,14 @@ M18_30		PROC	NEAR
 		ADD	SI,OFFSET NameF
 		MOV	DI,OFFSET LineBuf1
 		STOSW
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	SI,DS:FileFirst
 		CALL	Numb2Addr
 		CALL	FileNumb
 		ADD	SI,OFFSET NameF
 		MOV	DI,OFFSET LineBuf2
 		STOSW
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	BX,DS:EndBuf
 		CALL	FileSort
 		MOV	CX,DS:DiskBuf
@@ -2916,7 +2916,7 @@ F49_00:		PUSH	ES			; Save setup
 		MOV	SI,OFFSET IniFile
 		MOV	DI,OFFSET LineBuf1
 		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		STOSB
 		STOSB
 		MOV	DX,OFFSET SvSt_T

@@ -231,7 +231,7 @@ Input0		PROC	FAR
 		MOV	BlTime.Hi,CX
   @@KeyBar:	MOV	AL,IKeyBar
 		CALL	PutKey
-		CALL	LeaveTm
+		CALL	Yield
 		CMP	DS:TaskStack,0
 		JNE	@@AutoEnter
 		CMP	DS:BlDelay,0		; Blank screen
@@ -256,7 +256,7 @@ Input0		PROC	FAR
   @@ExitMouse:	XOR	AX,AX
 		CALL	GetMous
 		JZ	@@InitVars1
-		CALL	LeaveTm
+		CALL	Yield
 		JMP	@@ExitMouse
   @@PutClock:	CMP	DS:Clock,0		; Output clock
 		JE	@@AutoEnter
@@ -552,7 +552,7 @@ Input0		PROC	FAR
 		MOV	AH,0FCh
   @@RetKey:	CLC
 		JMP	@@Exit
-  @@WaitMouse:	CALL	LeaveTm
+  @@WaitMouse:	CALL	Yield
 		JMP	@@InKeyBar
   @@SetFnKey:	CMP	AL,0
 		JE	@@GetMous1

@@ -799,7 +799,7 @@ Init58:		POP	ES
 		MOV	CH,0FFh
 		REPNE	SCASB
 		DEC	DI
-		CALL	AddFile
+		CALL	AddPathSep
 		PUSH	ES
 		POP	DS
 		XOR	AX,AX
@@ -1254,7 +1254,7 @@ Panels40	PROC	NEAR
 		POP	ES
 		MOV	SI,OFFSET WinShortPath
 		MOV	DI,OFFSET WinLongPath
-		CALL	MvzLine
+		CALL	strcpy
 		CMP	DS:WinShortPath[3],0
 		JE	Panels41
 		CALL	SetParentDir
@@ -1426,7 +1426,7 @@ Func11:		MOV	SI,DS:FileCur
 		CMP	DS:ArcPnt,0
 		JNZ	Func12
 		MOV	SI,OFFSET WinShortPath
-		CALL	MvzLine
+		CALL	strcpy
 		JMP	Func13
 Func12:		CALL	PutDescriptor
 Func13:		POP	SI
@@ -1434,8 +1434,8 @@ Func13:		POP	SI
 		ADD	SI,OFFSET NameF
 		CALL	ChkUpDir
 		JE	Func14
-		CALL	AddFile
-		CALL	MvzLine
+		CALL	AddPathSep
+		CALL	strcpy
 Func14:		POP	SI
 		PUSH	ES
 		POP	DS
@@ -1728,7 +1728,7 @@ Mouse11:	CALL	GetMous
 		JZ	Mouse12
 		CALL	F84_10
 		JC	Mouse11
-		CALL	LeaveTm
+		CALL	Yield
 		JMP	Mouse11
 Mouse12:	MOV	AL,0
 		CALL	TypMous
@@ -1838,7 +1838,7 @@ Mouse36:	DEC	AX
 		CALL	PutFls
 		CALL	Window
 		JMP	Mouse38
-Mouse37:	CALL	LeaveTm
+Mouse37:	CALL	Yield
 Mouse38:	PUSH	CX
 		CALL	GetMous
 		POP	AX
@@ -1921,7 +1921,7 @@ Mouse45:	PUSH	SI
 		TEST	ES:MouseWin,2
 		JZ	F00_70
 Mouse46:	CALL	ResMouseCmd
-Mouse47:	CALL	LeaveTm
+Mouse47:	CALL	Yield
 		JMP	Func10
 
 Mouse50:	MOV	SI,4800h		; Scroll up
@@ -2176,7 +2176,7 @@ Run_24:		CMP	DI,OFFSET TmpBuf
 		PUSH	SI
 		MOV	DS,CS:SubsSeg
 		MOV	SI,OFFSET UserInLine_S
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AL,' '
 		STOSB
 		POP	SI
@@ -2361,7 +2361,7 @@ Run_46:		PUSH	ES
 		MOV	DI,OFFSET TmpBuf
 		PUSH	DI
 		PUSH	SI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		POP	DI
 		PUSH	AX
@@ -2480,7 +2480,7 @@ Run_61:		PUSH	SI
 		MOV	SI,OFFSET VcTempArc_S
 		MOV	AX,DS:TempDirNumb
 		CALL	MakePathName
-		CALL	AddFile
+		CALL	AddPathSep
 		POP	AX
 		POP	SI
 		CALL	CutPath
@@ -2506,13 +2506,13 @@ Run_62:		CMP	DS:Visible,0
 		ADD	SI,DS:[SI].LenShortNamF
 Run_63:		ADD	SI,OFFSET NameF
 		AND	AH,7Fh
-Run_64:		CALL	MvzLine
+Run_64:		CALL	strcpy
 		MOV	DS,BX
 		MOV	SI,OFFSET LineBuf1
 		MOV	DI,OFFSET TmpBuf
 		PUSH	DI
 		PUSH	SI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		POP	DI
 		TEST	AH,80h
@@ -2575,7 +2575,7 @@ Run_73:		PUSH	ES
 		MOV	SI,CX
 Run_74:		MOV	DI,OFFSET DosBuf
 		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DI
 		CALL	StrLen
 		MOV	AX,CX
@@ -2614,7 +2614,7 @@ RunCmd00:	PUSH	ES			; Run command line
 		CMP	DS:ExecTyp,0
 		JNZ	RunCmd01
 		MOV	SI,OFFSET Switches
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AL,' '
 		STOSB
 RunCmd01:	MOV	SI,OFFSET DosBuf
@@ -2944,7 +2944,7 @@ RunCmd40:	JA	RunCmd45		; Swap mode
 		MOV	ES,CS:SubsSeg
 		MOV	ES,ES:ResidentPoint.Segm
 		MOV	SI,OFFSET ComnIni.TempDir
-		CALL	MvzLine
+		CALL	strcpy
 		POP	ES
 		JMP	RunCmd60
 RunCmd41:	MOV	DX,OFFSET WrSwapErr_S

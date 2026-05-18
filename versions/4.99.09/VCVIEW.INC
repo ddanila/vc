@@ -174,10 +174,10 @@ ViewLoad	PROC	FAR
 		MOV	AX,DS:TempDirNumb
 		PUSH	DI
 		CALL	MakePathName
-		CALL	AddFile
+		CALL	AddPathSep
 		MOV	SI,OFFSET SourceFile
 		CALL	CutPath
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
   @@Init:	MOV	DL,DS:Columns
 		MOV	DH,DS:Lines
@@ -236,7 +236,7 @@ ViewFile	PROC	FAR
 		CALL	CutPath
 V00_06:		MOV	DI,OFFSET TmpBuf
 		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		MOV	AL,DS:Columns
 		MOV	AH,0
@@ -309,7 +309,7 @@ V00_13:		CALL	Input
 		MOV	DX,DS:VwSize
 		CALL	InWind
 		JNC	V00_15
-		CALL	LeaveTm
+		CALL	Yield
 		JMP	V00_10
 V00_14:		CMP	ES:Quote,0
 		JNZ	V00_15
@@ -415,7 +415,7 @@ V10_01:		MOV	ES:MouseWin,1
 		CMP	CL,BL
 		JAE	V10_03
 		MOV	ES:MouseCmd,0
-V10_02:		CALL	LeaveTm
+V10_02:		CALL	Yield
 		JMP	V10_20
 V10_03:		CALL	MouseRepeat
 		JNC	V10_20
@@ -2334,9 +2334,9 @@ ViewFileRead	PROC	NEAR
 		MOV	DI,OFFSET TmpBuf
 		PUSH	DI
 		CALL	MakePathName
-		CALL	AddFile
+		CALL	AddPathSep
 		MOV	SI,DX
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DX
 		POP	SI
 		POP	DI

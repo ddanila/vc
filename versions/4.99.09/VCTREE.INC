@@ -33,7 +33,7 @@ LongTreePath	PROC	FAR			; Long path under Win95
 ShortTreePath:	PUSH	DI
 		PUSH	SI
 		PUSH	AX
-		CALL	MvzLine
+		CALL	strcpy
 		POP	AX
 		POP	SI
 		POP	DI
@@ -81,7 +81,7 @@ LongTreePath1	PROC	FAR			; Long path
 		MOV	ES,CX
 		MOV	DI,BX
 		CALL	LongDirOffset1
-		CALL	MvzLine
+		CALL	strcpy
 		OR	DH,DH
 		JE	@@SaveTarget
 		MOV	AL,'\'
@@ -100,7 +100,7 @@ LongTreePath1	PROC	FAR			; Long path
 		MOV	SI,DI
 		MOV	ES,CX
 		MOV	DI,BX
-  @@MovePath:	CALL	MvzLine
+  @@MovePath:	CALL	strcpy
   @@Exit:	POP	BP
 		RET
 LongTreePath1	ENDP
@@ -734,7 +734,7 @@ TreeFunc	PROC	NEAR
 		PUSH	CS
 		POP	DS
 		MOV	SI,OFFSET Mask_S
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DS
 		POP	DI
 		MOV	AH,4Eh
@@ -770,7 +770,7 @@ TreeFunc	PROC	NEAR
 		CALL	CutPath
 		MOV	DI,SI
 		MOV	SI,OFFSET DTA.FilName
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		MOV	DI,OFFSET FindData.WinLongName
 		LEA	BP,[SI+260+14]
@@ -917,7 +917,7 @@ TreeFunc	PROC	NEAR
 		PUSH	DI
 		ADD	DI,OFFSET DirName
 		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		INC	DI
 		MOV	AX,DI
@@ -1031,7 +1031,7 @@ TreeFunc	PROC	NEAR
 		MOV	AH,0
 		ADD	SI,AX
   @@Recurse:	ADD	SI,OFFSET DirName
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		CALL	NextDirEnt
 		MOV	DI,SI
@@ -1126,12 +1126,12 @@ ReadTreeInfo	PROC	FAR
 		REP	STOSB
 		MOV	SI,OFFSET VcSet		; Find tree in home directory
 		MOV	DI,DX
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	DS
 		PUSH	CS
 		POP	DS
 		MOV	SI,OFFSET TreeInfo_F+1
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AL,'.'
 		STOSB
 		MOV	AX,'*'
@@ -1174,7 +1174,7 @@ ReadTreeInfo	PROC	FAR
 		POP	DS
 		MOV	DI,SI
 		MOV	SI,OFFSET DTA.FilName
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	DS
 		PUSH	ES
 		POP	DS
@@ -1286,8 +1286,8 @@ ReadTreeInfo	PROC	FAR
 		POP	ES
 		MOV	SI,OFFSET TreeInfo_F
 		MOV	DI,DX
-		CALL	MvzLine
-		CALL	MvzLine
+		CALL	strcpy
+		CALL	strcpy
 		PUSH	ES
 		POP	DS
 		POP	ES
@@ -1432,7 +1432,7 @@ SaveTreeInfo	PROC	FAR
 		MOV	DI,DX
 		MOV	SI,OFFSET VcSet
 		PUSH	AX
-		CALL	MvzLine
+		CALL	strcpy
 		POP	AX
 		MOV	SI,OFFSET TreeInfo_F+1
 		CALL	MakeFileName
@@ -1458,8 +1458,8 @@ SaveTreeInfo	PROC	FAR
 		POP	ES
 		MOV	DI,DX
 		MOV	SI,OFFSET TreeInfo_F
-		CALL	MvzLine
-		CALL	MvzLine
+		CALL	strcpy
+		CALL	strcpy
 		PUSH	ES
 		POP	DS
 		POP	ES
@@ -1527,7 +1527,7 @@ SaveTreeInfo	PROC	FAR
 		POP	DS
 		MOV	SI,OFFSET VcSet
 		MOV	DI,DX
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	SI,OFFSET TreeInfo_F+1
 		MOV	AX,BX
 		CALL	MakeFileName
@@ -1550,8 +1550,8 @@ SaveTreeInfo	PROC	FAR
 		POP	DS
 		MOV	SI,OFFSET TreeInfo_F
 		MOV	DI,DX
-		CALL	MvzLine
-		CALL	MvzLine
+		CALL	strcpy
+		CALL	strcpy
 		POP	DI
 		POP	DS
 		POP	ES
@@ -1577,7 +1577,7 @@ SaveTreeInfo	PROC	FAR
 		POP	DS
 		MOV	SI,OFFSET VcSet
 		MOV	DI,DX
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	SI,OFFSET TreeInfo_F+1
 		XOR	AX,AX
 		CALL	MakeFileName
@@ -1695,7 +1695,7 @@ SetTreeCursor	PROC	FAR			; Find cursor position
 		POP	ES
 		MOV	SI,OFFSET DosShortPath
 		MOV	DI,OFFSET CrnPath
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	DS
 		PUSH	ES
 		POP	DS
@@ -1738,7 +1738,7 @@ FindTreeCursor	PROC	FAR
 		POP	CX
 		LOOP	@@FndSlash
 		ADD	SI,OFFSET DirName
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AX,'\'
 		STOSW
   @@CmpPath:	POP	DS
@@ -1848,7 +1848,7 @@ UpdateBranch	PROC	FAR
 		MOV	SI,DX
 		MOV	DI,OFFSET LineBuf1
 		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		MOV	DI,OFFSET LineBuf2
 		PUSH	BP
@@ -1861,7 +1861,7 @@ UpdateBranch	PROC	FAR
 		MOV	BX,SI
 		CALL	CutPath
 		XCHG	SI,DI
-		CALL	MvzLine
+		CALL	strcpy
   @@AddEntry:	POP	DI
 		POP	DS
 		POP	SI
@@ -1878,7 +1878,7 @@ UpdateBranch	PROC	FAR
 		POP	DS
 		MOV	SI,DX
 		MOV	DI,OFFSET LineBuf1
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		POP	DS
 		OR	BX,BX
@@ -1992,7 +1992,7 @@ ChooseDir	PROC	FAR
 		MOV	DI,OFFSET CrnPath
 		PUSH	DI
 		PUSH	SI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DI
 		POP	SI
 		MOV	AX,DS:[DI]
@@ -2037,7 +2037,7 @@ ChooseDir	PROC	FAR
 		MOV	DS,AX
 		MOV	SI,OFFSET CrnPath
 		MOV	DI,OFFSET TmpBuf
-		CALL	MvzLine
+		CALL	strcpy
 		CLC
   @@Exit:	RET
 ChooseDir	ENDP
@@ -2083,7 +2083,7 @@ ChDirList:	CALL	DialogList
 		ADD	AX,SI
 		CALL	Cursor
 		JMP	@@Mouse
-  @@LeaveTime:	CALL	LeaveTm
+  @@LeaveTime:	CALL	Yield
 		JMP	@@Mouse
 ChDirInit1:	CALL	ChDirStatInit		; Init
 		JMP	@@Exit

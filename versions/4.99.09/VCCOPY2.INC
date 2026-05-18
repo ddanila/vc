@@ -114,9 +114,9 @@ F35_TrueName	PROC	NEAR
 		MOV	AL,0
 		REPNE	SCASB
 		DEC	DI
-		CALL	AddFile
+		CALL	AddPathSep
 		MOV	SI,BX
-		CALL	MvzLine
+		CALL	strcpy
   @@NoErr:	MOV	DL,2
   @@Status:	MOV	ES:[DI+514-1],DL
 		CMP	DL,1
@@ -682,7 +682,7 @@ F35_FuncShort	PROC	NEAR
 		CALL	ChkShortNam
 		JC	@@Func
 		PUSH	SI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		CALL	PathLin
   @@Func:	POP	AX
@@ -695,7 +695,7 @@ F35_FuncShort	PROC	NEAR
 		CMP	BYTE PTR DS:[SI],0
 		JE	@@Exit
 		PUSH	AX
-		CALL	MvzLine
+		CALL	strcpy
 		POP	AX
   @@Exit:	POP	DI
 		POPF
@@ -737,16 +737,16 @@ F35_MoveDir	PROC	NEAR
 		MOV	SI,OFFSET DosShortPath
 		PUSH	DI
 		MOV	DI,OFFSET LineBuf4
-		CALL	MvzLine
-		CALL	AddFile
+		CALL	strcpy
+		CALL	AddPathSep
 		POP	SI
 		PUSH	SI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DI
 		MOV	SI,OFFSET LineBuf4
 		MOV	BYTE PTR DS:[SI+514-1],0
 		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DI
   @@Move:	MOV	AH,56h
 		CALL	Intr21

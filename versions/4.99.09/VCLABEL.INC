@@ -72,7 +72,7 @@ F54_01:		MOV	DS:LabelSerNum.Lo,BX
 		MOV	DS:LabelSerNum.Hi,CX
 		PUSH	SI
 		MOV	DI,OFFSET LineBuf1
-		CALL	MvzLine
+		CALL	strcpy
 		STOSB
 		STOSB
 		POP	SI
@@ -82,7 +82,7 @@ F54_01:		MOV	DS:LabelSerNum.Lo,BX
 		JE	F54_02
 		MOV	AX,'" '
 		STOSW
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AX,'"'
 		STOSW
 F54_02:		MOV	DX,OFFSET LineBufs_T	; Check drive
@@ -124,7 +124,7 @@ F54_04:		MOV	SI,OFFSET Volume
 		ADD	DI,5
 		MOV	AX,8
 		STOSW
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	CX,12
 		MOV	AL,' '
 		REP	STOSB
@@ -182,11 +182,11 @@ F54_10:		MOV	AX,DS:LabelSerNum.Lo	; Update TREEINFO in home dir
 		REP	STOSB
 		MOV	SI,OFFSET VcSet
 		MOV	DI,OFFSET LineBuf2
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	DS
 		MOV	DS,CS:SubsSeg
 		MOV	SI,OFFSET TreeInfo_F+1
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DS
 		MOV	AL,'.'
 		STOSB
@@ -213,7 +213,7 @@ F54_12:		LODSB
 		CALL	CutPath
 		MOV	DI,SI
 		MOV	SI,OFFSET DTA.FilName
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AL,12h
 		CALL	OpenFil
 		JNC	F54_13

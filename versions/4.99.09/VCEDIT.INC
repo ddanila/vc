@@ -215,10 +215,10 @@ T00_02:		PUSH	ES
 		MOV	DX,OFFSET TmpBuf
 		MOV	SI,OFFSET TempDir
 		MOV	DI,DX
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	SI,OFFSET SourceFile
 		CALL	CutPath
-		CALL	MvzLine
+		CALL	strcpy
 T00_04:		CALL	ChgDisk
 		JC	T00_06
 	JMP	T99_99
@@ -304,7 +304,7 @@ T99_03:	MOV	SI,OFFSET SourceFile	; Extension or menu file ?
 	MOV	DI,OFFSET TmpBuf
 	MOV	CX,13
 	PUSH	DI
-	CALL	MvzLine
+	CALL	strcpy
 	STOSB
 	POP	SI
 	CALL	PathLin
@@ -2682,7 +2682,7 @@ T80_14:	MOV	DI,OFFSET TmpBuf
 	REPNE	SCASB
 	POP	CX
 	DEC	DI
-	CALL	AddFile
+	CALL	AddPathSep
 T80_15:	ADD	CX,DX
 	SUB	CX,DI
 	JBE	T80_17

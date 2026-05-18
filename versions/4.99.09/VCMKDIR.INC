@@ -185,13 +185,13 @@ MkDir_dialog_impl:
 		PUSH	SI
 		MOV	DS,DS:WCBcrn
 		MOV	SI,OFFSET CrnPath
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		POP	DS
-		CALL	AddFile
+		CALL	AddPathSep
 
   @@CanonicalizePath:
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		MOV	DI,OFFSET LineBuf2
 		MOV	DX,DI

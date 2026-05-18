@@ -33,15 +33,15 @@ PutArcPathName1	PROC	FAR
 
 ;##
 		MOV	SI,OFFSET WinShortPath
-		CALL	MvzLine
-		JMP	@@AddFile
+		CALL	strcpy
+		JMP	@@AddPathSep
   @@TmpArc:	CALL	CutPath
 		PUSH	SI
 		MOV	SI,OFFSET VcTempArc_S
 		CALL	MakePathName
-  @@AddFile:	CALL	AddFile
+  @@AddPathSep:	CALL	AddPathSep
 		POP	SI
-  @@MoveName:	CALL	MvzLine
+  @@MoveName:	CALL	strcpy
   @@Exit:	RET
 PutArcPathName1	ENDP
 
@@ -54,13 +54,13 @@ PutArcPathName1	ENDP
 PutDescriptor	PROC	FAR
 		USES	AX,SI
 		MOV	SI,OFFSET ArcExt
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AL,':'
 		STOSB
 		CALL	PutArcPathName
-		CALL	AddFile
+		CALL	AddPathSep
 		MOV	SI,OFFSET ArcPath
-		CALL	MvzLine
+		CALL	strcpy
 		RET
 PutDescriptor	ENDP
 
@@ -465,12 +465,12 @@ ViewArcExtract	PROC	FAR
 		PUSH	SI
 		MOV	SI,OFFSET TempDir
 		MOV	DI,OFFSET VwArcFile
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		DEC	SI
 		MOV	BYTE PTR DS:[SI],'\'
 		CALL	CutPath
-		CALL	MvzLine
+		CALL	strcpy
 		POPF
 		POP	DI
 		LEA	SI,[DI+3]
@@ -493,7 +493,7 @@ ViewArcExtract	PROC	FAR
 		REP	MOVSB
 		POP	DI
 		MOV	SI,BX
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	DI,OFFSET TmpBuf
 		MOV	CX,256
 		REP	STOSB
@@ -562,7 +562,7 @@ ViewArcFunc	PROC	NEAR
 		CALL	CutPath
 		XCHG	SI,DI
 		CALL	CutPath
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		MOV	DI,DX
 		CALL	CompNormLines
@@ -604,10 +604,10 @@ DelTempArcFile	PROC	FAR
 		MOV	DI,DX
 		CALL	MakePathName
 		MOV	BX,DI
-		CALL	AddFile
+		CALL	AddPathSep
 		POP	SI
 		CALL	CutPath
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	ES
 		POP	DS
 		CALL	ChgDisk
@@ -722,7 +722,7 @@ DetectArc	PROC	FAR
 		PUSH	DI
 		MOV	AX,'.A'
 		STOSW
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	ES
 		POP	DS
 		POP	SI
@@ -1483,4 +1483,3 @@ ExecArcCalcEnt	PROC	NEAR
 		ADD	DS:ExecArcDirBuf,BX
   @@Exit:	RET
 ExecArcCalcEnt	ENDP
-

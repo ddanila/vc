@@ -121,11 +121,11 @@ F34_01:		CMP	DS:Visible,0
 		CMP	DS:ArcPnt,0
 		JE	F34_02
 		CALL	PutDescriptor
-		CALL	AddFile
+		CALL	AddPathSep
 F34_02:		MOV	SI,DS:FileCur
 		CALL	Numb2Addr
 		CALL	NameOffset
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		POP	AX
 		PUSH	DS
@@ -222,9 +222,9 @@ F34_15:		PUSH	AX
 		PUSH	SI
 		MOV	SI,OFFSET VcTempArc_S
 		CALL	MakePathName
-		CALL	AddFile
+		CALL	AddPathSep
 		POP	SI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 F34_16:		MOV	DI,OFFSET SourceFile
 		MOV	CX,LenStrFull+2
@@ -247,11 +247,11 @@ F34_16:		MOV	DI,OFFSET SourceFile
 		MOV	DI,OFFSET TmpBuf
 		MOV	SI,OFFSET EditDirInfo_S
 		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	ES
 		POP	DS
 		MOV	SI,OFFSET DirInfoFile
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AX,' '
 		STOSW
 		POP	DI
@@ -321,7 +321,7 @@ F34_33:		MOV	DS,CS:SubsSeg
 		MOV	DX,OFFSET TmpBuf
 		MOV	SI,BP
 		MOV	DI,DX
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	ES
 		POP	DS
 		CALL	ChgDisk
@@ -421,7 +421,7 @@ F34_42:		TEST	CL,10h
 F34_43:		MOV	SI,DX
 		MOV	DI,DX
 		CALL	CutPath
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	SI,DX
 		CALL	FindPath
 		JNC	F34_50
@@ -453,10 +453,10 @@ F34_51:		MOV	SI,OFFSET SourceFile
 		MOV	AX,DS:TempDirNumb
 		MOV	SI,OFFSET VcTempArc_S
 		CALL	MakePathName
-		CALL	AddFile
+		CALL	AddPathSep
 		POP	SI
 		CALL	CutPath
-F34_52:		CALL	MvzLine
+F34_52:		CALL	strcpy
 		POP	SI
 		MOV	DI,OFFSET ViewExecCmdLn+1
 		CALL	ShortName
@@ -769,7 +769,7 @@ F32_00:		CALL	HidCur			; F2 - user menu
 		MOV	SI,OFFSET Menu_F
 		MOV	DX,OFFSET TmpBuf
 		MOV	DI,DX
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	ES
 		POP	DS
 		CALL	ChgDisk

@@ -393,7 +393,7 @@ F87_20:		CMP	DS:ArcPnt,0		; From file panel
 		CALL	LongNameOffset
 		MOV	DX,SI
 		MOV	DI,OFFSET LineBuf1
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		CALL	NormStr
 		POP	SI
