@@ -68,7 +68,7 @@ F37_00		ENDP
 ; if (LineBuf1[0] == '\0') goto Func04 // empty directory path
 ;
 ; if (f_mkdir_path != RAW &&
-;      && LineBuf1[0] != '\\' && LineBuf1[0] != '/' && LineBuf1[0] != ':') {
+;      LineBuf1[0] != '\\' && LineBuf1[0] != '/' && LineBuf1[0] != ':') {
 ;     f_mkdir_path = CONSTRUCTED
 ;     sprintf(LineBuf3, "%s/%s", CrnPath, LineBuf1)
 ; } else {
@@ -84,7 +84,7 @@ F37_00		ENDP
 ;
 ; p = CutPath(LineBuf2) - &LineBuf2
 ; // last path's character is '/'
-; if (LineBuf2[p] == '\0' && p > 0 && LineBuf2[p - 1] != ':') LineBuf2[p - 1] = '\0'
+; if (LineBuf2[p] == '\0' && p > 1 && LineBuf2[p - 1] != ':') LineBuf2[p - 1] = '\0'
 ;
 ; // after failure try to create every directory in the path from the last
 ; // (negative directories don't exist yet):
