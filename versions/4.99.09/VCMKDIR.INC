@@ -31,7 +31,11 @@ MkDirError_B	BOXHD	< MkDirError_P, 900h, 0, Dialog_K, Def_M, Default_H, 6 >
 
 		.CODE
 
+;---------------------------------------------------------------
+;
 ; F7 - make directory (path appended by the active panel path if not absolute)
+;
+;---------------------------------------------------------------
 F37_00		PROC	NEAR
 		CMP	DS:Visible,0		; no active panel, cannot build
 		JZ	F47_00			; the full path from it
@@ -43,7 +47,12 @@ F37_00		PROC	NEAR
 		JNE	Func04			; cannot create directory there
 F37_00		ENDP
 
+;---------------------------------------------------------------
+;
 ; Shift F7 - make directory (raw path), default when panels are off
+;
+;---------------------------------------------------------------
+;
 ;
 ; // helper function, [[noreturn]]
 ; Error() {
@@ -108,7 +117,7 @@ F37_00		ENDP
 ;             DirName_len = strchr(LineBuf4[ActvPanPath_len + 1]/*shortname*/, '\\')
 ;                           - &LineBuf4[ActvPanPath_len]
 ;             // EndBuf is offset (see VCDATA.INC diagram), but here it used as
-;             // <F2>panel's DiskBuf current size
+;             // panel's DiskBuf current size
 ;             if (sizeof(FilEnt) + DirName_len <= ActvPanBuf_size - EndBuf) { // have space
 ;                 FileCur = Addr2Numb(MK_FP(WCBcrn, EndBuf))
 ;                 FilEnt[EndBuf].AttrF = FA_DIR
@@ -128,7 +137,7 @@ F37_00		ENDP
 ;         SaveTreeInfo(LineBuf4/*shortname*/)
 ; }
 ;
-F47_00		PROC	NEAR			; Shift F7 - make directory (relative path)
+F47_00		PROC	NEAR			; Shift F7 - make directory (raw path)
 		MOV	CL,0                    ; f_mkdir_path = RAW
 
 MkDir_dialog_impl:
@@ -142,7 +151,7 @@ MkDir_dialog_impl:
 		JNE	Func04			; Make Directory dialog canceled
 		CMP	BYTE PTR [SI],0
 		JE	Func04			; empty directory path
-		MOV	DI,OFFSET LineBuf3	; add full path if LineBuf1 is a relative path
+		MOV	DI,OFFSET LineBuf3	; construct path if LineBuf1 is a relative path
 		PUSH	DI
 		OR	CL,CL
 		JZ	@@CanonicalizePath	; f_mkdir_path == RAW
@@ -292,7 +301,7 @@ MkDir_dialog_impl:
 		MOV	AX,CX
 		ADD	AX,SIZE FilEnt
 		CMP	AX,DX
-		JA	@@UpdateTreeInfo	; skip - already too many files in the panel
+		JA	@@UpdateTreeInfo	; skip - too many files in the panel
 		MOV	SI,ES:EndBuf
 		PUSH	DS
 		PUSH	SI
