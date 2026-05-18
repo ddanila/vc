@@ -58,7 +58,7 @@ F37_00		ENDP
 ; if (LineBuf1[0] == '\0') goto Func04 // empty directory path
 ;
 ; if (f_mkdir_path != RAW &&
-;      && LineBuf1[0] != '\\' && LineBuf1[0] != '/' && LineBuf[0] != ':') {
+;      && LineBuf1[0] != '\\' && LineBuf1[0] != '/' && LineBuf1[0] != ':') {
 ;     f_mkdir_path = CONSTRUCTED
 ;     sprintf(LineBuf3, "%s/%s", CrnPath, LineBuf1)
 ; } else {
@@ -85,7 +85,7 @@ F37_00		ENDP
 ; }
 ;
 ; // after first successfully created directory any failure is fatal
-; for (; cnt_mkdir_recursv == 0; cnt_mkdir_recursv--) {
+; for (; cnt_mkdir_recursv > 0; cnt_mkdir_recursv--) {
 ;      f_mkdir_success = true // can be partial
 ;      p = strlen(LineBuf2)
 ;      LineBuf2[p] = '\\' // restore path separator
@@ -103,7 +103,7 @@ F37_00		ENDP
 ;     ActvPanPath_len = strlen(DosShortPath) - 1
 ;     if (!memcmp(LineBuf4/*shortname*/, DosShortPath, ActvPanPath_len)) {
 ;         // rootdir or path match active panel's path
-;         if (ActvPanPath_len == 3 || LingBuf4[ActvPanPath_len] == '\\') {
+;         if (ActvPanPath_len == 3 || LineBuf4[ActvPanPath_len] == '\\') {
 ;             ActvPanBuf_size = (FindNextSeg(GlobalSegs_L, WCBcrn + 1/*pActvPan*/) - &WCBcrn) * 16
 ;             DirName_len = strchr(LineBuf4[ActvPanPath_len + 1]/*shortname*/, '\\')
 ;                           - &LineBuf4[ActvPanPath_len]
@@ -111,7 +111,7 @@ F37_00		ENDP
 ;             // <F2>panel's DiskBuf current size
 ;             if (sizeof(FilEnt) + DirName_len <= ActvPanBuf_size - EndBuf) { // have space
 ;                 FileCur = Addr2Numb(MK_FP(WCBcrn, EndBuf))
-;                 FilEnt[EndBuf].AttrF, FA_DIR
+;                 FilEnt[EndBuf].AttrF = FA_DIR
 ;                 FilEnt[EndBuf].LenShortNamF = DirName_len
 ;                 FilEnt[EndBuf].LenLongNamF = 0
 ;                 strlcpy(FilEnt[EndBuf].NameF,
