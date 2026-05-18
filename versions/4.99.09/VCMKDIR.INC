@@ -37,13 +37,13 @@ MkDirError_B	BOXHD	< MkDirError_P, 900h, 0, Dialog_K, Def_M, Default_H, 6 >
 ;
 ;---------------------------------------------------------------
 F37_00		PROC	NEAR
-		CMP	DS:Visible,0		; no active panel, cannot build
-		JZ	F47_00			; the full path from it
+		CMP	DS:Visible,0		; no visible panels, cannot build
+		JZ	F47_00			; full path from it
 		MOV	CL,1			; f_mkdir_path = TRYCONSTRUCT
 		CMP	DS:WinTyp,p_Tree	; Info or QuickView panel, cannot build
-		JA	F47_00			; the full path from the active panel
+		JA	F47_00			; full path from the active panel
 		JE	MkDir_dialog_impl
-		CMP	DS:ArcPnt,0		; File panel, but in the archive
+		CMP	DS:ArcPnt,0		; File panel, but in the archive,
 		JNE	Func04			; cannot create directory there
 F37_00		ENDP
 
