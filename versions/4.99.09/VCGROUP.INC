@@ -85,7 +85,7 @@ DirFunc		PROC	FAR			; Find files in directory
 		CMP	AL,'/'
 		JE	@@AddMask2
 		DEC	SI
-  @@AddMask2:	CALL	MvzLine
+  @@AddMask2:	CALL	strcpy
 		PUSH	ES
 		POP	DS
 		MOV	BX,1
@@ -123,7 +123,7 @@ DirFunc		PROC	FAR			; Find files in directory
 		MOV	SI,OFFSET LineBuf1
 		CALL	CutPath
 		XCHG	SI,DI
-		CALL	MvzLine
+		CALL	strcpy
   @@DoFunc:	CALL	TstBrk
 		JC	@@FuncExit
 		PUSH	BX
@@ -165,11 +165,11 @@ DirFunc		PROC	FAR			; Find files in directory
 		JE	@@Exit
 		PUSH	SI
 		MOV	DI,OFFSET DirFuncBuf
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DI
 		MOV	DS,CS:SubsSeg
 		MOV	SI,OFFSET Mask_S+1
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	ES			; Find up directory
 		POP	DS
 		CALL	ChgDisk
@@ -199,7 +199,7 @@ DirFunc		PROC	FAR			; Find files in directory
 		CALL	CutPath
 		MOV	DI,SI
 		MOV	SI,OFFSET DirFuncBuf
-		CALL	MvzLine
+		CALL	strcpy
   @@Exit:	MOV	AX,BX
 		RET
 DirFunc		ENDP
@@ -245,14 +245,14 @@ FuncSel06:	CMP	SI,DS:EndBuf		; Loop
 FuncSel07:	PUSH	SI
 		ADD	SI,OFFSET NameF
 		MOV	DI,OFFSET DTA.FilName
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		PUSH	SI
 		CALL	FileNumb
 		MOV	BX,AX
 		CALL	LongNameOffset
 		MOV	DI,OFFSET LineBuf1
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		MOV	CL,1
 		XCHG	CL,ES:IncDirs
@@ -437,7 +437,7 @@ FuncMsk11:	MOV	BX,SI			; File or mask
 		PUSH	SI
 		MOV	SI,BX
 		MOV	DI,OFFSET GroupMask
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		CMP	BYTE PTR DS:[BX-1],':'
 		JE	FuncMsk13
@@ -467,7 +467,7 @@ FuncMsk14:	MOV	DI,OFFSET GroupMask	; Add one more mask
 		STOSB
 FuncMsk15:	PUSH	SI
 		MOV	SI,OFFSET LineBuf1
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		JMP	FuncMsk02
 FuncMsk16:	MOV	SI,CX			; File or mask
@@ -643,7 +643,7 @@ FuncTwoNames	PROC	NEAR
 		CALL	CutPath
 		XCHG	SI,DI
 		CALL	CutPath
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		POP	DI
 		CALL	ShortName
@@ -655,7 +655,7 @@ FuncTwoNames	PROC	NEAR
   @@ShortName:	MOV	SI,DI
 		CALL	CutPath
 		MOV	DI,OFFSET DTA.FilName
-		CALL	MvzLine
+		CALL	strcpy
   @@ExitOk:	STC
   @@Exit:	CMC
 		RET
@@ -703,7 +703,7 @@ FileList	PROC	FAR
 		CMP	ES:FileListLong,0
 		JNE	@@List03
 		MOV	SI,OFFSET WinShortPath
-  @@List03:	CALL	MvzLine
+  @@List03:	CALL	strcpy
 		CALL	AddFile
   @@List04:	MOV	ES:FileListOffset,DI
 		MOV	SI,DS:DiskBuf
@@ -732,7 +732,7 @@ FileList	PROC	FAR
 		JE	@@List07
 		ADD	SI,DS:[SI].LenShortNamF
   @@List07:	ADD	SI,OFFSET NameF
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		MOV	CL,1
 		XCHG	CL,ES:IncDirs

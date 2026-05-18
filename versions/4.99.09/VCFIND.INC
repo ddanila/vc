@@ -144,7 +144,7 @@ F67_00:		CALL	HidCur			; Alt F7 - file find
 		POP	DS
 		MOV	SI,OFFSET TblList
 		MOV	DI,OFFSET FndTblTitle
-		CALL	MvzLine
+		CALL	strcpy
 F67_02:		MOV	AL,LenStr		; First dialog
 		MOV	AH,DS:Lines
 		SUB	AH,20
@@ -245,10 +245,10 @@ F67_03:		CMP	AL,0
 		CALL	FilDir
 		MOV	DS,CS:SubsSeg
 		MOV	SI,OFFSET FindFound_S
-		CALL	MvzLine
+		CALL	strcpy
 		OR	DX,DX
 		JE	F67_06
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	DI
 		MOV	DI,OFFSET FndFoundSize
 		CALL	ReduceNumb
@@ -264,12 +264,12 @@ F67_03:		CMP	AL,0
 		CMP	AL,0
 		JE	F67_04
 		STOSB
-F67_04:		CALL	MvzLine
+F67_04:		CALL	strcpy
 		DEC	CX
 		OR	CX,BX
 		JNE	F67_05
 		DEC	DI
-F67_05:		CALL	MvzLine
+F67_05:		CALL	strcpy
 F67_06:		PUSH	ES
 		POP	DS
 		MOV	BX,8500h
@@ -321,7 +321,7 @@ F67_11:		LEA	DX,[SI]+SIZE FindEnt
 		POP	ES
 		MOV	SI,OFFSET DosShortPath
 		MOV	DI,OFFSET WinShortPath
-		CALL	MvzLine
+		CALL	strcpy
 		XOR	BX,BX
 		XOR	DX,DX
 		MOV	DI,OFFSET ArcFiles
@@ -415,7 +415,7 @@ F67_28:		MOV	DS:FndSrcPoint,SI
 		JE	F67_29
 		MOV	AL,'\'
 		STOSB
-F67_29:		CALL	MvzLine
+F67_29:		CALL	strcpy
 		POP	SI
 		CALL	CutPath
 		MOV	DS:FndMaskPoint,SI
@@ -494,7 +494,7 @@ FindProc	PROC	NEAR
 		CALL	AddFile
 		MOV	DS,CS:SubsSeg
 		MOV	SI,OFFSET Mask_S+1
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	ES
 		POP	DS
 		MOV	DS:FndFlag,0
@@ -524,7 +524,7 @@ FindProc	PROC	NEAR
 		CMP	BYTE PTR DS:[SI],0
 		JNE	@@FullName
 		MOV	SI,OFFSET DTA.FilName
-  @@FullName:	CALL	MvzLine
+  @@FullName:	CALL	strcpy
 		CALL	FindSearching
 		CALL	FindString
 		JNC	@@StoreEntry
@@ -796,7 +796,7 @@ FindSearching	PROC	NEAR
 		MOV	SI,DX
 		MOV	DI,OFFSET LineBuf4
 		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		MOV	ES,CS:SubsSeg
 		MOV	DI,OFFSET FindScan_S
@@ -916,7 +916,7 @@ FindSub1	PROC	NEAR
 		MOV	DS:TransTblNumb,AL
 		MOV	SI,OFFSET TblList
 		MOV	DI,OFFSET FndTblTitle
-		CALL	MvzLine
+		CALL	strcpy
 		CALL	FindTable
 		MOV	DX,OFFSET FindFile1_T
 		MOV	SI,OFFSET FindLeft_S
@@ -940,10 +940,10 @@ FindTable	PROC	FAR
 		POP	DS
 		MOV	SI,OFFSET FindTable_S
 		MOV	DI,OFFSET LineBuf4
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DS
 		MOV	SI,OFFSET FndTblTitle
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	DS:LineBuf4+LenStr,AL
 		RET
 FindTable	ENDP
@@ -1007,7 +1007,7 @@ FindSub2	PROC	NEAR
 		MOV	SI,DI
 		ADD	SI,OFFSET FndName
 		MOV	DI,OFFSET LineBuf1
-		CALL	MvzLine
+		CALL	strcpy
 		CALL	AddFile
 		POP	SI
 		POP	DS
@@ -1017,7 +1017,7 @@ FindSub2	PROC	NEAR
 		JE	@@MoveName
 		ADD	SI,DS:[SI].FndLenShort
   @@MoveName:	ADD	SI,OFFSET FndName
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	ES
 		POP	DS
 		MOV	SI,OFFSET LineBuf1
@@ -1110,7 +1110,7 @@ FindLine	PROC	NEAR
 		TEST	DS:[SI].FndAttr,80h	; Path
 		JZ	@@Entry
 		ADD	SI,OFFSET FndName
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		MOV	AX,CX
 		CALL	ShrtLin
@@ -1288,7 +1288,7 @@ PrepareSearch	PROC	NEAR
 		MOV	SI,OFFSET SrchStr
 		MOV	DI,OFFSET Search.SrText
 		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		CMP	DS:SrchCase,0
 		JNZ	@@LenText
@@ -1590,7 +1590,7 @@ TableSelect	PROC	FAR
 		STOSW
 		MOV	DS,CS:SubsSeg
 		MOV	SI,OFFSET PlainText_S
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	ES
 		POP	DS
 		CMP	CX,100h
@@ -1686,10 +1686,10 @@ TableSelect	PROC	FAR
   @@Read:	PUSH	DI
 		MOV	DX,OFFSET TblMask
 		MOV	DI,DX
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		INC	SI
-		CALL	MvzLine
+		CALL	strcpy
 		CALL	ChgDisk
 		JC	@@ExitErr
 		MOV	BP,OFFSET TableReadErr_T
@@ -1699,7 +1699,7 @@ TableSelect	PROC	FAR
 		PUSH	BX
 		MOV	BX,AX
 		MOV	DI,OFFSET TblList
-		CALL	MvzLine
+		CALL	strcpy
 		LEA	DX,[DI+1]
 		MOV	CX,TblWidth+2+100h+1
 		MOV	AH,3Fh
@@ -1838,7 +1838,7 @@ TableSelect	PROC	FAR
   @@None:	PUSHF
 		MOV	DI,OFFSET TblList
 		LEA	SI,[DI+3]
-		CALL	MvzLine
+		CALL	strcpy
 		XOR	AX,AX
 		POPF
 		POP	SI
@@ -1856,11 +1856,11 @@ TableRead	PROC	NEAR			; Read tables
 		PUSH	DI
 		MOV	DX,OFFSET TblMask
 		MOV	DI,DX
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	DS
 		MOV	DS,CS:SubsSeg
 		MOV	SI,OFFSET TableMask_S
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DS
 		POP	DI
 		CALL	ChgDisk
@@ -1876,14 +1876,14 @@ TableRead	PROC	NEAR			; Read tables
 		MOV	AL,DS:TblPath
 		STOSB
 		MOV	SI,OFFSET DTA.FilName
-		CALL	MvzLine
+		CALL	strcpy
 		INC	DI
 		PUSH	DI
 		MOV	SI,DX
 		CALL	CutPath
 		MOV	DI,SI
 		MOV	SI,OFFSET DTA.FilName
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DI
 		MOV	AL,40h
 		CALL	OpenFil

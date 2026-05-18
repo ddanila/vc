@@ -118,10 +118,10 @@ ReadDir		PROC	FAR
 		MOV	DX,OFFSET LineBuf2	; Check main archive
 		MOV	SI,OFFSET WinShortPath
 		MOV	DI,DX
-		CALL	MvzLine
+		CALL	strcpy
 		CALL	AddFile
 		MOV	SI,OFFSET ArcFiles+2
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	DS
 		PUSH	ES
 		POP	DS
@@ -192,7 +192,7 @@ ReadDir		PROC	FAR
 		POP	ES
 		MOV	SI,OFFSET ArchiveExt
 		MOV	DI,OFFSET ArcExt
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	DS
 		PUSH	ES
 		POP	DS
@@ -230,7 +230,7 @@ ReadDir		PROC	FAR
 		MOV	DI,OFFSET TmpBuf
 		MOV	DX,DI
 		JE	@@Mask
-		CALL	MvzLine
+		CALL	strcpy
 		CALL	AddFile
   @@Mask:	PUSH	DS
 		PUSH	CS
@@ -370,7 +370,7 @@ ReadDir		PROC	FAR
 		POP	ES
 		MOV	SI,OFFSET DTA.FilName
 		MOV	DI,DS:EAPathOffset
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DI
 		POP	ES
 		MOV	SI,OFFSET TmpBuf
@@ -441,7 +441,7 @@ ReadDir		PROC	FAR
 		POP	DS
 		MOV	DI,SI
 		MOV	SI,OFFSET Ext_F
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	ES
 		POP	DS
 		POP	DI
@@ -792,7 +792,7 @@ DirTwoNames	PROC	NEAR			; Set short and long path
 		MOV	DI,OFFSET WinLongPath
 		PUSH	DI
 		PUSH	SI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		POP	DI
 		OR	CL,CL
@@ -923,7 +923,7 @@ ReadInfo	PROC	FAR
 		MOV	SI,OFFSET DTA.FilName
   @@MoveName:	MOV	DI,OFFSET DirInfoFile
 		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		JMP	@@InitView
   @@FindInArc:	PUSH	DI			; Find in archive
@@ -964,7 +964,7 @@ ReadInfo	PROC	FAR
 		CALL	PutDescriptor
 		CALL	AddFile
 		LEA	SI,[BX].NameF
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		PUSH	ES
 		POP	DS
@@ -978,14 +978,14 @@ ReadInfo	PROC	FAR
 		PUSH	SI
 		MOV	DI,OFFSET DirInfoFile
 		PUSH	AX
-		CALL	MvzLine
+		CALL	strcpy
 		POP	AX
 		MOV	DI,OFFSET TmpBuf
 		MOV	SI,OFFSET VcTempArc_S
 		CALL	MakePathName
 		CALL	AddFile
 		POP	SI
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	SI,OFFSET TmpBuf
   @@InitView:	MOV	AX,DS:WorkBuffer	; Init view file
 		ADD	AX,MinView/16/2
@@ -1093,18 +1093,18 @@ ReadQuickView	PROC	FAR
 		JNE	@@ViewArc
 		PUSH	SI
 		MOV	SI,OFFSET WinLongPath
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	DX,DI
 		MOV	DI,OFFSET ViewName1
 		MOV	SI,OFFSET WinShortPath
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		PUSH	SI
 		ADD	SI,OFFSET NameF
 		CALL	ChkUpDir
 		JE	@@SetAttrib
 		CALL	AddFile
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		PUSH	SI
 		CALL	LongNameOffset1
@@ -1114,21 +1114,21 @@ ReadQuickView	PROC	FAR
 		MOV	DI,OFFSET ViewName1
 		PUSH	SI
 		MOV	SI,OFFSET ArcExt
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AL,':'
 		STOSB
 		CALL	PutArcPathName
 		CALL	AddFile
 		MOV	ES:ViewArcPath,DI
 		MOV	SI,OFFSET ArcPath
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		PUSH	SI
 		ADD	SI,OFFSET NameF
 		CALL	ChkUpDir
 		JE	@@SetAttrib
   @@AddName:	CALL	AddFile
-		CALL	MvzLine
+		CALL	strcpy
   @@SetAttrib:	POP	SI
 		MOV	AL,DS:[SI].AttrF
 		TEST	AL,10h
@@ -1140,7 +1140,7 @@ ReadQuickView	PROC	FAR
   @@ViewTree:	MOV	SI,OFFSET CrnPath	; Tree panel
 		CALL	LongTreePath1
 		MOV	DI,OFFSET ViewName1
-		CALL	MvzLine
+		CALL	strcpy
   @@DelTemp:	MOV	DS,CX			; Delete temp file if exists
 		OR	BX,BX
 		JZ	@@Init
@@ -1179,7 +1179,7 @@ ReadQuickView	PROC	FAR
 		MOV	SI,OFFSET ViewName1
 		MOV	DI,OFFSET LineBuf2
 		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		PUSH	DS
 		PUSH	ES
@@ -1200,12 +1200,12 @@ ReadQuickView	PROC	FAR
 		CALL	AddFile
 		MOV	SI,OFFSET ViewName1
 		CALL	CutPath
-		CALL	MvzLine
+		CALL	strcpy
 		POP	ES
   @@InitFile:	MOV	SI,OFFSET ViewName2	; Init view file
 		MOV	DI,OFFSET TmpBuf
 		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		MOV	AX,DS
 		ADD	AX,MinView/16/2
@@ -1289,7 +1289,7 @@ ReadQuickView	PROC	FAR
 		REP	STOSW
 		MOV	SI,OFFSET ViewName2
 		MOV	DI,OFFSET LineBuf1
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	ES:FncAddr,OFFSET QuickViewDir
 		MOV	CL,1
 		XCHG	CL,ES:IncDirs
@@ -1929,7 +1929,7 @@ PutTree		PROC	FAR
 		POP	CX
 		LOOP	@@FndSlash
 		ADD	SI,OFFSET DirName
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AX,'\'
 		STOSW
 		POP	DI
@@ -2023,7 +2023,7 @@ PutTree		PROC	FAR
 		LEA	SI,PathBuffer
 		MOV	DI,OFFSET TmpBuf
 		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	ES
 		POP	DS
 		POP	DI
@@ -2235,17 +2235,17 @@ PutInf		PROC	FAR
 		CMP	DS:ArcPnt,0
 		JE	@@MovePath
 		MOV	SI,OFFSET ArcExt
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AL,':'
 		STOSB
 		MOV	SI,DS:ArcPnt
 		LODSW
 		CALL	CutPath
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AL,'\'
 		STOSB
 		MOV	SI,OFFSET ArcPath
-  @@MovePath:	CALL	MvzLine
+  @@MovePath:	CALL	strcpy
 		POP	SI
 		CALL	SizDX
 		MOV	AL,DL
@@ -2267,7 +2267,7 @@ PutInf		PROC	FAR
   @@Title:	MOV	SI,OFFSET DirInfoFile
 		MOV	DI,OFFSET TmpBuf
 		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DI
 		CALL	StrLen
 		ADD	CX,6-1
@@ -2394,7 +2394,7 @@ PutView		PROC	FAR
   @@PutName1:	CALL	CutPath
 		MOV	DI,OFFSET TmpBuf
 		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		PUSH	ES
 		POP	DS
@@ -2532,7 +2532,7 @@ PutVwLin1	PROC	NEAR
 		POP	DS
 		MOV	SI,OFFSET ByteShort_S
 		MOV	DI,OFFSET TmpBuf+11
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		POP	DS
 PutVwLin1	ENDP
@@ -2581,11 +2581,11 @@ PutVwName	PROC	NEAR
 		PUSH	SI
 		MOV	SI,AX
 		CALL	CutPath
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		MOV	BYTE PTR DS:[SI],'\'
 		INC	SI
-  @@ShortName:	CALL	MvzLine
+  @@ShortName:	CALL	strcpy
 		POP	SI
 		MOV	AL,DL
 		MOV	AH,0
@@ -2657,7 +2657,7 @@ GetPath		PROC	FAR
 		MOV	AL,0
 		JNC	@@Exit
   @@Error:	MOV	SI,OFFSET DosPath
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AL,1
   @@Exit:	MOV	DS:PathEr,AL
 		RET
@@ -2772,7 +2772,7 @@ DirSize		PROC	FAR
 		MOV	ES:FncAddr,OFFSET DirSiz1
 		MOV	SI,OFFSET WinLongPath
 		MOV	DI,OFFSET LineBuf1
-		CALL	MvzLine
+		CALL	strcpy
 		CALL	AddFile
 		MOV	AL,0
 		STOSB
@@ -2811,7 +2811,7 @@ DirSize		PROC	FAR
 		POP	SI
 		PUSH	SI
 		CALL	LongNameOffset
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		MOV	CH,1
 		XCHG	CH,ES:IncDirs

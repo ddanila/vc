@@ -1435,14 +1435,14 @@ M18_30		PROC	NEAR
 		ADD	SI,OFFSET NameF
 		MOV	DI,OFFSET LineBuf1
 		STOSW
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	SI,DS:FileFirst
 		CALL	Numb2Addr
 		CALL	FileNumb
 		ADD	SI,OFFSET NameF
 		MOV	DI,OFFSET LineBuf2
 		STOSW
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	BX,DS:EndBuf
 		CALL	FileSort
 		MOV	CX,DS:DiskBuf
@@ -2916,7 +2916,7 @@ F49_00:		PUSH	ES			; Save setup
 		MOV	SI,OFFSET IniFile
 		MOV	DI,OFFSET LineBuf1
 		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		STOSB
 		STOSB
 		MOV	DX,OFFSET SvSt_T

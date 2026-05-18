@@ -126,16 +126,16 @@ ChkShort1	PROC	NEAR
 ChkShort1	ENDP
 
 ;---------------------------------------------------------------
-;	Move ASCIIZ line from DS:SI to ES:DI
+;	Copy ASCIIZ string from DS:SI to ES:DI
 ;---------------------------------------------------------------
-MvzLine		PROC	FAR
+strcpy		PROC	FAR
 		LODSB
 		STOSB
 		CMP	AL,0
-		JNE	MvzLine
+		JNE	strcpy
 		DEC	DI
 		RET
-MvzLine		ENDP
+strcpy		ENDP
 
 ;---------------------------------------------------------------
 ;	Check name for special symbols
@@ -476,7 +476,7 @@ ShortName	PROC	FAR
 		CLC
 		JMP	@@Exit
   @@Error:	PUSH	AX
-		CALL	MvzLine
+		CALL	strcpy
 		POP	AX
 		STC
   @@Exit:	RET
@@ -568,7 +568,7 @@ NormPath	PROC	FAR
 		PUSH	ES
 		POP	DS
 		MOV	SI,OFFSET DosPath[3]
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		POP	DS
 		JMP	@@AddSlash
@@ -791,11 +791,11 @@ MainFil		PROC	FAR
 		PUSH	ES
 		POP	DS
 		MOV	SI,OFFSET VcSet
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		PUSH	CS
 		POP	DS
-		CALL	MvzLine
+		CALL	strcpy
 		RET
 MainFil		ENDP
 
@@ -1105,7 +1105,7 @@ TestMask	PROC	FAR
 		PUSH	DI
 		MOV	DI,OFFSET TmpErr
 		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AX,'.'
 		STOSW
 		PUSH	ES
@@ -1531,7 +1531,7 @@ Intr21		PROC	FAR
   @@MoveName:	MOV	DI,OFFSET DTA.FilName
 		PUSH	SI
 		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		TEST	BL,18h
 		JNZ	@@SkipConv
@@ -1829,7 +1829,7 @@ RealPath	PROC	FAR
 		CALL	Intr21
 		JC	@@Exit
   @@Move:	XCHG	SI,DI
-		CALL	MvzLine
+		CALL	strcpy
 		CLC
   @@Exit:	RET
 RealPath	ENDP
@@ -1908,7 +1908,7 @@ MoveTempPath	PROC	FAR
 		USES	AX,SI,DS
 		MOV	DS,CS:DataSegment
 		MOV	SI,OFFSET TempDir
-		CALL	MvzLine
+		CALL	strcpy
 		RET
 MoveTempPath	ENDP
 
@@ -1921,7 +1921,7 @@ MakeFileName	PROC	FAR
 		MOV	CX,AX
 		PUSH	CS
 		POP	DS
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AL,'.'
 		STOSB
 		MOV	AX,CX
@@ -2638,4 +2638,3 @@ ShortDirLen:	MOV	AL,DS:[SI].DirShortLen
 		MOV	AH,0
   @@Exit:	RET
 LongDirLen1	ENDP
-

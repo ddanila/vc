@@ -214,7 +214,7 @@ F38_03:		CMP	DS:ArcPnt,0		; Delete from archive
 		MOV	AX,'.A'
 		STOSW
 		MOV	SI,OFFSET ArcExt
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	ES
 		POP	DS
 		POP	SI
@@ -232,7 +232,7 @@ F38_03:		CMP	DS:ArcPnt,0		; Delete from archive
 		JNC	F38_10
 F38_04:		MOV	DI,OFFSET LineBuf1
 		MOV	SI,OFFSET ArcExt
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AL,':'
 		STOSB
 		CALL	PutArcPathName
@@ -254,16 +254,16 @@ F38_10:		CALL	TotSel			; Delete from file panel
 		CMP	DS:ArcPnt,0
 		JE	F38_11
 		MOV	SI,OFFSET ArcExt
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AL,':'
 		STOSB
 		MOV	SI,DS:ArcPnt
 		LODSW
 		CALL	CutPath
-		CALL	MvzLine
+		CALL	strcpy
 		CALL	AddFile
 		MOV	SI,OFFSET ArcPath
-F38_11:		CALL	MvzLine
+F38_11:		CALL	strcpy
 		MOV	DX,OFFSET LineBufs_T
 		MOV	BP,OFFSET DelSel_B
 		XOR	BX,BX
@@ -282,7 +282,7 @@ F38_12:		MOV	SI,DS:FileCur		; Delete file / directory
 		JZ	F38_13
 		MOV	DX,OFFSET DelDir_T
 		MOV	BP,OFFSET DelDir_B
-F38_13:		CALL	MvzLine
+F38_13:		CALL	strcpy
 F38_14:		CALL	Dialog
 		JNE	Func04
 		CMP	DS:ArcPnt,0
@@ -299,11 +299,11 @@ F38_14:		CALL	Dialog
 		MOV	SI,OFFSET ArcPath
 		CMP	BYTE PTR DS:[SI],0
 		JE	F38_15
-		CALL	MvzLine
+		CALL	strcpy
 		CALL	AddFile
 F38_15:		MOV	SI,BX
 		CALL	LongNameOffset
-		CALL	MvzLine
+		CALL	strcpy
 		TEST	DS:[BX].AttrF,10h
 		PUSH	ES
 		POP	DS
@@ -345,7 +345,7 @@ F48_10		PROC	NEAR
 		MOV	SI,OFFSET DelWarn4_S
 		MOV	DI,OFFSET LineBuf2
 		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DI
 		MOV	SI,OFFSET LineBuf1
 		CMP	BYTE PTR ES:[SI],0
@@ -354,7 +354,7 @@ F48_10		PROC	NEAR
 		PUSH	SI
 		PUSH	ES
 		POP	DS
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		CALL	CutPath
 		CALL	FndLet
@@ -363,7 +363,7 @@ F48_10		PROC	NEAR
 		CMP	AL,0
 		JNE	F48_11
 		INC	SI
-F48_11:		CALL	MvzLine
+F48_11:		CALL	strcpy
 		MOV	AX,' '
 		STOSW
 F48_12:		POP	DS
@@ -732,7 +732,7 @@ F38_80		PROC	NEAR
 		JNE	F38_81
 		INC	SI
 F38_81:		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DI
 		POP	DS
 		MOV	BX,500h

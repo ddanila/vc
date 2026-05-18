@@ -177,7 +177,7 @@ ViewLoad	PROC	FAR
 		CALL	AddFile
 		MOV	SI,OFFSET SourceFile
 		CALL	CutPath
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
   @@Init:	MOV	DL,DS:Columns
 		MOV	DH,DS:Lines
@@ -236,7 +236,7 @@ ViewFile	PROC	FAR
 		CALL	CutPath
 V00_06:		MOV	DI,OFFSET TmpBuf
 		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		MOV	AL,DS:Columns
 		MOV	AH,0
@@ -2336,7 +2336,7 @@ ViewFileRead	PROC	NEAR
 		CALL	MakePathName
 		CALL	AddFile
 		MOV	SI,DX
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DX
 		POP	SI
 		POP	DI

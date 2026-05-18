@@ -552,7 +552,7 @@ PutPrompt	PROC	FAR
 		DEC	SI
 		LEA	DI,PathBuf
 		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		MOV	AL,DS:Columns
 		MOV	AH,0
@@ -1702,13 +1702,13 @@ PutPath		PROC	FAR
 		CMP	DS:ArcPnt,0
 		JE	@@MovePath
 		MOV	SI,OFFSET ArcExt
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AL,':'
 		STOSB
 		MOV	SI,DS:ArcPnt
 		LODSW
 		CALL	CutPath
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AL,'\'
 		STOSB
 		MOV	SI,OFFSET ArcPath
@@ -2811,7 +2811,7 @@ SingleLine	PROC	FAR
 		POP	DS
 		MOV	CL,0
   @@MoveName:	XCHG	SI,DI
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	DS:[BX],CH
 		MOV	AL,CL
 		STC
@@ -3168,7 +3168,7 @@ FindPath	PROC	FAR
 		POP	DS
 		MOV	SI,BX
 		MOV	DI,OFFSET TmpErr
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		POP	DS
 		MOV	CX,SI
@@ -3199,7 +3199,7 @@ FindPath	PROC	FAR
 		PUSH	CS
 		POP	DS
 		MOV	SI,OFFSET ExeExt_S
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DI
 		POP	SI
 		PUSH	ES
@@ -3226,7 +3226,7 @@ FindPath	PROC	FAR
 		PUSH	CS
 		POP	DS
 		MOV	SI,OFFSET ComExt_S
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DI
 		POP	SI
   @@CheckFile:	PUSH	ES

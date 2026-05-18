@@ -385,7 +385,7 @@ F08_01:		POP	SI
 		MOV	ES:SumSize.Hi,0
 		MOV	DI,OFFSET LineBuf1
 		CALL	LongNameOffset
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	CL,1
 		XCHG	CL,ES:IncDirs
 		MOV	AL,10h
@@ -954,7 +954,7 @@ F21_23:		MOV	BX,DS
 		POP	DS
 		MOV	SI,OFFSET VcSet
 		MOV	DI,OFFSET TmpBuf
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DI
 		MOV	ES,BX
 		MOV	SI,OFFSET MainExt
@@ -986,7 +986,7 @@ F21_31:		POP	SI
 		JE	F21_32
 		MOV	AL,'"'
 		STOSB
-F21_32:		CALL	MvzLine
+F21_32:		CALL	strcpy
 		TEST	AH,2
 		JE	F21_33
 		MOV	AL,'"'
@@ -1081,7 +1081,7 @@ F23_02:		MOV	BX,0FFFFh
 		PUSH	DI
 		CALL	PutDescriptor
 		CALL	AddFile
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		MOV	DX,OFFSET ChDir_T
 		CALL	ViewArcExtract
@@ -1099,7 +1099,7 @@ F23_03:		CMP	AX,0FFFFh
 		CALL	MakePathName
 		CALL	AddFile
 		MOV	SI,BP
-F23_04:		CALL	MvzLine
+F23_04:		CALL	strcpy
 		PUSH	DS			; Checking archive
 		PUSH	BX
 		PUSH	ES
@@ -1138,12 +1138,12 @@ F23_06:		MOV	DI,OFFSET LineBuf1	; Enter to archive
 		MOV	SI,OFFSET ArcPath
 		CMP	BYTE PTR DS:[SI],0
 		JE	F23_07
-		CALL	MvzLine
+		CALL	strcpy
 		CALL	AddFile
 F23_07:		MOV	SI,DS:FileCur
 		CALL	Numb2Addr
 		CALL	NameOffset
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		MOV	DI,DS:DiskBuf
 		MOV	DS:ArcPnt,DI
@@ -1153,7 +1153,7 @@ F23_07:		MOV	SI,DS:FileCur
 		POP	ES
 		MOV	AX,BX
 		STOSW
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	DS
 		PUSH	ES
 		POP	DS
@@ -1284,7 +1284,7 @@ F23_33:		MOV	DS:FileCur,0
 		PUSH	DS
 		POP	ES
 		PUSH	SI
-		CALL	MvzLine
+		CALL	strcpy
 		INC	DI
 		MOV	DS:EndBuf,DI
 		SUB	DI,BX
@@ -1308,7 +1308,7 @@ F23_35:		POP	ES
 		POP	ES
 		MOV	SI,OFFSET DosShortPath
 		MOV	DI,OFFSET WinShortPath
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	DS
 		PUSH	ES
 		POP	DS
@@ -1592,13 +1592,13 @@ F80_08:		ADD	BX,CX
 		JE	F80_09
 		MOV	AL,'"'
 		STOSB
-F80_09:		CALL	MvzLine
+F80_09:		CALL	strcpy
 		TEST	DL,10h
 		JZ	F80_10
 		PUSH	DS
 		MOV	DS,CS:SubsSeg
 		MOV	SI,OFFSET Mask_S
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DS
 F80_10:		TEST	BP,80h
 		JE	F80_11
@@ -2174,7 +2174,7 @@ F82_02:		MOV	SI,OFFSET ArcPath
 		JNZ	F82_03
 		CALL	WinPath
 F82_03:		PUSH	DI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DI
 F82_04:		PUSH	ES
 		POP	DS
@@ -2188,7 +2188,7 @@ F82_04:		PUSH	ES
 		MOV	AL,'"'
 		STOSB
 F82_05:		PUSH	AX
-		CALL	MvzLine
+		CALL	strcpy
 		CMP	DI,BX
 		JE	F82_06
 		MOV	AL,'\'

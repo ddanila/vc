@@ -375,7 +375,7 @@ F35_02:		CMP	DS:ArcPnt,0		; Copy / Move from archive
 		MOV	AX,'.A'
 		STOSW
 		MOV	SI,OFFSET ArcExt
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	ES
 		POP	DS
 		POP	SI
@@ -403,7 +403,7 @@ F35_02:		CMP	DS:ArcPnt,0		; Copy / Move from archive
 		JNC	F35_04
 F35_03:		MOV	DI,OFFSET LineBuf1
 		MOV	SI,OFFSET ArcExt
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AL,':'
 		STOSB
 		CALL	PutArcPathName
@@ -445,7 +445,7 @@ F35_06:		PUSH	CX
 		JNE	F35_07
 		CALL	LongTreePath
 		JMP	F35_08
-F35_07:		CALL	MvzLine
+F35_07:		CALL	strcpy
 F35_08:		PUSH	ES
 		POP	DS
 		POP	SI
@@ -454,13 +454,13 @@ F35_08:		PUSH	ES
 		CALL	ShrtLin
 		MOV	AL,'"'
 		STOSB
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AL,'"'
 		STOSB
 		MOV	CX,BP
 F35_09:		MOV	DS,CS:SubsSeg
 		MOV	SI,OFFSET To2_S
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	CX
 		MOV	CX,OFFSET LineBuf1+LenStr
 		SUB	CX,DI
@@ -518,7 +518,7 @@ F35_10:		PUSH	DS			; Copy / Move to archive
 		MOV	BX,SI
 		MOV	SI,OFFSET TargetFile
 		MOV	DI,OFFSET LineBuf1
-		CALL	MvzLine
+		CALL	strcpy
 		POP	AX
 		MOV	DS:[BX],AH
 F35_11:		MOV	BP,OFFSET NotImpl_B
@@ -534,13 +534,13 @@ F35_13:		PUSH	DX
 		PUSH	SI
 		CALL	WinPath
 		MOV	DI,OFFSET LineBuf1
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	DS
 		PUSH	ES
 		POP	DS
 		MOV	SI,OFFSET TargetFile
 		MOV	DI,OFFSET ExecArcProgram
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DS
 		POP	SI
 		MOV	DX,103h
@@ -554,12 +554,12 @@ F35_13:		PUSH	DX
 		POP	DS
 		CMP	BYTE PTR DS:[SI],0
 		JE	F35_14
-		CALL	MvzLine
+		CALL	strcpy
 		CALL	AddFile
 F35_14:		POP	DS
 		MOV	SI,BX
 		CALL	LongNameOffset
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		TEST	DS:[BX].AttrF,10h
 		PUSH	ES
@@ -573,7 +573,7 @@ F35_15:		PUSH	DS
 		POP	ES
 		MOV	BP,OFFSET ArcPath
 		MOV	DI,BP
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	DS
 		PUSH	ES
 		POP	DS
@@ -627,7 +627,7 @@ F35_20:		MOV	SI,OFFSET CrnPath	; Copy / Move from tree panel
 		CALL	CutPath
 		MOV	DI,SI
 		POP	SI
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	SI,OFFSET LineBuf3
 		MOV	DI,OFFSET TargetFile
 		PUSH	DI
@@ -680,7 +680,7 @@ F35_23:		MOV	SI,DI
 		POP	ES
 		XCHG	SI,DI
 		MOV	DS:[BX],CL
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	DS
 		POP	ES
 		JMP	FuncExit
@@ -699,10 +699,10 @@ F35_30:		PUSH	DS			; Copy / Move from archive
 		MOV	SI,OFFSET TargetFile
 		MOV	DI,OFFSET ExecArcProgram
 		PUSH	SI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		MOV	DI,DX
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	SI,DX
 		CALL	CutPath
 		CMP	BYTE PTR DS:[SI],0
@@ -747,17 +747,17 @@ F35_34:		MOV	CX,SI
 		MOV	DI,BP
 		MOV	SI,OFFSET ArcPath
 		PUSH	SI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		MOV	DI,OFFSET LineBuf2
 		PUSH	DI
 		CMP	BYTE PTR DS:[SI],0
 		JE	F35_35
-		CALL	MvzLine
+		CALL	strcpy
 		CALL	AddFile
 F35_35:		MOV	SI,BX
 		CALL	LongNameOffset
-		CALL	MvzLine
+		CALL	strcpy
 		TEST	DS:[BX].AttrF,10h
 		PUSH	ES
 		POP	DS
@@ -900,7 +900,7 @@ F35_Target	PROC	NEAR
 		CMP	DS:ArcPnt,0
 		JE	@@Path
 		MOV	SI,OFFSET ArcExt	; Archive descriptor
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	AL,':'
 		STOSB
 		CALL	PutArcPathName
@@ -932,9 +932,9 @@ F35_Target	PROC	NEAR
 		POP	DS
 		CALL	CutPath
 		POP	DI
-  @@Move:	CALL	MvzLine
+  @@Move:	CALL	strcpy
 		JMP	@@SaveTarget
-  @@Path:	CALL	MvzLine			; Add path
+  @@Path:	CALL	strcpy			; Add path
   @@AddSlash:	CALL	AddFile
 		MOV	BYTE PTR ES:[DI],0
   @@SaveTarget:	PUSH	ES			; Save target
@@ -958,10 +958,10 @@ F35_Target	PROC	NEAR
 		MOV	SI,OFFSET RenMove_S+1
   @@DialogLine:	MOV	DS,CS:SubsSeg
 		MOV	DI,OFFSET LineBuf1
-		CALL	MvzLine
+		CALL	strcpy
 		PUSH	DI
 		MOV	SI,OFFSET To2_S
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	CX,OFFSET LineBuf1+LenStr-2
 		SUB	CX,DI
 		POP	DI
@@ -1007,14 +1007,14 @@ F35_Tree	PROC	NEAR
 		PUSH	DS
 		PUSH	SS
 		POP	DS
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DS
 		MOV	SI,OFFSET DosShortPath
 		MOV	DI,OFFSET LineBuf3
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	SI,OFFSET DosPath
 		MOV	DI,OFFSET LineBuf4
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		CALL	NormStr
 		POP	AX
@@ -1053,7 +1053,7 @@ F35_Tree	PROC	NEAR
 		PUSH	DI
 		PUSH	SS
 		POP	ES
-		CALL	MvzLine
+		CALL	strcpy
 		CALL	AddFile
 		MOV	AL,0
 		STOSB
@@ -1082,10 +1082,10 @@ F35_Tree	PROC	NEAR
 		POP	DS
   @@Restore:	MOV	SI,OFFSET LineBuf3
 		MOV	DI,OFFSET DosShortPath
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	SI,OFFSET LineBuf4
 		MOV	DI,OFFSET DosPath
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	DL,DS:DosShortPath[0]
 		SUB	DL,'A'
 		MOV	AH,0Eh
@@ -1139,7 +1139,7 @@ C00_02:		PUSH	DS			; Check recursion
 C00_06:		MOV	SI,OFFSET TargetFile	; Set target name
 		MOV	DX,OFFSET LineBuf2
 		MOV	DI,DX
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	SI,DX
 		CALL	NormStr
 		MOV	AL,DS:CopyTargetType	; Target: 0-unknown; 1-mask;
@@ -1206,7 +1206,7 @@ C00_14:		MOV	SI,DX			; Mask
 		MOV	DI,OFFSET TmpErr
 		PUSH	DI
 		PUSH	SI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DI
 		POP	SI
 		MOV	BX,DS:CopyBegName
@@ -2205,7 +2205,7 @@ C20_59:		MOV	DS:CopySplit,CL
 		MOV	SI,OFFSET MoveContinue_S
 C20_60:		MOV	DI,OFFSET LineBuf2
 		MOV	DS,CS:SubsSeg
-		CALL	MvzLine
+		CALL	strcpy
 		MOV	CX,OFFSET LineBuf2+LenStr
 		SUB	CX,DI
 		MOV	AL,' '
@@ -2436,10 +2436,10 @@ C30_03:		MOV	SI,DI
 		MOV	SI,DX
 		PUSH	SI
 		ADD	SI,CX
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DI
 		POP	SI
-		CALL	MvzLine
+		CALL	strcpy
 		JMP	C30_06
 C30_04:		CMP	CX,3
 		JBE	C30_05
@@ -2474,7 +2474,7 @@ C30_10:		MOV	SI,DX
 		PUSH	DS
 		PUSH	ES
 		POP	DS
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DS
 		MOV	DX,OFFSET LineBuf2
 		CALL	F35_AddTree
@@ -2930,7 +2930,7 @@ C40_21:		PUSH	DS
 		MOV	SI,DI
 		CALL	CutPath
 		MOV	DI,OFFSET DTA.FilName
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DS
 		CALL	FindDescription
 		JC	C40_23
@@ -3148,7 +3148,7 @@ C40_45:		PUSH	DS
 		PUSH	ES
 		POP	DS
 		POP	ES
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		PUSH	SI
 		PUSH	CX

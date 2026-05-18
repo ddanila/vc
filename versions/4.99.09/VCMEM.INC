@@ -237,7 +237,7 @@ F65_20:		CMP	BX,SegDOS		; DOS area
 		PUSH	DI
 		PUSH	DS
 		MOV	DS,CS:SubsSeg
-		CALL	MvzLine
+		CALL	strcpy
 		POP	DS
 		MOV	AX,DS:VerDOS
 		MOV	BH,AH

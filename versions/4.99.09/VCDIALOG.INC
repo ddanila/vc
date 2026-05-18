@@ -2220,7 +2220,7 @@ InpStrPath2:	MOV	AX,ES:WCB2seg
 		MOV	SI,AX
 		PUSH	DI
 		PUSH	SI
-		CALL	MvzLine
+		CALL	strcpy
 		POP	SI
 		POP	DI
 		CMP	SI,OFFSET ArcFiles
