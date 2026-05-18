@@ -54,12 +54,13 @@ F37_00		ENDP
 ;---------------------------------------------------------------
 ;
 ;
-; // helper function, [[noreturn]]
+; // helper function
 ; Error() {
-;   if (errno == CRITERR_FAIL) goto Func04
-;   Dialog(MkDir_T, MkDirError_B)
-;   if (f_mkdir_success) goto @@UpdateTreePanelPath
-;   else goto Func04
+;   if (errno != CRITERR_FAIL) {
+;       Dialog(MkDir_T, MkDirError_B)
+;       if (f_mkdir_success) return
+;   }
+;   goto Func04
 ; }
 ;
 ; LineBuf1[0] = '\0'
@@ -75,7 +76,10 @@ F37_00		ENDP
 ; }
 ;
 ; f_mkdir_success = false
-; if (NormPath(&LineBuf2, LineBuf3) == -1) Error()
+; if (NormPath(LineBuf2, LineBuf3) == -1) {
+;     Error()
+;     goto @@UpdateTreePanelPath
+; }
 ; if (ChgDisk() == -1) goto Func04 // deal with single floppy PC
 ;
 ; cnt_mkdir_recursv = 0
@@ -88,7 +92,10 @@ F37_00		ENDP
 ;     if (errno == CRITERR_FAIL) goto Func04
 ;     p = CutPath(LineBuf2) - &LineBuf2
 ;     // cannot create any directory in the given path or path is rootdir
-;     if (p <= 1 || LineBuf2[p - 1] == ':') Error()
+;     if (p <= 1 || LineBuf2[p - 1] == ':') {
+;         Error()
+;         goto @@UpdateTreePanelPath
+;     }
 ;     cnt_mkdir_recursv++
 ;     LineBuf2[p - 1] = '\0'
 ; }
@@ -98,12 +105,16 @@ F37_00		ENDP
 ;      f_mkdir_success = true // can be partial
 ;      p = strlen(LineBuf2)
 ;      LineBuf2[p] = '\\' // restore path separator
-;      if (mkdir(LineBuf2) == -1 ) {
-;          LineBuf2[p] = '\0' // make asciiz path for Error()
+;      if (mkdir(LineBuf2) == -1) {
+;          LineBuf2[p] = '\0' // make valid path for *PanelPath update
+;          // XXX misfeature(?) uses LineBuf1(user input) instead of
+;          // LineBuf2 as error path
 ;          Error()
+;          break
 ;      }
 ; }
 ;
+;@@UpdateTreePanelPath:
 ; if (PrepAddTree(LineBuf4/*shortname*/, LineBuf3/*longname*/, LineBuf2/*src*/) == -1)
 ;     goto FuncExit2
 ; if (f_mkdir_path == CONSTRUCTED) { // Tree panel
@@ -228,7 +239,7 @@ MkDir_dialog_impl:
 		MOV	AH,39h
 		CALL	Intr21			; mkdir()
 		JNC	@@MkDir2
-		MOV	BYTE PTR [DI-1],0	; make asciiz path for Error Dialog
+		MOV	BYTE PTR [DI-1],0	; make valid path for @@UpdateTreePanelPath
 
   @@Error:	CMP	AX,53h
 		JE	Func04                  ; Critical Error(int 24h)
