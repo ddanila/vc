@@ -121,7 +121,7 @@ F34_01:		CMP	DS:Visible,0
 		CMP	DS:ArcPnt,0
 		JE	F34_02
 		CALL	PutDescriptor
-		CALL	AddFile
+		CALL	AddPathSep
 F34_02:		MOV	SI,DS:FileCur
 		CALL	Numb2Addr
 		CALL	NameOffset
@@ -222,7 +222,7 @@ F34_15:		PUSH	AX
 		PUSH	SI
 		MOV	SI,OFFSET VcTempArc_S
 		CALL	MakePathName
-		CALL	AddFile
+		CALL	AddPathSep
 		POP	SI
 		CALL	strcpy
 		POP	SI
@@ -453,7 +453,7 @@ F34_51:		MOV	SI,OFFSET SourceFile
 		MOV	AX,DS:TempDirNumb
 		MOV	SI,OFFSET VcTempArc_S
 		CALL	MakePathName
-		CALL	AddFile
+		CALL	AddPathSep
 		POP	SI
 		CALL	CutPath
 F34_52:		CALL	strcpy

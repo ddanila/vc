@@ -66,7 +66,7 @@ ChkUpDir	ENDP
 ;---------------------------------------------------------------
 ;	Add backslash to ES:DI if there is not
 ;---------------------------------------------------------------
-AddFile		PROC	FAR
+AddPathSep		PROC	FAR
 		MOV	AL,ES:[DI-1]
 		CMP	AL,'\'
 		JE	@@Exit
@@ -77,7 +77,7 @@ AddFile		PROC	FAR
 		MOV	AL,'\'
 		STOSB
   @@Exit:	RET
-AddFile		ENDP
+AddPathSep		ENDP
 
 ;---------------------------------------------------------------
 ;	Check short name
@@ -603,7 +603,7 @@ NormPath	PROC	FAR
 		REPNE	SCASB
 		DEC	DI
 		POP	CX
-  @@AddSlash:	CALL	AddFile
+  @@AddSlash:	CALL	AddPathSep
   @@NormDir:	LODSB
 		CMP	AL,0
 		JE	@@Exit

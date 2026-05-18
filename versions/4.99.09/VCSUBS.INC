@@ -3186,7 +3186,7 @@ FindPath	PROC	FAR
 		MOV	DI,DX
 		MOV	CX,AX
 		REP	MOVSB
-		CALL	AddFile
+		CALL	AddPathSep
 		MOV	BX,DI
 		PUSH	SI
 		MOV	SI,OFFSET TmpErr

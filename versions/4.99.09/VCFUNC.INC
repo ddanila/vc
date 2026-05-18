@@ -1080,7 +1080,7 @@ F23_02:		MOV	BX,0FFFFh
 		MOV	BP,SI
 		PUSH	DI
 		CALL	PutDescriptor
-		CALL	AddFile
+		CALL	AddPathSep
 		CALL	strcpy
 		POP	SI
 		MOV	DX,OFFSET ChDir_T
@@ -1097,7 +1097,7 @@ F23_03:		CMP	AX,0FFFFh
 		MOV	DI,SI
 		MOV	SI,OFFSET VcTempArc_S
 		CALL	MakePathName
-		CALL	AddFile
+		CALL	AddPathSep
 		MOV	SI,BP
 F23_04:		CALL	strcpy
 		PUSH	DS			; Checking archive
@@ -1139,7 +1139,7 @@ F23_06:		MOV	DI,OFFSET LineBuf1	; Enter to archive
 		CMP	BYTE PTR DS:[SI],0
 		JE	F23_07
 		CALL	strcpy
-		CALL	AddFile
+		CALL	AddPathSep
 F23_07:		MOV	SI,DS:FileCur
 		CALL	Numb2Addr
 		CALL	NameOffset

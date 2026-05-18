@@ -34,12 +34,12 @@ PutArcPathName1	PROC	FAR
 ;##
 		MOV	SI,OFFSET WinShortPath
 		CALL	strcpy
-		JMP	@@AddFile
+		JMP	@@AddPathSep
   @@TmpArc:	CALL	CutPath
 		PUSH	SI
 		MOV	SI,OFFSET VcTempArc_S
 		CALL	MakePathName
-  @@AddFile:	CALL	AddFile
+  @@AddPathSep:	CALL	AddPathSep
 		POP	SI
   @@MoveName:	CALL	strcpy
   @@Exit:	RET
@@ -58,7 +58,7 @@ PutDescriptor	PROC	FAR
 		MOV	AL,':'
 		STOSB
 		CALL	PutArcPathName
-		CALL	AddFile
+		CALL	AddPathSep
 		MOV	SI,OFFSET ArcPath
 		CALL	strcpy
 		RET
@@ -604,7 +604,7 @@ DelTempArcFile	PROC	FAR
 		MOV	DI,DX
 		CALL	MakePathName
 		MOV	BX,DI
-		CALL	AddFile
+		CALL	AddPathSep
 		POP	SI
 		CALL	CutPath
 		CALL	strcpy
@@ -1483,4 +1483,3 @@ ExecArcCalcEnt	PROC	NEAR
 		ADD	DS:ExecArcDirBuf,BX
   @@Exit:	RET
 ExecArcCalcEnt	ENDP
-

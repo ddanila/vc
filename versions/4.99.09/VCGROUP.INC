@@ -704,7 +704,7 @@ FileList	PROC	FAR
 		JNE	@@List03
 		MOV	SI,OFFSET WinShortPath
   @@List03:	CALL	strcpy
-		CALL	AddFile
+		CALL	AddPathSep
   @@List04:	MOV	ES:FileListOffset,DI
 		MOV	SI,DS:DiskBuf
 		CALL	TotSel

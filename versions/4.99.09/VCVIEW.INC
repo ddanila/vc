@@ -174,7 +174,7 @@ ViewLoad	PROC	FAR
 		MOV	AX,DS:TempDirNumb
 		PUSH	DI
 		CALL	MakePathName
-		CALL	AddFile
+		CALL	AddPathSep
 		MOV	SI,OFFSET SourceFile
 		CALL	CutPath
 		CALL	strcpy
@@ -2334,7 +2334,7 @@ ViewFileRead	PROC	NEAR
 		MOV	DI,OFFSET TmpBuf
 		PUSH	DI
 		CALL	MakePathName
-		CALL	AddFile
+		CALL	AddPathSep
 		MOV	SI,DX
 		CALL	strcpy
 		POP	DX

@@ -555,7 +555,7 @@ F35_13:		PUSH	DX
 		CMP	BYTE PTR DS:[SI],0
 		JE	F35_14
 		CALL	strcpy
-		CALL	AddFile
+		CALL	AddPathSep
 F35_14:		POP	DS
 		MOV	SI,BX
 		CALL	LongNameOffset
@@ -754,7 +754,7 @@ F35_34:		MOV	CX,SI
 		CMP	BYTE PTR DS:[SI],0
 		JE	F35_35
 		CALL	strcpy
-		CALL	AddFile
+		CALL	AddPathSep
 F35_35:		MOV	SI,BX
 		CALL	LongNameOffset
 		CALL	strcpy
@@ -904,7 +904,7 @@ F35_Target	PROC	NEAR
 		MOV	AL,':'
 		STOSB
 		CALL	PutArcPathName
-		CALL	AddFile
+		CALL	AddPathSep
 		MOV	SI,OFFSET ArcPath
 		JMP	@@Move
   @@Tree:	MOV	SI,OFFSET CrnPath
@@ -935,7 +935,7 @@ F35_Target	PROC	NEAR
   @@Move:	CALL	strcpy
 		JMP	@@SaveTarget
   @@Path:	CALL	strcpy			; Add path
-  @@AddSlash:	CALL	AddFile
+  @@AddSlash:	CALL	AddPathSep
 		MOV	BYTE PTR ES:[DI],0
   @@SaveTarget:	PUSH	ES			; Save target
 		POP	DS
@@ -1054,7 +1054,7 @@ F35_Tree	PROC	NEAR
 		PUSH	SS
 		POP	ES
 		CALL	strcpy
-		CALL	AddFile
+		CALL	AddPathSep
 		MOV	AL,0
 		STOSB
 		PUSH	DS
@@ -1198,7 +1198,7 @@ C00_13:		MOV	DS:CopyTargetType,AL
 		CMP	AL,2
 		JA	C00_30
 		JNE	C00_14
-		CALL	AddFile			; Add path
+		CALL	AddPathSep			; Add path
 		MOV	SI,DS:CopyBegName
 		JMP	C00_22
 C00_14:		MOV	SI,DX			; Mask

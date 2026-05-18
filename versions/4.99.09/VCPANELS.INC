@@ -119,7 +119,7 @@ ReadDir		PROC	FAR
 		MOV	SI,OFFSET WinShortPath
 		MOV	DI,DX
 		CALL	strcpy
-		CALL	AddFile
+		CALL	AddPathSep
 		MOV	SI,OFFSET ArcFiles+2
 		CALL	strcpy
 		PUSH	DS
@@ -231,7 +231,7 @@ ReadDir		PROC	FAR
 		MOV	DX,DI
 		JE	@@Mask
 		CALL	strcpy
-		CALL	AddFile
+		CALL	AddPathSep
   @@Mask:	PUSH	DS
 		PUSH	CS
 		POP	DS
@@ -962,7 +962,7 @@ ReadInfo	PROC	FAR
 		MOV	DI,OFFSET LineBuf2	; Extract archive
 		PUSH	DI
 		CALL	PutDescriptor
-		CALL	AddFile
+		CALL	AddPathSep
 		LEA	SI,[BX].NameF
 		CALL	strcpy
 		POP	SI
@@ -983,7 +983,7 @@ ReadInfo	PROC	FAR
 		MOV	DI,OFFSET TmpBuf
 		MOV	SI,OFFSET VcTempArc_S
 		CALL	MakePathName
-		CALL	AddFile
+		CALL	AddPathSep
 		POP	SI
 		CALL	strcpy
 		MOV	SI,OFFSET TmpBuf
@@ -1103,7 +1103,7 @@ ReadQuickView	PROC	FAR
 		ADD	SI,OFFSET NameF
 		CALL	ChkUpDir
 		JE	@@SetAttrib
-		CALL	AddFile
+		CALL	AddPathSep
 		CALL	strcpy
 		POP	SI
 		PUSH	SI
@@ -1118,7 +1118,7 @@ ReadQuickView	PROC	FAR
 		MOV	AL,':'
 		STOSB
 		CALL	PutArcPathName
-		CALL	AddFile
+		CALL	AddPathSep
 		MOV	ES:ViewArcPath,DI
 		MOV	SI,OFFSET ArcPath
 		CALL	strcpy
@@ -1127,7 +1127,7 @@ ReadQuickView	PROC	FAR
 		ADD	SI,OFFSET NameF
 		CALL	ChkUpDir
 		JE	@@SetAttrib
-  @@AddName:	CALL	AddFile
+  @@AddName:	CALL	AddPathSep
 		CALL	strcpy
   @@SetAttrib:	POP	SI
 		MOV	AL,DS:[SI].AttrF
@@ -1197,7 +1197,7 @@ ReadQuickView	PROC	FAR
 		MOV	DI,OFFSET ViewName2
 		MOV	SI,OFFSET VcTempArc_S
 		CALL	MakePathName
-		CALL	AddFile
+		CALL	AddPathSep
 		MOV	SI,OFFSET ViewName1
 		CALL	CutPath
 		CALL	strcpy
@@ -2773,7 +2773,7 @@ DirSize		PROC	FAR
 		MOV	SI,OFFSET WinLongPath
 		MOV	DI,OFFSET LineBuf1
 		CALL	strcpy
-		CALL	AddFile
+		CALL	AddPathSep
 		MOV	AL,0
 		STOSB
 		MOV	SI,DS:DiskBuf

@@ -2238,7 +2238,7 @@ InpStrPath2:	MOV	AX,ES:WCB2seg
 		MOV	AL,0
 		REPNE	SCASB
 		DEC	DI
-		CALL	AddFile
+		CALL	AddPathSep
 		MOV	AL,0
 		STOSB
 		POP	CX

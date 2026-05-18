@@ -2247,7 +2247,7 @@ ExecArcChar	PROC	NEAR
 		MOV	DS:ExecArcPathEnd,0
 		CALL	ExecArcMoveName
 		JNC	@@SkipEntry
-		CALL	AddFile
+		CALL	AddPathSep
 		CMP	DI,OFFSET ExecArcNameEnd
 		JAE	@@SkipEntry
   @@MakeName1:	MOV	AX,DI

@@ -261,7 +261,7 @@ F38_10:		CALL	TotSel			; Delete from file panel
 		LODSW
 		CALL	CutPath
 		CALL	strcpy
-		CALL	AddFile
+		CALL	AddPathSep
 		MOV	SI,OFFSET ArcPath
 F38_11:		CALL	strcpy
 		MOV	DX,OFFSET LineBufs_T
@@ -300,7 +300,7 @@ F38_14:		CALL	Dialog
 		CMP	BYTE PTR DS:[SI],0
 		JE	F38_15
 		CALL	strcpy
-		CALL	AddFile
+		CALL	AddPathSep
 F38_15:		MOV	SI,BX
 		CALL	LongNameOffset
 		CALL	strcpy

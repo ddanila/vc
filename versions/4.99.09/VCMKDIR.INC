@@ -188,7 +188,7 @@ MkDir_dialog_impl:
 		CALL	strcpy
 		POP	SI
 		POP	DS
-		CALL	AddFile
+		CALL	AddPathSep
 
   @@CanonicalizePath:
 		CALL	strcpy

@@ -114,7 +114,7 @@ F35_TrueName	PROC	NEAR
 		MOV	AL,0
 		REPNE	SCASB
 		DEC	DI
-		CALL	AddFile
+		CALL	AddPathSep
 		MOV	SI,BX
 		CALL	strcpy
   @@NoErr:	MOV	DL,2
@@ -738,7 +738,7 @@ F35_MoveDir	PROC	NEAR
 		PUSH	DI
 		MOV	DI,OFFSET LineBuf4
 		CALL	strcpy
-		CALL	AddFile
+		CALL	AddPathSep
 		POP	SI
 		PUSH	SI
 		CALL	strcpy

@@ -799,7 +799,7 @@ Init58:		POP	ES
 		MOV	CH,0FFh
 		REPNE	SCASB
 		DEC	DI
-		CALL	AddFile
+		CALL	AddPathSep
 		PUSH	ES
 		POP	DS
 		XOR	AX,AX
@@ -1434,7 +1434,7 @@ Func13:		POP	SI
 		ADD	SI,OFFSET NameF
 		CALL	ChkUpDir
 		JE	Func14
-		CALL	AddFile
+		CALL	AddPathSep
 		CALL	strcpy
 Func14:		POP	SI
 		PUSH	ES
@@ -2480,7 +2480,7 @@ Run_61:		PUSH	SI
 		MOV	SI,OFFSET VcTempArc_S
 		MOV	AX,DS:TempDirNumb
 		CALL	MakePathName
-		CALL	AddFile
+		CALL	AddPathSep
 		POP	AX
 		POP	SI
 		CALL	CutPath

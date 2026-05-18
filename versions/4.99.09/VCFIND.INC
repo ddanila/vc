@@ -491,7 +491,7 @@ FindProc	PROC	NEAR
 		REPNE	SCASB
 		DEC	DI
 		PUSH	DI
-		CALL	AddFile
+		CALL	AddPathSep
 		MOV	DS,CS:SubsSeg
 		MOV	SI,OFFSET Mask_S+1
 		CALL	strcpy
@@ -1008,7 +1008,7 @@ FindSub2	PROC	NEAR
 		ADD	SI,OFFSET FndName
 		MOV	DI,OFFSET LineBuf1
 		CALL	strcpy
-		CALL	AddFile
+		CALL	AddPathSep
 		POP	SI
 		POP	DS
 		MOV	DX,SI
