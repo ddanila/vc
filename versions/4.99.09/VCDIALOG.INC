@@ -1171,7 +1171,7 @@ DialogShTab:	SUB	DI,SIZE BoxMn		; Shift-Tab
 		MOV	AL,ES:Pointers[5]
   @@TypMouse:	CALL	TypMous
 		JMP	@@GetMouse
-  @@LeaveTime:	CALL	LeaveTm
+  @@LeaveTime:	CALL	Yield
 		JMP	@@GetMouse
   @@InMenu:	DEC	BH
 		MOV	AL,AH
@@ -1551,7 +1551,7 @@ DialogList	PROC	NEAR
 		POP	DX
 		JNC	@@ScrRepeat
 		MOV	DS:MouseCmd,0
-  @@LeaveTime:	CALL	LeaveTm
+  @@LeaveTime:	CALL	Yield
 		JMP	@@Mouse
   @@ScrRepeat:	CALL	MouseRepeat
 		JNC	@@Mouse
@@ -2353,7 +2353,7 @@ InpStrPath2:	MOV	AX,ES:WCB2seg
 		JE	@@LeaveTime
 		MOV	DI,BP
 		JMP	@@PutStr
-  @@LeaveTime:	CALL	LeaveTm
+  @@LeaveTime:	CALL	Yield
 		JMP	@@Mouse
 InpStrLeft:	OR	DI,DI
 		JNE	@@ChkClr
@@ -2434,7 +2434,7 @@ Select		PROC	NEAR
 		CMP	AL,0
 		JZ	@@Input
 		PUSH	CX
-  @@WaitMouse:	CALL	LeaveTm
+  @@WaitMouse:	CALL	Yield
 		CALL	GetMous
 		JNZ	@@WaitMouse
 		POP	CX
@@ -2467,7 +2467,7 @@ Select		PROC	NEAR
 		JE	@@LeaveTime
 		MOV	CH,AH
 		JMP	@@ChgPos
-  @@LeaveTime:	CALL	LeaveTm
+  @@LeaveTime:	CALL	Yield
 		JMP	@@Mouse
 SelectEnter:	CMP	CH,CL			; Enter
 		JNE	@@ChgPos
@@ -2574,7 +2574,7 @@ FlipFl		PROC	NEAR
 		CMP	AL,' '
 		JE	@@Input
 		PUSH	CX
-  @@WaitMouse:	CALL	LeaveTm
+  @@WaitMouse:	CALL	Yield
 		CALL	GetMous
 		JNZ	@@WaitMouse
 		POP	CX
@@ -2660,7 +2660,7 @@ MnMn10		PROC	NEAR
 		INC	SI
 		INC	SI
 		JMP	@@WhatItem
-  @@LeaveTm1:	CALL	LeaveTm
+  @@LeaveTm1:	CALL	Yield
 		JMP	@@ChkMouse
   @@CmpItem:	MOV	AX,SI
 		SUB	AX,DI
@@ -2687,7 +2687,7 @@ MnMn10		PROC	NEAR
 		MOV	SI,AX
 		CALL	TypMous
 		JMP	@@WaitMouse
-  @@LeaveTm2:	CALL	LeaveTm
+  @@LeaveTm2:	CALL	Yield
 		JMP	@@WaitMouse
   @@RelMouse:	MOV	AL,0
 		CALL	TypMous

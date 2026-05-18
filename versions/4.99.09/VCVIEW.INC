@@ -309,7 +309,7 @@ V00_13:		CALL	Input
 		MOV	DX,DS:VwSize
 		CALL	InWind
 		JNC	V00_15
-		CALL	LeaveTm
+		CALL	Yield
 		JMP	V00_10
 V00_14:		CMP	ES:Quote,0
 		JNZ	V00_15
@@ -415,7 +415,7 @@ V10_01:		MOV	ES:MouseWin,1
 		CMP	CL,BL
 		JAE	V10_03
 		MOV	ES:MouseCmd,0
-V10_02:		CALL	LeaveTm
+V10_02:		CALL	Yield
 		JMP	V10_20
 V10_03:		CALL	MouseRepeat
 		JNC	V10_20

@@ -1914,7 +1914,7 @@ DriveSub	PROC	NEAR
 		MOV	AL,AH
 		CALL	TypMous
 		JMP	@@GetMouse
-  @@LeaveTime:	CALL	LeaveTm
+  @@LeaveTime:	CALL	Yield
 		JMP	@@GetMouse
   @@ExitMouse:	MOV	AX,SI
 		OR	AH,AH

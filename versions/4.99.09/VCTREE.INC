@@ -2083,7 +2083,7 @@ ChDirList:	CALL	DialogList
 		ADD	AX,SI
 		CALL	Cursor
 		JMP	@@Mouse
-  @@LeaveTime:	CALL	LeaveTm
+  @@LeaveTime:	CALL	Yield
 		JMP	@@Mouse
 ChDirInit1:	CALL	ChDirStatInit		; Init
 		JMP	@@Exit

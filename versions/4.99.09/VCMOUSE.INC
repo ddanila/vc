@@ -158,7 +158,7 @@ MouseCtrlO	PROC	FAR
 		MOV	BL,AL
 		CALL	TypMous
 		JMP	@@GetMouse
-  @@LeaveTime:	CALL	LeaveTm
+  @@LeaveTime:	CALL	Yield
   @@GetMouse:	CALL	GetMous
 		JZ	@@ChkExit
 		CMP	CX,2
@@ -210,7 +210,7 @@ MouseRepeat	PROC	FAR
 		MOV	DL,1
   @@CmpDelay:	CMP	BX,DX
 		JAE	@@AddTime
-  @@LeaveTime:	CALL	LeaveTm
+  @@LeaveTime:	CALL	Yield
 		CLC
 		JMP	@@Exit
   @@AddTime:	XOR	CX,CX
@@ -280,7 +280,7 @@ MouseDblClick	PROC	FAR
 		MOV	CH,AL
 		CALL	TypMous
 		JMP	@@WaitMouse
-  @@LeaveTime:	CALL	LeaveTm
+  @@LeaveTime:	CALL	Yield
 		JMP	@@WaitMouse
   @@Exit:	MOV	AL,0
 		CALL	TypMous

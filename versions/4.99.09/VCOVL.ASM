@@ -1728,7 +1728,7 @@ Mouse11:	CALL	GetMous
 		JZ	Mouse12
 		CALL	F84_10
 		JC	Mouse11
-		CALL	LeaveTm
+		CALL	Yield
 		JMP	Mouse11
 Mouse12:	MOV	AL,0
 		CALL	TypMous
@@ -1838,7 +1838,7 @@ Mouse36:	DEC	AX
 		CALL	PutFls
 		CALL	Window
 		JMP	Mouse38
-Mouse37:	CALL	LeaveTm
+Mouse37:	CALL	Yield
 Mouse38:	PUSH	CX
 		CALL	GetMous
 		POP	AX
@@ -1921,7 +1921,7 @@ Mouse45:	PUSH	SI
 		TEST	ES:MouseWin,2
 		JZ	F00_70
 Mouse46:	CALL	ResMouseCmd
-Mouse47:	CALL	LeaveTm
+Mouse47:	CALL	Yield
 		JMP	Func10
 
 Mouse50:	MOV	SI,4800h		; Scroll up

@@ -323,7 +323,7 @@ F39_02:		CALL	F40_40
 F39_03:		MOV	AL,None_M
 		CALL	PutMnu1
 		MOV	CH,0
-F39_04:		CALL	LeaveTm
+F39_04:		CALL	Yield
 		CALL	F40_40
 		JZ	F39_07
 		OR	AH,AH
@@ -401,7 +401,7 @@ F39_17:		OR	CH,CH
 		JE	F39_12
 F39_18:		CMP	AL,CH
 		JNE	F39_41
-		CALL	LeaveTm
+		CALL	Yield
 		JMP	F39_10
 F39_19:		MOV	AL,Dialog_K
 		CALL	Input

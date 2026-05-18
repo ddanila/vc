@@ -718,7 +718,7 @@ Blank		PROC	NEAR
 		XCHG	DX,DI
 		CMP	DX,DI
 		JNE	@@RndPos
-		CALL	LeaveTm
+		CALL	Yield
 		JMP	@@ChkExit
   @@Exit:	MOV	AH,0Fh
 		INT	10h

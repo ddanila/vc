@@ -2822,15 +2822,15 @@ SingleLine	PROC	FAR
 SingleLine	ENDP
 
 ;---------------------------------------------------------------
-;	Leave time
+;	Release time-slice
 ;---------------------------------------------------------------
-LeaveTm		PROC	FAR
+Yield		PROC	FAR
 		USES	AX
 		CMP	ES:TaskStack,0
-		JE	@@LeaveTime
+		JE	@@DOSIdle
 		CALL	TaskSwitch
 		JMP	@@Exit
-  @@LeaveTime:	INT	28h
+  @@DOSIdle:	INT	28h
 		CMP	ES:WinLeave,0
 		JNZ	@@DesqView
 		MOV	AX,1680h
@@ -2847,7 +2847,7 @@ LeaveTm		PROC	FAR
 		MOV	AX,1025h
 		INT	15h
   @@Exit:	RET
-LeaveTm		ENDP
+Yield		ENDP
 
 ;---------------------------------------------------------------
 ;	Task switch
