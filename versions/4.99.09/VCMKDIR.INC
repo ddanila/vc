@@ -82,13 +82,16 @@ F37_00		ENDP
 ; }
 ; if (ChgDisk() == -1) goto Func04 // deal with single floppy PC
 ;
-; cnt_mkdir_recursv = 0
 ; p = CutPath(LineBuf2) - &LineBuf2
 ; // last path's character is '/'
 ; if (LineBuf2[p] == '\0' && p > 0 && LineBuf2[p - 1] != ':') LineBuf2[p - 1] = '\0'
 ;
-; // after failure try to create every directory in the path from the start
-; while (mkdir(LineBuf2) == -1) {
+; // after failure try to create every directory in the path from the last
+; // (negative directories don't exist yet):
+; // mkdir('/4/-3/-2/-1\0') -> fail
+; // mkdir('/4/-3/-2\0') -> fail
+; // mkdir('/4/-3\0') -> success, cnt_mkdir = 2, exit loop
+; for (cnt_mkdir = 0; mkdir(LineBuf2) == -1; cnt_mkdir++) {
 ;     if (errno == CRITERR_FAIL) goto Func04
 ;     p = CutPath(LineBuf2) - &LineBuf2
 ;     // cannot create any directory in the given path or path is rootdir
@@ -96,12 +99,16 @@ F37_00		ENDP
 ;         Error()
 ;         goto @@UpdateTreePanelPath
 ;     }
-;     cnt_mkdir_recursv++
 ;     LineBuf2[p - 1] = '\0'
 ; }
 ;
 ; // after first successfully created directory any failure is fatal
-; for (; cnt_mkdir_recursv > 0; cnt_mkdir_recursv--) {
+; // (negative directories don't exist yet):
+; // mkdir("/4/3/-2\0") -> success
+; // mkdir("/4/3/2/-1\0") -> success, cnt_mkdir = 0
+; // OR
+; // mkdir("/4/3/2/-1\0") - fail, Error()
+; for (; cnt_mkdir > 0; cnt_mkdir--) {
 ;      f_mkdir_success = true // can be partial
 ;      p = strlen(LineBuf2)
 ;      LineBuf2[p] = '\\' // restore path separator
@@ -193,7 +200,7 @@ MkDir_dialog_impl:
 		JC	@@Error
 		CALL	ChgDisk			; deal with single floppy PC
 		JC	Func04
-		XOR	BX,BX			; cnt_mkdir_recursv = 0
+		XOR	BX,BX			; cnt_mkdir = 0
 		MOV	SI,DX
 		CALL	CutPath
 		CMP	BYTE PTR [SI],0
@@ -204,7 +211,7 @@ MkDir_dialog_impl:
 		CMP	BYTE PTR [SI],':'	; last path's character is '/'
 		JE	@@MkDir1
 
-  @@MkDirInPath_Next:
+  @@MkDirInPath_Prev:
 		MOV	BYTE PTR [SI],0
 
   @@MkDir1:	MOV	AH,39h
@@ -221,20 +228,20 @@ MkDir_dialog_impl:
 		JBE	@@DispErrorDialog	; cannot create any directory in the given path
 		CMP	BYTE PTR [SI],':'
 		JE	@@DispErrorDialog	; path is 'X:' - cannot create rootdir
-		INC	BX                      ; cnt_mkdir_recursv++
-		JMP	@@MkDirInPath_Next	; try mkdir() next path component
+		INC	BX                      ; cnt_mkdir++
+		JMP	@@MkDirInPath_Prev	; try mkdir() previous path component
 
   @@MkDir2:
 		MOV	CH,1			; f_mkdir_success = true (can be partial)
 		OR	BX,BX
 		JE	@@UpdateTreePanelPath
-		DEC	BX			; cnt_mkdir_recursv--
+		DEC	BX			; cnt_mkdir--
 		PUSH	CX
 		MOV	DI,DX
 		MOV	CH,0FFh
 		MOV	AL,0
 		REPNE	SCASB
-		MOV	BYTE PTR [DI-1],'\'	; restore path separator (see @@MkDirInPath_Next)
+		MOV	BYTE PTR [DI-1],'\'	; restore path separator (see @@MkDirInPath_Prev)
 		POP	CX
 		MOV	AH,39h
 		CALL	Intr21			; mkdir()
