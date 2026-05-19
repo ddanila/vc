@@ -10,9 +10,8 @@
 ;		ZF - none
 ;---------------------------------------------------------------
 		.DATA
-; BUG ^C should be 2E (see also TstBrk)
 ;			nop ^A  ^B  ^C      ^D  ^E  ^F  ^G
-ScanCodes	DB	03h,1Eh,30h,3Eh,    20h,12h,21h,22h
+ScanCodes	DB	03h,1Eh,30h,2Eh,    20h,12h,21h,22h
 ;			\b  \t  ^Enter ^K   ^L  Enter ^N  ^O
 		DB	0Eh,0Fh,1Ch,   25h, 26h,1Ch,  31h,18h
 ;			^P  ^Q  ^R  ^S      ^T  ^U  ^V  ^W
