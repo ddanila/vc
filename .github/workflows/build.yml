@@ -56,11 +56,17 @@ jobs:
         shell: bash
         run: |
           mkdir -p release-assets
-          shopt -s nullglob nocaseglob
-          files=( build/${{ matrix.version }}/*.com \
-                  build/${{ matrix.version }}/*.ovl )
-          zip -j "release-assets/vc-${{ matrix.version }}.zip" "${files[@]}"
-          unzip -l "release-assets/vc-${{ matrix.version }}.zip"
+          python3 - "release-assets/vc-${{ matrix.version }}.zip" \
+                    "build/${{ matrix.version }}" <<'PY'
+          import glob, os, sys, zipfile
+          out, src = sys.argv[1], sys.argv[2]
+          files = sorted(glob.glob(os.path.join(src, "*.COM")) +
+                         glob.glob(os.path.join(src, "*.OVL")))
+          with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
+              for f in files:
+                  z.write(f, arcname=os.path.basename(f))
+                  print("+", os.path.basename(f), os.path.getsize(f), "bytes")
+          PY
 
       - name: Capture latest commit subject
         id: changenote
