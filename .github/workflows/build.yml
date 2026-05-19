@@ -3,10 +3,10 @@ name: Build
 on:
   push:
     branches: [build]
-    paths-ignore: ['**.md']
+    paths-ignore: ['README.md', 'SECURITY.md']
   pull_request:
     branches: [build]
-    paths-ignore: ['**.md']
+    paths-ignore: ['README.md', 'SECURITY.md']
 
 jobs:
   build:
@@ -28,7 +28,6 @@ jobs:
         uses: actions/checkout@v6
         with:
           submodules: recursive
-          fetch-depth: 0   # full history so 'git log -- versions/<v>/' works
 
       - name: Grant KVM access
         run: chmod 666 /dev/kvm
@@ -75,25 +74,12 @@ jobs:
         env:
           SHA: ${{ github.sha }}
         run: |
-          # Container runs under a different uid than actions/checkout's;
-          # git refuses to read the worktree without this opt-in.
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           {
             echo "Rolling pre-release built from the tip of \`build\`."
-            printed_header=0
-            for v in 4.05 4.99.09; do
-              msgs=$(git log --format='%s' -- "versions/$v/" \
-                       | grep -iE '^(bugfix|fix)\b' || true)
-              [ -z "$msgs" ] && continue
-              if [ "$printed_header" = 0 ]; then
-                echo
-                echo "## Changes"
-                printed_header=1
-              fi
+            if [ -s CHANGELOG.md ]; then
               echo
-              echo "### $v"
-              echo "$msgs" | sed 's/^/- /'
-            done
+              cat CHANGELOG.md
+            fi
             echo
             echo "Commit: $SHA"
           } > release-body.md
