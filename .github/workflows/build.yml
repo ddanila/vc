@@ -53,6 +53,7 @@ jobs:
 
       - name: Stage release assets with version-suffixed names
         if: github.ref == 'refs/heads/build' && github.event_name == 'push'
+        shell: bash
         run: |
           mkdir -p release-assets
           shopt -s nullglob nocaseglob
