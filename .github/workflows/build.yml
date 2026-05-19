@@ -51,20 +51,22 @@ jobs:
           retention-days: 14
           if-no-files-found: warn
 
-      - name: Stage release assets with version-suffixed names
+      - name: Stage vc-${{ matrix.version }}.zip
         if: github.ref == 'refs/heads/build' && github.event_name == 'push'
         shell: bash
         run: |
           mkdir -p release-assets
           shopt -s nullglob nocaseglob
-          for f in build/${{ matrix.version }}/*.com \
-                   build/${{ matrix.version }}/*.ovl; do
-              base="$(basename "$f")"
-              stem="${base%.*}"
-              ext="${base##*.}"
-              cp "$f" "release-assets/${stem}-${{ matrix.version }}.${ext}"
-          done
-          ls -la release-assets/
+          files=( build/${{ matrix.version }}/*.com \
+                  build/${{ matrix.version }}/*.ovl )
+          zip -j "release-assets/vc-${{ matrix.version }}.zip" "${files[@]}"
+          unzip -l "release-assets/vc-${{ matrix.version }}.zip"
+
+      - name: Capture latest commit subject
+        id: changenote
+        if: github.ref == 'refs/heads/build' && github.event_name == 'push'
+        shell: bash
+        run: echo "subject=$(git log -1 --format=%s)" >> "$GITHUB_OUTPUT"
 
       - name: Publish to rolling 'latest-build' release
         if: github.ref == 'refs/heads/build' && github.event_name == 'push'
@@ -74,6 +76,7 @@ jobs:
           name: Latest build
           body: |
             Rolling pre-release built from the tip of `build`.
+            Latest change: ${{ steps.changenote.outputs.subject }}
             Commit: ${{ github.sha }}
           prerelease: true
           files: release-assets/*
