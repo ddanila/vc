@@ -72,7 +72,11 @@ jobs:
         id: changenote
         if: github.ref == 'refs/heads/build' && github.event_name == 'push'
         shell: bash
-        run: echo "subject=$(git log -1 --format=%s)" >> "$GITHUB_OUTPUT"
+        env:
+          MSG: ${{ github.event.head_commit.message }}
+        run: |
+          subject="$(printf '%s' "$MSG" | head -n1)"
+          echo "subject=$subject" >> "$GITHUB_OUTPUT"
 
       - name: Publish to rolling 'latest-build' release
         if: github.ref == 'refs/heads/build' && github.event_name == 'push'
