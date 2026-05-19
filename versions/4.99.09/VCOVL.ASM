@@ -842,11 +842,12 @@ Init58:		POP	ES
 		AND	DL,81h
 		CMP	DL,81h
 		JNE	Init59
-		MOV	AX,11FFh		; ExtKeyb
-		INT	16h
-		SUB	AX,11FFh
-		JE	Init59
-		MOV	AX,10h
+		PUSH	DS
+		XOR	AX,AX
+		MOV	DS,AX
+		MOV	AL,DS:[496h]		; BDA.keyboardflags3
+		POP	DS
+		AND	AL,10h			; BIOS_GetKey = 0x10 if extended keyboard, 0 otherwise
 Init59:		MOV	DS:ExtKeyb,AL
 		MOV	DS:StdIn,AH
 		MOV	AH,19h			; DosChg
