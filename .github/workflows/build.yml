@@ -28,6 +28,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           submodules: recursive
+          fetch-depth: 0   # full history so 'git log -- versions/<v>/' works
 
       - name: Grant KVM access
         run: chmod 666 /dev/kvm
@@ -68,15 +69,35 @@ jobs:
                   print("+", os.path.basename(f), os.path.getsize(f), "bytes")
           PY
 
-      - name: Capture latest commit subject
-        id: changenote
+      - name: Build release body
         if: github.ref == 'refs/heads/build' && github.event_name == 'push'
         shell: bash
         env:
-          MSG: ${{ github.event.head_commit.message }}
+          SHA: ${{ github.sha }}
         run: |
-          subject="$(printf '%s' "$MSG" | head -n1)"
-          echo "subject=$subject" >> "$GITHUB_OUTPUT"
+          # Container runs under a different uid than actions/checkout's;
+          # git refuses to read the worktree without this opt-in.
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          {
+            echo "Rolling pre-release built from the tip of \`build\`."
+            printed_header=0
+            for v in 4.05 4.99.09; do
+              msgs=$(git log --format='%s' -- "versions/$v/" \
+                       | grep -iE '^(bugfix|fix)\b' || true)
+              [ -z "$msgs" ] && continue
+              if [ "$printed_header" = 0 ]; then
+                echo
+                echo "## Changes"
+                printed_header=1
+              fi
+              echo
+              echo "### $v"
+              echo "$msgs" | sed 's/^/- /'
+            done
+            echo
+            echo "Commit: $SHA"
+          } > release-body.md
+          cat release-body.md
 
       - name: Publish to rolling 'latest-build' release
         if: github.ref == 'refs/heads/build' && github.event_name == 'push'
@@ -84,9 +105,6 @@ jobs:
         with:
           tag_name: latest-build
           name: Latest build
-          body: |
-            Rolling pre-release built from the tip of `build`.
-            Latest change: ${{ steps.changenote.outputs.subject }}
-            Commit: ${{ github.sha }}
+          body_path: release-body.md
           prerelease: true
           files: release-assets/*
