@@ -44,7 +44,6 @@ jobs:
           name: vc-${{ matrix.version }}
           path: |
             build/${{ matrix.version }}/*.COM
-            build/${{ matrix.version }}/*.EXE
             build/${{ matrix.version }}/*.OVL
             build/${{ matrix.version }}/stage/build.log
             build/${{ matrix.version }}/stage/debugcon.log
@@ -58,7 +57,6 @@ jobs:
           mkdir -p release-assets
           shopt -s nullglob nocaseglob
           for f in build/${{ matrix.version }}/*.com \
-                   build/${{ matrix.version }}/*.exe \
                    build/${{ matrix.version }}/*.ovl; do
               base="$(basename "$f")"
               stem="${base%.*}"
