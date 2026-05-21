@@ -32,9 +32,7 @@ MkDirError_B	BOXHD	< MkDirError_P, 900h, 0, Dialog_K, Def_M, Default_H, 6 >
 		.CODE
 
 ;---------------------------------------------------------------
-;
 ; F7 - make directory (path appended by the active panel path if not absolute)
-;
 ;---------------------------------------------------------------
 F37_00		PROC	NEAR
 		CMP	DS:Visible,0		; no visible panels, cannot build
@@ -48,9 +46,7 @@ F37_00		PROC	NEAR
 F37_00		ENDP
 
 ;---------------------------------------------------------------
-;
 ; Shift F7 - make directory (raw path), default when panels are off
-;
 ;---------------------------------------------------------------
 ;
 ;
@@ -83,7 +79,7 @@ F37_00		ENDP
 ; if (ChgDisk() == -1) goto Func04 // deal with single floppy PC
 ;
 ; p = CutPath(LineBuf2) - &LineBuf2
-; // last path's character is '/'
+; // remove '/' at the end of path
 ; if (LineBuf2[p] == '\0' && p > 1 && LineBuf2[p - 1] != ':') LineBuf2[p - 1] = '\0'
 ;
 ; // after failure try to create every directory in the path from the last
@@ -114,7 +110,7 @@ F37_00		ENDP
 ;      LineBuf2[p] = '\\' // restore path separator
 ;      if (mkdir(LineBuf2) == -1) {
 ;          LineBuf2[p] = '\0' // make valid path for *PanelPath update
-;          // XXX misfeature(?) uses LineBuf1(user input) instead of
+;          // XXX misfeature: uses LineBuf1(user input) instead of
 ;          // LineBuf2 as error path
 ;          Error()
 ;          break
@@ -129,12 +125,12 @@ F37_00		ENDP
 ; } else { // File panel
 ;     ActvPanPath_len = strlen(DosShortPath) - 1
 ;     if (!memcmp(LineBuf4/*shortname*/, DosShortPath, ActvPanPath_len)) {
-;         // rootdir or path match active panel's path
+;         // rootdir or path matching active panel's path
 ;         if (ActvPanPath_len == 3 || LineBuf4[ActvPanPath_len] == '\\') {
 ;             ActvPanBuf_size = (FindNextSeg(GlobalSegs_L, WCBcrn + 1/*pActvPan*/) - &WCBcrn) * 16
 ;             DirName_len = strchr(LineBuf4[ActvPanPath_len + 1]/*shortname*/, '\\')
 ;                           - &LineBuf4[ActvPanPath_len]
-;             // EndBuf is offset (see VCDATA.INC diagram), but here it used as
+;             // EndBuf is offset (see the diagram in VCDATA.INC), but here it used as
 ;             // panel's DiskBuf current size
 ;             if (sizeof(FilEnt) + DirName_len <= ActvPanBuf_size - EndBuf) { // have space
 ;                 FileCur = Addr2Numb(MK_FP(WCBcrn, EndBuf))
@@ -203,12 +199,12 @@ MkDir_dialog_impl:
 		XOR	BX,BX			; cnt_mkdir = 0
 		MOV	SI,DX
 		CALL	CutPath
-		CMP	BYTE PTR [SI],0
+		CMP	BYTE PTR [SI],0		; remove '/' at the end of path
 		JNE	@@MkDir1
 		DEC	SI
 		CMP	SI,DX
 		JE	@@MkDir1
-		CMP	BYTE PTR [SI],':'	; last path's character is '/'
+		CMP	BYTE PTR [SI],':'
 		JE	@@MkDir1
 
   @@MkDirInPath_Prev:
@@ -219,8 +215,6 @@ MkDir_dialog_impl:
 		JNC	@@MkDir2
 		CMP	AX,53h
 		JE	Func04			; Critical Error(int 24h)
-
-  @@DirAlreadyExist:
 		MOV	SI,DX
 		CALL	CutPath
 		DEC	SI
