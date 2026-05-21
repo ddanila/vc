@@ -131,7 +131,7 @@ ShadBox		ENDP
 
 ;---------------------------------------------------------------
 ;	Box
-;		BH,HL - coordinates
+;		BH,BL - coordinates
 ;		   AH - color
 ;		    ╔═════════════════╗
 ;		    ║                 ║   ┐
