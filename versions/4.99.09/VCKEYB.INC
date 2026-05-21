@@ -51,8 +51,8 @@ GetKey		PROC	FAR
 		JB	@@Ready ; not functional (F1 - F12) key
 		MOV	AL,0 ; zero ascii character
 		JMP	@@Ready
-  @@GetStd:	MOV	DL,0FFh ; DOS_GetKey branch, makes a little sense
-		MOV	AH,6 ; as DOS internaly uses the same BIOS funcs
+  @@GetStd:	MOV	DL,0FFh ; DOS_GetKey branch
+		MOV	AH,6
 		INT	21h
 		JZ	@@Exit ; no key pressed
 		CMP	AL,0
