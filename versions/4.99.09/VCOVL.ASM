@@ -164,7 +164,7 @@ Start:		CLD
 		LES	DI,DS:[SI]
 		CMP	BYTE PTR DS:[SI+4],13
 		JNE	Terminate
-		MOV	ES:[DI].Offs,OFFSET Init00
+		MOV	ES:[DI].Offs,OFFSET Init
 		MOV	ES:[DI].Segm,CS
 		MOV	DS:[101h],ES		; Split into 2 MCB
 		MOV	AL,'M'
@@ -181,7 +181,7 @@ Start:		CLD
 		MOV	DS:MainStack.Segm,SS
 		MOV	AL,0
 Terminate:	MOV	AH,4Ch
-		INT	21h
+		INT	21h			; exit(0)
 
 ;------------------- Return to resident part -------------------
 QuitVC:		STC
@@ -201,103 +201,153 @@ GoResident:	PUSH	CS
 ;		   CX - length of data
 ;		   DX - data handle
 ;---------------------------------------------------------------
-Init00:		MOV	DS,CS:SubsSeg
+;
+; SwitchStack()
+; AllocDataSeg()
+; RestoreOvl(): // one of
+;   Restore_BaseMem()
+;   Restore_Swap()
+;   Restore_XMS()
+;   Restore_EMS()
+; Restore_Swap_rest()
+; Move_Panels_runtime_vars_and_Files
+; RestoreExtensions_and_History()
+; SetGlobalVars()
+; RestorePanels():
+;   for i = 1, 2:
+;     RestorePanelOtherVars()
+;     RestorePanelArcFiles()
+;     RebuildPanelFiles()
+;     PadPanelBlock()
+; SetSegmPtrs()
+; HookVct()
+; Init_RestoreVideoMode()
+; FixCursorSize()
+; SetupLCaseMap()
+; GetTopMem() // result unused ?
+; SetupVCenv()
+; SetupTEMPenv()
+; InitVars()
+; GetDOSColor()
+; SetDOSPromptRow()
+; SaveScreen()
+; IniMous()
+; PutMnu(None_M)
+; PutKey(Empty_K)
+;
+Init:
+		MOV	DS,CS:SubsSeg
 		POP	DS:ResidentPoint.Offs
-		POP	DS:ResidentPoint.Segm
+		POP	DS:ResidentPoint.Segm	; vc.com PSP
+
+SwitchStack	PROC	NEAR
 		MOV	DS:ResidentStack.Offs,SP
 		MOV	DS:ResidentStack.Segm,SS
 		CLI
 		MOV	SP,DS:MainStack.Offs
 		MOV	SS,DS:MainStack.Segm
 		STI
+SwitchStack	ENDP
 
-;------------------- Allocate data segment ---------------------
+AllocDataSeg	PROC	NEAR
 		CBW
-		MOV	BP,AX
+		MOV	BP,AX			; memory mode
 		PUSH	CS
 		POP	ES
 		MOV	BX,0FFFFh		; Check max free space
 		MOV	AH,4Ah
-		INT	21h
-		CMP	AX,8
-		JNE	Init01
-		MOV	DI,BX
-		MOV	AX,SP			; Compress PSP
+		INT	21h			; realloc(-1)
+		CMP	AX,8			; insufficient memory
+		JNE	InitAbort		; unexpected error
+		MOV	DI,BX			; max available reallocation size
+		MOV	AX,SP			; compress our memory block
 		DEC	AX
 		PUSH	CX
 		MOV	CL,4
 		SHR	AX,CL
 		POP	CX
-		INC	AX
+		INC	AX			; stack size in para, rounded up
 		MOV	BX,SS
-		ADD	BX,AX
+		ADD	BX,AX                   ; top of stack
 		MOV	AX,CS
-		SUB	BX,AX
+		SUB	BX,AX                   ; required memory in para
 		MOV	AH,4Ah
-		INT	21h
-		JC	Init01
+		INT	21h			; realloc()
+		JC	InitAbort
 		MOV	BX,0FFFFh		; Allocate data segment
 		MOV	AH,48h
-		INT	21h
-		CMP	AX,8
-		JNE	Init01
+		INT	21h			; fmem = malloc(-1) - query largest free memory block
+		CMP	AX,8			; insufficient memory
+		JNE	InitAbort		; unexpected error
 		MOV	AH,48h
-		INT	21h
-		JNC	Init02
-Init01:		MOV	AL,0FFh
+		INT	21h			; DataSegment = malloc(fmem)
+		JNC	RestoreOvl
+AllocDataSeg	ENDP
+
+InitAbort	PROC	NEAR
+		MOV	AL,0FFh
 		JMP	QuitVC
-Init02:		MOV	DS:DataSegment,AX
+InitAbort	ENDP
+
+RestoreOvl	PROC	NEAR
+		MOV	DS:DataSegment,AX
 		MOV	ES,AX
 		PUSH	CX			; Check space for restore
 		MOV	AX,CX
 		DEC	AX
 		MOV	CL,4
 		SHR	AX,CL
-		INC	AX
+		INC	AX			; (sizeof(OvlData) - 1) / 16 + 1
 		POP	CX
 		CMP	AX,BX
-		JA	Init01
-
-;------------------------ Restore data -------------------------
-		PUSH	DI
-		PUSH	SI
-		PUSH	BP
-		PUSH	DX
-		PUSH	BX
-		MOV	DS,DS:ResidentPoint.Segm
+		JA	InitAbort		; required memory > sizeof(DataSegment)
+		PUSH	DI			; max available reallocation size
+		PUSH	SI			; &OvlData
+		PUSH	BP			; memory mode
+		PUSH	DX			; data handle (XMS, EMS)
+		PUSH	BX			; DataSegment size
+		MOV	DS,DS:ResidentPoint.Segm ; vc.com PSP
 		XOR	DI,DI
-		CMP	BP,1			; Standard mode
-		JAE	Init05
-		REP	MOVSB
-		JMP	Init20
+RestoreOvl	ENDP
 
-Init05:		JA	Init10			; Swap mode
+Restore_BaseMem	PROC	NEAR
+		CMP	BP,SWAP
+		JAE	Restore_Swap
+		REP	MOVSB
+		JMP	Restore_Swap_rest
+Restore_BaseMem	ENDP
+
+Restore_Swap	PROC	NEAR
+		JA	Restore_XMS
 		MOV	DX,SI
 		MOV	AX,3D00h
-		INT	21h
-		JC	Init06
+		INT	21h			; open()
+		JC	@@Error
 		PUSH	DS
 		PUSH	ES
 		POP	DS
 		MOV	BX,AX
 		MOV	DX,DI
 		MOV	AH,3Fh
-		INT	21h
+		INT	21h			; read()
 		PUSHF
 		POP	DX
 		POP	DS
 		MOV	AH,3Eh
-		INT	21h
-		JC	Init06
+		INT	21h			; close()
+		JC	@@Error
 		PUSH	DX
 		POPF
-		JC	Init06
+		JC	@@Error
 		MOV	DX,SI
 		MOV	AH,41h
-		INT	21h
-		JNC	Init20
-Init06:		CALL	BadSwapFile
-		JMP	Init05
+		INT	21h			; unlink()
+		JNC	Restore_Swap_rest
+
+  @@Error:
+		CALL	BadSwapFile
+		JMP	Restore_Swap
+Restore_Swap	ENDP
 
 BadSwapFile	PROC	NEAR
 		PUSH	DS
@@ -328,11 +378,12 @@ BadSwapFile	PROC	NEAR
   @@Exit:	RET
 BadSwapFile	ENDP
 
-Init10:		CMP	BP,3			; XMS mode
-		JAE	Init16
+Restore_XMS	PROC	NEAR
+		CMP	BP,EMS
+		JAE	Restore_EMS
 		PUSH	ES
 		MOV	AX,4310h
-		INT	2Fh
+		INT	2Fh			; GetXMSAPI
 		MOV	AX,ES
 		MOV	ES,CS:SubsSeg
 		MOV	ES:CallXMS.Offs,BX
@@ -355,51 +406,72 @@ Init10:		CMP	BP,3			; XMS mode
 		MOV	AH,0Bh
 		CALL	ES:CallXMS
 		CMP	AX,1
-		JNE	Init11
+		JNE	@@Error
 		MOV	BX,DS:ComnIni.NormalSize
 		MOV	AH,0Fh
 		CALL	ES:CallXMS
 		PUSH	DS
 		POP	ES
-		JMP	Init20
-Init11:		MOV	DX,OFFSET ErrorXMS_S
+		JMP	Restore_Swap_rest
+
+  @@Error:
+		MOV	DX,OFFSET ErrorXMS_S
 		MOV	AL,InitXMS_E
-Init12:		PUSH	AX
+Restore_XMS	ENDP
+
+Error_XMS	PROC	NEAR
+		PUSH	AX
 		MOV	DS,CS:SubsSeg
 		CALL	OutErr
 		POP	AX
 		JMP	QuitVC
+Error_XMS	ENDP
 
-Init15:		MOV	DX,OFFSET ErrorEMS_S	; EMS mode
+Error_EMS	PROC	NEAR
+		MOV	DX,OFFSET ErrorEMS_S
 		MOV	AL,InitEMS_E
-		JMP	Init12
-Init16:		XOR	BX,BX
-Init17:		MOV	AX,4401h
+		JMP	Error_XMS
+Error_EMS	ENDP
+
+Restore_EMS	PROC	NEAR
+		XOR	BX,BX			; N = 0
+
+  @@RestorePage_Next:
+		MOV	AX,4401h		; map physpage 1 to logicpage N
 		CALL	CallEMS
-		JNE	Init15
-		PUSH	CX
+		JNE	Error_EMS
+		PUSH	CX			; sizeof(OvlData)
 		MOV	AX,4000h
-		SUB	AX,SI
+		SUB	AX,SI			; EMSPage_ofs = sizeof(EMSpage) - &OvlData
 		CMP	AX,CX
-		JAE	Init18
+		JAE	@@Restore_Last
 		MOV	CX,AX
-Init18:		MOV	AX,CX
-		ADD	SI,4000h
+
+  @@Restore_Last:
+; cnt_read = (EMSPage_ofs >= sizeof(OvlData)) ? sizeof(OvlData) : EMSPage_ofs
+		MOV	AX,CX
+		ADD	SI,4000h		; adjust for EMS physpage 1
 		REP	MOVSB
-		POP	CX
+		POP	CX                      ; sizeof(OvlData)
 		XOR	SI,SI
-		INC	BX
-		SUB	CX,AX
-		JA	Init17
+		INC	BX                      ; N++
+		SUB	CX,AX			; sizeof(OvlData) - cnt_read
+		JA	@@RestorePage_Next
 		MOV	BX,ES:ComnIni.NormalSize
 		MOV	AH,51h
-		CALL	CallEMS
+		CALL	CallEMS                 ; EMSRealloc(EMSHan, ComnIni.NormalSize/*pages*/)
+Restore_EMS	ENDP
 
-Init20:		PUSH	ES			; Load rest of data from swap
+;---------------------------------------------------------------
+; Load rest of data from swap
+; Can be no-op if there is enough memory and no /swap in command line
+;---------------------------------------------------------------
+Restore_Swap_rest	PROC	NEAR
+		PUSH	ES
 		POP	DS
 		MOV	SI,OFFSET ComnIni.TempDir
 		MOV	CX,DS:ComnIni.BytesInSwap
-		JCXZ	Init23
+		JCXZ	@@Exit
 		MOV	DX,SI
 		MOV	AX,DS:ComnIni.CmdLnPoint
 		ADD	AX,CX
@@ -408,43 +480,52 @@ Init20:		PUSH	ES			; Load rest of data from swap
 		SHR	AX,CL
 		INC	AX
 		POP	CX
-		POP	BX
+		POP	BX			; DataSegment size
 		CMP	AX,BX
-		JBE	Init21
+		JBE	@@LoadData
+
+ @@Error_NotEnoughMemory:
 		MOV	AH,41h
-		INT	21h
-		JMP	Init01
-Init21:		PUSH	BX
+		INT	21h			; unlink(swapfile)
+		JMP	InitAbort
+
+ @@LoadData:
+		PUSH	BX
 		MOV	AX,3D00h
-		INT	21h
-		JC	Init22
+		INT	21h			; open()
+		JC	@@Error
 		INC	CX
 		MOV	BX,AX
 		MOV	DX,DS:ComnIni.CmdLnPoint
 		MOV	AH,3Fh
-		INT	21h
+		INT	21h			; read()
 		PUSHF
 		PUSH	AX
 		MOV	AH,3Eh
-		INT	21h
+		INT	21h			; close()
 		POP	AX
 		POP	BX
-		JC	Init22
+		JC	@@Error
 		PUSH	BX
 		POPF
-		JC	Init22
+		JC	@@Error
 		DEC	CX
 		CMP	AX,CX
-		JNE	Init22
+		JNE	@@Error
 		ADD	DS:ComnIni.CmdLnPoint,AX
 		MOV	DX,SI
 		MOV	AH,41h
-		INT	21h
-		JMP	Init23
-Init22:		CALL	BadSwapFile
-		JMP	Init20
-Init23:		POP	BX
+		INT	21h			; unlink()
+		JMP	@@Exit
 
+  @@Error:
+		CALL	BadSwapFile
+		JMP	Restore_Swap_rest
+  @@Exit:
+Restore_Swap_rest	ENDP
+
+Move_Panels_runtime_vars_and_Files	PROC	NEAR
+		POP	BX			; DataSegment size
 		MOV	CL,4			; Check size of data segment
 		MOV	DI,DS:ComnIni.HistPoint
 		ADD	DI,DS:ComnIni.LenHistory
@@ -461,17 +542,22 @@ Init23:		POP	BX
 		SHR	AX,CL
 		INC	AX
 		ADD	DI,AX
+; #define RND2PARA(a) ((a - 1) >> 4) + 1
+;
+; pHistEnd = &ComnIni.HistPoint + ComnIni.LenHistory
+; p = RND2PARA(PHistEnd + sizeof(MainDat) - sizeof(Dat))
+; p += RND2PARA(WCB1sav.EndBuf) + RND2PARA(WCB2sav.EndBuf)
 		MOV	AX,BX
 		SUB	AX,MinView/16
-		JBE	Init01
+		JBE	InitAbort
 		SUB	AX,DI
-		JB	Init01
+		JB	InitAbort		; if (sizeof(DataSeg) - MinView/16 - p <= 0) InitAbort()
 		MOV	SI,DS:ComnIni.CmdLnPoint ; Move WCB1, WCB2 and files
 		MOV	DX,SI
-		SUB	DX,DS:ComnIni.FilesPoint
+		SUB	DX,DS:ComnIni.FilesPoint ; FilesSize = ComnIni.CmdLnPoint - ComnIni.FilesPoint
 		MOV	AX,2 * WCBsave - 1
 		ADD	AX,DX
-		PUSH	AX
+		PUSH	AX			; dst_ofs = FilesSize + 2 * WCBsave - 1
 		MOV	AX,DX
 		SHR	AX,CL
 		SUB	DI,AX
@@ -480,22 +566,26 @@ Init23:		POP	BX
 		MOV	CX,DS
 		ADD	CX,DI
 		INC	CX
-		MOV	ES,CX
-		POP	DI
+		MOV	ES,CX			; dst_seg = p - (FilesSize / 16) + 2 + &DataSegment + 1
+		POP	DI			; dst_ofs
 		DEC	SI
-		PUSH	SI
+		PUSH	SI			; ComnIni.CmdLnPoint - 1
 		MOV	SI,OFFSET ComnIni-1
 		MOV	CX,2 * WCBsave
-		STD
-		REP	MOVSB
-		POP	SI
-		MOV	CX,DX
-		JCXZ	Init24
-		REP	MOVSB
-Init24:		POP	DX
-		POP	AX
-		POP	BP
+		STD				; Panel runtime(others) vars
+		REP	MOVSB			; memcpy(MK_FP(dst_seg, dst_ofs), ComnIni - 1, 2 * WCBsave) // backward
+		POP	SI			; ComnIni.CmdLnPoint - 1
+		MOV	CX,DX			; FilesSize
+		JCXZ	@@Exit
+		REP	MOVSB			; memcpy(MK_FP(dst_seg, dst_ofs - 2 * WCBsave + 1), ComnIni.CmdLnPoint - 1, FilesSize) // backward
+  @@Exit:
+Move_Panels_runtime_vars_and_Files	ENDP
 
+		POP	DX			; data handle (XMS, EMS)
+		POP	AX			; memory mode
+		POP	BP			; &OvlData
+
+RestoreExtensions_and_History	PROC	NEAR
 		PUSH	ES			; Restore *.EXT, History
 		PUSH	DS
 		POP	ES
@@ -505,25 +595,31 @@ Init24:		POP	DX
 		SUB	CX,SIZE Dat - 1
 		REP	MOVSB
 		CLD
+RestoreExtensions_and_History	ENDP
 
+SetGlobalVars	PROC	NEAR
 		XOR	DI,DI			; Restore global vars
 		MOV	SI,OFFSET ComnIni
 		MOV	CX,CmnSave
 		REP	MOVSB
 		MOV	DS:DataLocation,AL	; Init global vars
-		MOV	DS:DatPoint,BP
+		MOV	DS:DatPoint,BP		; &OvlData
 		MOV	DS:DatHandle,DX
 		MOV	DS:SizeDataSeg,BX
 		POP	DS
-		POP	AX
+		POP	AX			; max available reallocation size
 		CMP	AX,BX
-		JAE	Init25
+		JAE	@@SetFreeMem
 		MOV	AX,BX
-Init25:		MOV	ES:FreeMem,AX
+
+  @@SetFreeMEM:
+; FreeMem = (max_reloc_size >= SizeDataSeg) ? max_reloc_size : SizeDataSeg
+		MOV	ES:FreeMem,AX
 		MOV	AX,SIZE MainDat - SIZE Dat
 		ADD	ES:ArchPoint,AX
 		ADD	ES:FiltsPoint,AX
 		ADD	ES:HistPoint,AX
+SetGlobalVars	ENDP
 
 		XOR	SI,SI			; Restore WCB1 & WCB2
 		MOV	DX,ES:CmdLnPoint
@@ -531,44 +627,66 @@ Init25:		MOV	ES:FreeMem,AX
 		MOV	DI,ES:HistPoint
 		ADD	DI,ES:LenHistory
 		MOV	BL,3
-		JMP	Init31
-Init26:		MOV	ES,AX
+		JMP	RestorePanels
+
+RestorePanelOtherVars	PROC	NEAR
+		MOV	ES,AX
 		XCHG	SI,DX
 		XOR	DI,DI
 		MOV	CX,WCBsave
 		REP	MOVSB
+RestorePanelOtherVars	ENDP
+
+RestorePanelArcFiles	PROC	NEAR
 		XCHG	SI,DX
 		MOV	DI,OFFSET ArcFiles
 		MOV	CX,ES:DiskBuf
 		SUB	CX,DI
-		JBE	Init27
+		JBE	RebuildPanelFiles
 		REP	MOVSB
-Init27:		CMP	DI,ES:EndBuf
-		JAE	Init30
+RestorePanelArcFiles	ENDP
+
+RebuildPanelFiles	PROC	NEAR
+		CMP	DI,ES:EndBuf
+		JAE	@@Exit			; last file
 		MOV	BP,DI
-		ADD	DI,OFFSET NameF
-Init28:		LODSB
-		CMP	AL,20h
-		JB	Init29
+		ADD	DI,SIZE FilEnt		; &FilEnt.NameF
+
+  @@SetName:
+		LODSB
+		CMP	AL,' '
+		JB	@@SetFattr
 		STOSB
-		JMP	Init28
-Init29:		MOV	CL,3
+		JMP	@@SetName
+
+  @@SetFAttr:
+		MOV	CL,3
 		SHL	AL,CL
 		MOV	ES:[BP].AttrF,AL
 		MOV	AL,0
 		STOSB
+
+  @@SetShortNameLen:
 		MOV	AX,DI
 		SUB	AX,BP
-		SUB	AX,OFFSET NameF
-		MOV	ES:[BP].LenShortNamF,AX
+		SUB	AX,SIZE FilEnt
+		MOV	ES:[BP].LenShortNamF,AX	; p - &DiskBuf - sizeof(FilEnt)
 		MOV	ES:[BP].LenLongNamF,0
-		JMP	Init27
-Init30:		MOV	AX,ES:DiskBuf
+		JMP	RebuildPanelFiles
+  @@Exit:
+RebuildPanelFiles	ENDP
+
+PadPanelBlock	PROC	NEAR
+		MOV	AX,ES:DiskBuf
 		ADD	AX,SIZE FilEnt+3
 		CMP	AX,DI
-		JBE	Init31
+		JBE	@@Exit
 		MOV	DI,AX
-Init31:		PUSH	ES
+  @@Exit:
+PadPanelBlock	ENDP
+
+RestorePanels	PROC	NEAR
+		PUSH	ES
 		MOV	AX,DI
 		DEC	AX
 		MOV	CL,4
@@ -577,21 +695,27 @@ Init31:		PUSH	ES
 		MOV	CX,ES
 		ADD	AX,CX
 		DEC	BL
-		JNZ	Init26
-		POP	CX
-		POP	BX
+		JNZ	RestorePanelOtherVars
+		POP	CX			; WCB2seg
+RestorePanels	ENDP
+
+SetSegmPtrs	PROC	NEAR
+		POP	BX			; WCB1seg
 		POP	DS
 		CMP	DS:SwapWin,0
-		JZ	Init32
+		JZ	@@SetPtrs
 		XCHG	BX,CX
-Init32:		MOV	DS:WCB1seg,BX
+
+  @@SetPtrs:
+		MOV	DS:WCB1seg,BX
 		MOV	DS:WCB2seg,CX
 		MOV	DS:WorkBuffer,AX
 		MOV	DS:TreeSeg,0
 		MOV	DS:DirinfoSeg,0
 		MOV	DS:ViewSeg,0
+SetSegmPtrs	ENDP
 
-;------------------------- Set vectors -------------------------
+;---------- Set Ctrl-Break, DOS Critical Error vectors ---------
 		CALL	HookVct
 		PUSH	DS
 		POP	ES
@@ -602,6 +726,7 @@ Return_S	DB	13,10, 'Press ENTER to return ', 0
 		DB	13,10, 'to the ',PrgName, 0
 
 		.CODE
+Init_RestoreVideoMode	PROC	NEAR
 		PUSH	DS
 		MOV	DS:TstEGA,0
 		MOV	BX,0FF10h
@@ -609,20 +734,22 @@ Return_S	DB	13,10, 'Press ENTER to return ', 0
 		INT	10h
 		MOV	DL,25
 		CMP	BX,0FF10h
-		JE	Init40
+		JE	@@CGA
 		MOV	DS:TstEGA,1
 		PUSH	ES
 		MOV	BH,2
 		MOV	AX,1130h
-		INT	10h
+		INT	10h			; GetFontInfo()
 		POP	ES
 		INC	DX
 		CMP	DL,25
-		JB	Init41
-Init40:		MOV	AH,0Fh
-		INT	10h
+		JB	@@BadMode		; Lines < 25
+
+  @@CGA:
+		MOV	AH,0Fh
+		INT	10h			; GetVideoMode()
 		CMP	AH,80
-		JB	Init41
+		JB	@@BadMode		; Columns < 80
 		MOV	AL,DL
 		MUL	AH
 		SHL	AX,1
@@ -630,147 +757,192 @@ Init40:		MOV	AH,0Fh
 		XOR	BP,BP
 		MOV	DS,BP
 		CMP	AX,DS:[44Ch]
-		JBE	Init41
+		JBE	@@BadMode		; Columns * Rows * 4 <= BDA.vpage_size
+
+  @@AcceptMode:				; Columns >= 80 and Lines >= 25
 		CMP	ES:RestoreMode,0
-		JZ	Init45
+		JZ	@@UpdateVideoVars	; !RestoreMode
 		MOV	AL,ES:ScrMod
 		MOV	AH,ES:CharSize
 		MOV	ES:RestoreMode,AX
 		MOV	AH,0Fh
-		INT	10h
+		INT	10h			; GetVideoMode()
 		CMP	AL,ES:ScrMod
-		JNE	Init45
+		JNE	@@UpdateVideoVars
 		CMP	AH,ES:Columns
-		JNE	Init45
+		JNE	@@UpdateVideoVars
 		CMP	DL,ES:Lines
-		JNE	Init45
-		MOV	ES:RestoreMode,0
-		JMP	Init45
-Init41:		MOV	DS,CS:SubsSeg
+		JNE	@@UpdateVideoVars
+		MOV	ES:RestoreMode,0	; default: mode 3, 80x25
+		JMP	@@UpdateVideoVars
+
+  @@BadMode:
+  @@HideCursor:
+		MOV	DS,CS:SubsSeg
 		MOV	CX,2000h
 		MOV	AH,1
-		INT	10h
+		INT	10h			; SetCurShape()
+
+  @@WarnRestoreScr:
 		MOV	SI,OFFSET Return_S
 		CALL	PrintStr
 		MOV	AH,0Fh
-		INT	10h
+		INT	10h			; GetVideoMode()
 		CMP	AH,80
-		JB	Init42
+		JB	@@WarnRestoreScr2	; Columns < 80, continue from the new line
 		INC	SI
 		INC	SI
-Init42:		CALL	PrintStr
-Init43:		MOV	AH,7
-		INT	21h
-		CMP	AL,0
-		JNE	Init44
+
+  @@WarnRestoreScr2:
+		CALL	PrintStr
+
+  @@DOS_GetKey:
 		MOV	AH,7
-		INT	21h
-		JMP	Init43
-Init44:		CMP	AL,0Dh
-		JNE	Init43
+		INT	21h			; DOS_GetKeyNoEcho()
+		CMP	AL,0
+		JNE	@@WaitEnter
+
+  @@ExtKey:
+		MOV	AH,7
+		INT	21h			; DOS_GetKeyNoEcho()
+		JMP	@@DOS_GetKey
+
+  @@WaitEnter:
+		CMP	AL,0Dh			; Enter or KeypadEnter
+		JNE	@@DOS_GetKey
 		PUSH	ES
 		POP	DS
-		MOV	DS:RestoreMode,0
-		CALL	F69_40
-Init45:		POP	DS
+		MOV	DS:RestoreMode,0	; restored
+		CALL	RestoreVideoMode
+
+  @@UpdateVideoVars:
+		POP	DS
 		MOV	AH,0Fh
-		INT	10h
+		INT	10h			; GetVideoMode()
 		MOV	DS:ScrMod,AL
 		MOV	DS:Columns,AH
 		MOV	DS:ScrPage,BH
+Init_RestoreVideoMode	ENDP
 
-;-------------------- Correct cursor size ----------------------
-		MOV	BL,8
+FixCursorSize	PROC	NEAR
+		MOV	BL,8			; CGA font height
 		CMP	DS:ScrMod,7
-		JNE	Init46
-		MOV	BL,14
-Init46:		CMP	DS:TstEGA,0
-		JE	Init47
+		JNE	@@CheckEGA
+		MOV	BL,14			; mono font height
+
+  @@CheckEGA:
+		CMP	DS:TstEGA,0
+		JE	@@GetCurSize		; CGA
 		PUSH	ES
 		MOV	BL,2
 		MOV	AX,1130h
-		INT	10h
+		INT	10h			; GetFontInfo()
 		POP	ES
-		MOV	BL,CL
-Init47:		MOV	BH,0
+		MOV	BL,CL			; font height
+
+  @@GetCurSize:
+		MOV	BH,0			; videopage
 		MOV	AH,3
-		INT	10h
+		INT	10h			; GetCurPos()
 		CMP	CH,BL
-		JAE	Init48
+		JAE	@@FixCursorSize		; cursor.end > fontheight
 		CMP	CL,BL
-		JAE	Init48
+		JAE	@@FixCursorSize		; cursor.start > fontheight
 		CMP	CL,CH
-		JAE	Init49
-Init48:		MOV	CL,BL
+		JAE	@@Exit			; !(cursor.end <= cursor.start)
+
+  @@FixCursorSize:				; CGA: 6-7, EGA: 11-12, VGA 13-14
+		MOV	CL,BL
 		CMP	BL,11
 		CMC
 		SBB	CL,1
-		MOV	CH,CL
-		DEC	CH
+		MOV	CH,CL			; cursor.end = (fontheight > 11) ? fontheight - 2 : fontheight - 1
+		DEC	CH			; cursor.start = cursor.end - 1
 		MOV	AH,1
-		INT	10h
+		INT	10h			; SetCurSize()
+  @@Exit:
+FixCursorSize	ENDP
 
-;---------------------- Initialize data ------------------------
-Init49:		MOV	DX,OFFSET Country	; Country
+SetupLCaseMap	PROC	NEAR
+		MOV	DX,OFFSET Country
 		MOV	AX,3800h
-		INT	21h
-		MOV	DI,OFFSET TmpBuf	; Lower case table
+		INT	21h			; GetCountryInfo()
+		MOV	DI,OFFSET TmpBuf	; Upper case map
 		MOV	SI,OFFSET LowTab
 		MOV	CX,80h
 		PUSH	DI
 		PUSH	CX
-Init50:		MOV	AL,CL
-		NEG	AL
-		MOV	DS:[SI],AL
-		INC	SI
+
+  @@InitLCaseMap:
+		MOV	AL,CL			; for (i = 0; i < 0x80 i++) {
+		NEG	AL			;   LowTab[i] = i + 0x80
+		MOV	DS:[SI],AL		;   TmpBuf[i] = Country.CaseMap(LowTab[i]) // UCaseMap
+		INC	SI			; }
 		CALL	DS:Country.CaseMap
 		STOSB
-		LOOP	Init50
+		LOOP	@@InitLCaseMap
 		POP	CX
 		POP	SI
 		MOV	BH,0
 		MOV	AH,80h
-Init51:		LODSB
-		CMP	AL,AH
-		JE	Init52
-		CMP	AL,80h
-		JB	Init52
+
+  @@SetLCaseMap:
+		LODSB				; for (i = 0, j = 0x80; i < 0x80; i++, j++) {
+		CMP	AL,AH			;   if (TmpBuf[i] == j || TmpBuf[i] < 0x80) continue
+		JE	@@Skip			;   LowTab[TmpBuf[i] - 0x80] = j
+		CMP	AL,80h			; }
+		JB	@@Skip
 		MOV	BL,AL
 		MOV	DS:LowTab[BX-128],AH
-Init52:		INC	AH
-		LOOP	Init51
+
+  @@Skip:
+		INC	AH
+		LOOP	@@SetLCaseMap
+SetupLCaseMap	ENDP
+
 		CALL	MakeIni			; IniBuffer
-		MOV	DS,CS:SubsSeg		; Memorys
+
+GetTopMem	PROC	NEAR
+		MOV	DS,CS:SubsSeg		; Memorys (unused ?)
 		MOV	DS,DS:ResidentPoint.Segm
-		MOV	AX,DS:[2]
-		MOV	ES:Memorys,AX
-		MOV	DS,DS:[2Ch]		; VcDir
+		MOV	AX,DS:[2]		; PSP:2
+		MOV	ES:Memorys,AX		; first free memory segment, usually 0x9FFF
+GetTopMem	ENDP
+
+SetupVCenv	PROC	NEAR
+		MOV	DS,DS:[2Ch]		; PSP:2C Env segment
 		XOR	SI,SI
-Init53:		LODSW
+
+  @@SkipEnv:
+		LODSW
 		DEC	SI
 		OR	AX,AX
-		JNE	Init53
+		JNE	@@SkipEnv
+
+  @@EnvEnd:
 		ADD	SI,3
 		MOV	CX,LenPath-1
 		MOV	DI,OFFSET VcDir
 		PUSH	DI
 		REP	MOVSB
-		STOSB
+		STOSB				; strlcpy(VcDir, argv[0], LenPath - 1)
 		POP	SI
 		PUSH	DS
 		PUSH	ES
 		POP	DS
 		CALL	CutPath
-		MOV	DS:[SI],AL
-		POP	DS
+		MOV	DS:[SI],AL		; VcDir[CutPath(VcDir)] = '\0' // vc.com exec path
+		POP	DS			; Env segment
 		PUSH	ES			; VcSet
 		MOV	ES,CS:SubsSeg
 		MOV	DI,OFFSET VcEnv
 		MOV	CX,3
 		XOR	SI,SI
 		MOV	AL,0
-Init54:		CMP	AL,DS:[SI]
-		JE	Init57
+
+  @@GetEnvNext:
+		CMP	AL,DS:[SI]
+		JE	@@DefVCvar		; no 'VC=' in environment
 		PUSH	DI
 		PUSH	SI
 		PUSH	CX
@@ -778,37 +950,50 @@ Init54:		CMP	AL,DS:[SI]
 		POP	CX
 		POP	SI
 		POP	DI
-		JE	Init56
-Init55:		LODSB
+		JE	@@FoundVCvar
+
+  @@SkipVar:
+		LODSB
 		CMP	AL,0
-		JNE	Init55
-		JMP	Init54
-Init56:		ADD	SI,CX
-		JMP	Init58
-Init57:		POP	DS
+		JNE	@@SkipVar
+		JMP	@@GetEnvNext
+
+  @@FoundVCvar:
+		ADD	SI,CX
+		JMP	@@SetVCvar
+
+  @@DefVCvar:
+		POP	DS
 		PUSH	DS
 		MOV	SI,OFFSET VcDir
-Init58:		POP	ES
+
+  @@SetVCvar:
+		POP	ES
 		MOV	DI,OFFSET VcSet
 		MOV	CX,LenPath-2
 		PUSH	DI
 		REP	MOVSB
 		MOV	AL,0
-		STOSB
+		STOSB				; strlcpy(VcSet, VcDir, LenPath - 2)
 		POP	DI
 		MOV	CH,0FFh
 		REPNE	SCASB
 		DEC	DI
-		CALL	AddPathSep
+		CALL	AddPathSep		; p = AddPathSep(VcSet[strlen(VcSet)])
 		PUSH	ES
 		POP	DS
 		XOR	AX,AX
-		MOV	DS:[DI],AL
+		MOV	DS:[DI],AL		; VcSet[p] = '\0'
+SetupVCenv	ENDP
 
-		MOV	SI,OFFSET TempDir	; TempDir
+SetupTEMPenv	PROC	NEAR
+		MOV	SI,OFFSET TempDir	; TempDir == TmpPath (swapfile path)
 		CALL	CutPath
-		MOV	DS:[SI],AL
-		MOV	DS:DosBuf,AL		; DosBuf
+		MOV	DS:[SI],AL		; TempDir[CutPath(TempDir)] = '\0'
+SetupTEMPenv	ENDP
+
+InitVars	PROC	NEAR
+		MOV	DS:DosBuf,AL		; DosBuf = 0
 		MOV	DS:DosCol,AL		; DosCol
 		MOV	DS:BegCol,AL		; BegCol
 		MOV	DS:OutCol,AL		; OutCol
@@ -831,158 +1016,209 @@ Init58:		POP	ES
 		MOV	DS:BarPrev,0FFh		; BarPrev
 		MOV	DS:MouseCur,0FFh	; MouseCur
 		MOV	DS:ProcLongNams,1	; ProcLongNams
-		XOR	BX,BX			; StdIn, StdFile
+InitVars	ENDP
+
+SetupInput	PROC	NEAR
+		XOR	BX,BX			; stdin
 		MOV	DL,81h
 		MOV	AX,4400h
-		INT	21h
+		INT	21h			; IOCTL_GetDevInfo(stdin) & DEVICE
 		MOV	AL,DL
 		AND	AL,80h
-		MOV	DS:StdFile,AL
-		MOV	AX,100h
+		MOV	DS:StdFile,AL		; stdin is redirected if false
+		MOV	AX,100h			; StdIn = true, ExtKeyb = 0
 		AND	DL,81h
 		CMP	DL,81h
-		JNE	Init59
+		JNE	@@SetInputFlgs		; stdin is not device or not console device
+
+  @@DetectExtKeyboardFuncs:
 		PUSH	DS
 		XOR	AX,AX
 		MOV	DS,AX
 		MOV	AL,DS:[496h]		; BDA.keyboardflags3
 		POP	DS
 		AND	AL,10h			; BIOS_GetKey = 0x10 if extended keyboard, 0 otherwise
-Init59:		MOV	DS:ExtKeyb,AL
+
+  @@SetInputFlgs:
+		MOV	DS:ExtKeyb,AL
 		MOV	DS:StdIn,AH
-		MOV	AH,19h			; DosChg
-		INT	21h
-		MOV	DS:DosChg,AL
+SetupInput	ENDP
+
+SaveCurDrv	PROC	NEAR
+		MOV	AH,19h
+		INT	21h			; GetCurDrv()
+		MOV	DS:OldCurDrv,AL
+SaveCurDrv	ENDP
+
+SetLines_CharHeight	PROC	NEAR
 		MOV	DL,25			; Lines
-		MOV	CL,8
+		MOV	CL,8			; fontheight
 		CMP	DS:TstEGA,0
-		JZ	Init60
+		JZ	@@CGA
 		PUSH	ES
 		MOV	BH,0
 		MOV	AX,1130h
-		INT	10h
+		INT	10h			; GetFontInfo()
 		POP	ES
 		INC	DX
-Init60:		MOV	DS:Lines,DL
+
+  @@CGA:
+		MOV	DS:Lines,DL
 		MOV	DS:CharSize,CL
-		CALL	ScreenParms
+SetLines_CharHeight	ENDP
+
+		CALL	ScreenParms		; DetectColor_Snow // TODO rename
+
+DetectDesqView	PROC	NEAR
 		MOV	CX,'DE'			; Check DESQWIEV
 		MOV	DX,'SQ'
 		MOV	AX,2B01h
 		INT	21h
 		INC	AX
 		MOV	DS:DesqVie,AL
-		MOV	DS:OS2Box,0		; VerDOS
+DetectDesqView	ENDP
+
+GetVerDOS	PROC	NEAR
+		MOV	DS:OS2Box,0
 		MOV	BX,0FFFFh
 		MOV	AX,3306h
 		INT	21h
 		CMP	AL,0FFh
-		JE	Init61                  ; true DOS version < 5.0
+		JE	@@GetDOSVer		; true DOS version < 5.0
 		MOV	AX,BX
 		CMP	AX,0FFFFh
-		JE	Init61                  ; DOS version -1
+		JE	@@GetDOSVer		; DOS version -1
 		CMP	AH,100
-		JAE	Init61                  ; DOS minor version >= 100
+		JAE	@@GetDOSVer		; DOS minor version >= 100
 		CMP	AL,5
-		JB	Init61                  ; DOS major version <= 5
+		JB	@@GetDOSVer		; DOS major version <= 5
 		PUSH	AX
 		MOV	AH,0
 		MOV	BL,10
 		DIV	BL
 		OR	AH,AH
 		POP	AX
-		JNE	Init62                  ; DOS.major != 10 && DOS.major != 20
+		JNE	@@Exit			; DOS.major != 10 && DOS.major != 20
 		MOV	DS:OS2Box,1
-		JMP	Init62
-Init61:		MOV	AH,30h
-		INT	21h
+		JMP	@@Exit
+
+  @@GetDOSVer:
+		MOV	AH,30h
+		INT	21h			; DOS_GetVer()
 		CMP	AX,4
-		JNE	Init62
+		JNE	@@Exit
 		CMP	BH,0FFh
-		JNE	Init62
+		JNE	@@Exit
 		MOV	AH,1
-Init62:		MOV	DS:VerDOS,AX
-		MOV	SI,DS:WCB1seg		; WCBseg
+
+  @@Exit:
+		MOV	DS:VerDOS,AX
+GetVerDOS	ENDP
+
+InitFilePanels	PROC	NEAR
+		MOV	SI,DS:WCB1seg
 		MOV	DI,DS:WCB2seg
 		PUSH	DS
 		MOV	DS,SI
-		MOV	DS:ChgFlg,1
-		MOV	DS:LongNamFlag,0
+		MOV	DS:ChgFlg,1		; WCB1seg.ChgFlg = true (need update)
+		MOV	DS:LongNamFlag,0	; WCB1seg.LongNamFlag = false
 		MOV	DS,DI
-		MOV	DS:ChgFlg,1
-		MOV	DS:LongNamFlag,0
+		MOV	DS:ChgFlg,1		; WCB2seg.ChgFlg = true (need update)
+		MOV	DS:LongNamFlag,0	; WCB2seg.LongNamFlag = false
 		POP	DS
-		CMP	DS:Active,0
-		JE	Init63
+		CMP	DS:Active,p_Left
+		JE	@@SetActivePanel
 		XCHG	DI,SI
-Init63:		MOV	DS:WCBcrn,SI
-		MOV	DS:WCBsec,DI
 
-;------------------------ Set DOS color ------------------------
+  @@SetActivePanel:
+		MOV	DS:WCBcrn,SI
+		MOV	DS:WCBsec,DI
+InitFilePanels	ENDP
+
+GetDOSColor	PROC	NEAR
 		MOV	AH,0Fh
-		INT	10h
+		INT	10h			; GetVideoMode()
 		MOV	AH,3
-		INT	10h
+		INT	10h			; GetCurPos()
 		MOV	AH,DS:Lines
 		CMP	DH,AH
-		JB	Init64
+		JB	@@NewLine		; gety() < Lines
 		DEC	AH
 		MOV	AL,0
-		CALL	Cursor
-Init64:		MOV	AX,0E0Dh
-		INT	10h
-		MOV	AX,0E0Ah
-		INT	10h
-		MOV	AH,8
-		INT	10h
-		PUSH	AX
-		MOV	DL,' '
-		MOV	AH,6
-		INT	21h
+		CALL	Cursor			; gotoxy(0, Lines - 1)
+
+  @@NewLine:
 		MOV	AX,0E0Dh
 		INT	10h
+		MOV	AX,0E0Ah
+		INT	10h			; BIOS_TTY('\r\n')
+
+  @@SaveOldCharAttr:
 		MOV	AH,8
-		INT	10h
+		INT	10h			; read character and attribute at cursor pos
+		PUSH	AX
+
+  @@DOSOutput:
+		MOV	DL,' '
+		MOV	AH,6
+		INT	21h			; DOS_TTY(' ')
+		MOV	AX,0E0Dh
+		INT	10h			; BIOS_TTY('\r') // back to start of line
+
+  @@GetDOSColor:
+		MOV	AH,8
+		INT	10h			; read character and attribute at cursor pos (DOS output)
 		MOV	DS:CrntCol,AH
+
+  @@RestoreOldCharAttr:
 		POP	AX
 		MOV	BL,AH
 		MOV	CX,1
 		MOV	AH,9
-		INT	10h
+		INT	10h			; write character and attribute at cursor pos
+GetDOSColor	ENDP
 
-;------------------------- Set cursor --------------------------
-Init70:		PUSH	ES
+SetDOSPromptRow	PROC	NEAR
+		PUSH	ES
 		POP	DS
 		MOV	AH,0Fh
-		INT	10h
+		INT	10h			; GetVideoMode()
 		MOV	AH,3
-		INT	10h
+		INT	10h			; GetCurPos()
 		CMP	DS:KeyBar,0
-		JZ	Init71
+		JZ	@@CalcRow
 		MOV	AL,DS:Lines
 		DEC	AX
 		CMP	DH,AL
-		JB	Init71
+		JB	@@CalcRow		; cursor not in last row
+
+  @@ScrollUpDOSPrompt:				; by 1 line
 		MOV	DH,AL
-		DEC	DH
+		DEC	DH			; Lines - 2
 		MOV	AX,0E0Ah
-		INT	10h
-Init71:		MOV	AL,DH
+		INT	10h			; BIOS_TTY('\n')
+
+  @@CalcRow:
+		MOV	AL,DH
 		PUSH	DS
 		MOV	DS,DS:WCBcrn
 		CMP	DS:Visible,0
 		POP	DS
-		JZ	Init72
-		CALL	BegBX
-		CALL	SizDX
+		JZ	@@Set			; Panels are off
+		CALL	BegBX			; GetPanelStart(WCBSeg, &x, &y) // TODO rename
+		CALL	SizDX			; GetPanelDim(&w, &h)
 		ADD	DH,BH
 		CMP	AL,DH
-		JAE	Init72
-		MOV	AL,DH
-Init72:		MOV	DS:DosLin,AL
+		JAE	@@Set
+		MOV	AL,DH			; DosLin = (Lines - 2 >= y + h) ? Lines - 2 : y + h
+
+  @@Set:
+		MOV	DS:DosLin,AL
+SetDOSPromptRow	ENDP
+
 		CALL	HidCur
 
-;------------------------- Save screen -------------------------
+SaveScreen	PROC	NEAR
 		PUSH	DS
 		PUSH	ES
 		MOV	AL,DS:Columns
@@ -1009,10 +1245,14 @@ Init72:		MOV	DS:DosLin,AL
 		ADD	AX,DS:SizeDataSeg
 		SUB	AX,MinView/16
 		CMP	CX,AX
-		JBE	Init73
+		JBE	@@SaveScr
+
+  @@Error_NotEnoughMemory:
 		CALL	RestVct
-		JMP	Init01
-Init73:		CALL	SavScr
+		JMP	InitAbort
+
+  @@SaveScr:
+		CALL	SavScr
 		POP	ES
 		POP	DS
 		POP	CX
@@ -1021,6 +1261,7 @@ Init73:		CALL	SavScr
 		REP	MOVSW
 		POP	ES
 		POP	DS
+SaveScreen	ENDP
 
 ;-------------------- Output menu & key bar --------------------
 		CALL	IniMous
@@ -2777,7 +3018,7 @@ RunCmd25:	MOV	DS:BytesInSwap,AX
 
 		PUSH	ES			; Prepare data to save
 		POP	DS
-		MOV	AH,DS:DosChg
+		MOV	AH,DS:OldCurDrv
 		MOV	AL,DS:DataLocation
 		PUSH	AX
 		PUSH	DS:DatPoint
@@ -2997,14 +3238,14 @@ RunCmd46:	MOV	DS,CS:SubsSeg
 		MOV	BX,0FFFFh
 		MOV	AH,4Ah
 		INT	21h
-		CMP	AX,8
-		JNE	Init01
+		CMP	AX,8			; insufficient memory
+		JNE	InitAbort
 		PUSH	ES:ComnIni.FreeMem
 		PUSH	SI
 		PUSH	BP
 		PUSH	DX
 		PUSH	BX
-		JMP	Init20
+		JMP	Restore_Swap_rest
 RunCmd47:	MOV	DX,OFFSET ErrorEMS_S
 		JMP	RunCmd46
 
@@ -3081,14 +3322,16 @@ RunCmd70	PROC	NEAR			; Open swap file
 		RET
 RunCmd70	ENDP
 
-;---------------------------- Exit -----------------------------
-ExitVC:		CMP	ES:DataLocation,3
-		JB	Exit1
+ExitVC		PROC	NEAR
+		CMP	ES:DataLocation,EMS
+		JB	@@RestoreDefUserEnv
 		XOR	BX,BX
 		MOV	DX,ES:DatHandle
 		MOV	AX,4400h
-		CALL	CallEMS
-Exit1:		CALL	RstVc1
+		CALL	CallEMS			; map physpage 0 to logicpage 0
+
+  @@RestoreDefUserEnv:
+		CALL	RestVct_CtrlBreak
 		PUSH	ES
 		POP	DS
 		XOR	BX,BX
@@ -3106,13 +3349,16 @@ Exit1:		CALL	RstVc1
 		CALL	Cursor
 		MOV	AL,0
 		JMP	QuitVC
+ExitVC		ENDP
 
-;------------------ Restore and Hook vectots -------------------
+;----------- Restore and Hook Critical Error and Ctrl-Break vectors -----------
 RestVct		PROC	NEAR
 		LDS	DX,ES:ErrVct
 		MOV	AX,2524h
 		INT	21h
-RstVc1:		LDS	DX,ES:BrkVct
+
+RestVct_CtrlBreak:
+		LDS	DX,ES:BrkVct
 		MOV	AX,251Bh
 		INT	21h
 		RET

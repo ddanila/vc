@@ -713,7 +713,7 @@ F16_02:		MOV	DS:KeyBar,1
 		CALL	SavMous
 		MOV	AL,0
 		CALL	CurMous
-		JMP	Init70
+		JMP	SetDOSPromptRow
 
 F17_00:		PUSH	DS			; ^R
 F17_01:		MOV	AL,DS:WinTyp

@@ -40,6 +40,8 @@ KbdShiftMask	EQU	03h		; Right/left Shift status bits
 KbdCtrlMask	EQU	04h
 KbdAltMask	EQU	08h
 
+p_Left		EQU	0		; Left panel
+p_Right	EQU	1		; Right panel
 p_File		EQU	0		; File (main) panel type
 p_Tree		EQU	1		; Tree panel type
 p_Info		EQU	2		; Info panel type
@@ -454,7 +456,7 @@ WinLeave	DB	?			; Leave time under Windows
 CrntCol		DB	?			; Color which DOS currently uses
 Quote		DB	?			; Quote next character
 BarPrev		DB	?			; Previous Key Bar
-DosChg		DB	?			; Current drive when enter
+OldCurDrv	DB	?			; Current drive when enter
 SftErr		DB	?			; Shift error boxes down
 BlocEr		DB	?			; Disable critical error messages
 PathEr		DB	?			; Error when reading current path

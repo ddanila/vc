@@ -296,12 +296,12 @@ MnuMous		EQU	BYTE PTR TmpBuf+200	; Mouse status
 F40_00:		MOV	CX,ES:LastMnu		; Shift F10 - pull down menu
 		JMP	F39_01
 
-F39_00:		MOV	CX,1			; F9 - pull down menu
+F39_00:		MOV	CX,1			; F9 - pull down menu ("Left" menu item)
 		CMP	CH,DS:Visible
-		JE	F39_01
+		JE	F39_01			; !Visible - panels are off
 		CMP	CH,ES:Active
-		JE	F39_01
-		MOV	CL,5
+		JE	F39_01			; Left panel active
+		MOV	CL,5			; "Right" menu item
 F39_01:		CALL	HidCur
 		PUSH	DS
 		PUSH	ES
@@ -1833,7 +1833,7 @@ F69_11:		PUSH	ES
 		POP	AX
 		JNC	F69_13
 		MOV	DS:ModeFlag,1
-F69_12:		CALL	F69_40
+F69_12:		CALL	RestoreVideoMode
 		JMP	F69_11
 F69_13:		AND	AL,7Fh
 		MOV	DS:ScrMod,AL
@@ -2005,25 +2005,33 @@ F69_31		PROC	NEAR			; Size of screen buffer
 		RET
 F69_31		ENDP
 
-F69_40		PROC	NEAR			; Restore video mode
+RestoreVideoMode	PROC	NEAR
 		MOV	AL,DS:ScrMod
 		MOV	AH,0
 		INT	10h
+
+  @@RestoreFont:
 		PUSH	ES
 		MOV	BH,0
 		MOV	AX,1130h
 		INT	10h
 		POP	ES
 		CMP	CL,DS:CharSize
-		JBE	@@Exit
+		JBE	@@Exit			; current font's height <= CharSize
+
+  @@LoadCGAFont:
 		MOV	BL,0
 		MOV	AX,1112h
-		INT	10h
+		INT	10h			; load font8x8
+
+  @@AltPrntScr:
 		MOV	AH,12h
 		MOV	BL,20h
 		INT	10h
-  @@Exit:	RET
-F69_40		ENDP
+
+  @@Exit:
+		RET
+RestoreVideoMode	ENDP
 
 		.CONST
 Cmp0_S		DB	' Compare ',0
