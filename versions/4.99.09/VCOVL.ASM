@@ -181,7 +181,7 @@ Start:		CLD
 		MOV	DS:MainStack.Segm,SS
 		MOV	AL,0
 Terminate:	MOV	AH,4Ch
-		INT	21h			; exit(0)
+		INT	21h			; exit()
 
 ;------------------- Return to resident part -------------------
 QuitVC:		STC
@@ -773,7 +773,7 @@ Init_RestoreVideoMode	PROC	NEAR
 		JNE	@@UpdateVideoVars
 		CMP	DL,ES:Lines
 		JNE	@@UpdateVideoVars
-		MOV	ES:RestoreMode,0	; default: mode 3, 80x25
+		MOV	ES:RestoreMode,0
 		JMP	@@UpdateVideoVars
 
   @@BadMode:
@@ -845,9 +845,9 @@ FixCursorSize	PROC	NEAR
 		MOV	AH,3
 		INT	10h			; GetCurPos()
 		CMP	CH,BL
-		JAE	@@FixCursorSize		; cursor.end > fontheight
+		JAE	@@FixCursorSize		; cursor.end >= fontheight
 		CMP	CL,BL
-		JAE	@@FixCursorSize		; cursor.start > fontheight
+		JAE	@@FixCursorSize		; cursor.start >= fontheight
 		CMP	CL,CH
 		JAE	@@Exit			; !(cursor.end <= cursor.start)
 
@@ -856,7 +856,7 @@ FixCursorSize	PROC	NEAR
 		CMP	BL,11
 		CMC
 		SBB	CL,1
-		MOV	CH,CL			; cursor.end = (fontheight > 11) ? fontheight - 2 : fontheight - 1
+		MOV	CH,CL			; cursor.end = (fontheight >= 11) ? fontheight - 2 : fontheight - 1
 		DEC	CH			; cursor.start = cursor.end - 1
 		MOV	AH,1
 		INT	10h			; SetCurSize()
