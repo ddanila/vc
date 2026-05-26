@@ -2248,7 +2248,7 @@ M62_00:		PUSH	ES			; Interface options
 		CMP	AL,10
 		JBE	M62_01
 		MOV	AL,10
-M62_01:		CALL	HexDec
+M62_01:		CALL	BinDec
 		CMP	AL,'0'
 		JE	M62_02
 		STOSB
@@ -2587,7 +2587,7 @@ M64_00:		PUSH	ES			; Panel options
 		CMP	AL,99
 		JBE	M64_01
 		MOV	AL,99
-M64_01:		CALL	HexDec
+M64_01:		CALL	BinDec
 		CMP	AL,'0'
 		JE	M64_02
 		STOSB
@@ -2598,7 +2598,7 @@ M64_02:		MOV	AL,AH
 		CMP	AL,99
 		JBE	M64_03
 		MOV	AL,99
-M64_03:		CALL	HexDec
+M64_03:		CALL	BinDec
 		STOSW
 		XOR	AX,AX
 		STOSW

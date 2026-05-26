@@ -289,9 +289,9 @@ Input0		PROC	FAR
   @@ChkWrite:	CMP	DL,ClkFlag
 		JE	@@AutoEnter
 		MOV	ClkFlag,DL
-		CALL	HexDec
+		CALL	BinDec
 		XCHG	CX,AX
-		CALL	HexDec
+		CALL	BinDec
 		PUSH	AX
 		MOV	AH,Clock_C
 		CALL	Color

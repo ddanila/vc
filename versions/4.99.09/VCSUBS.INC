@@ -1998,14 +1998,14 @@ PutDate		PROC	FAR
 		MOV	AX,DS:[SI].DateF
 		PUSH	AX
 		AND	AX,1Fh
-		CALL	HexDec
+		CALL	BinDec
 		MOV	SI,AX
 		POP	AX
 		MOV	CL,5
 		SHR	AX,CL
 		PUSH	AX
 		AND	AX,0Fh
-		CALL	HexDec
+		CALL	BinDec
 		MOV	BX,AX
 		POP	AX
 		MOV	CL,4
@@ -2016,9 +2016,9 @@ PutDate		PROC	FAR
 		DIV	CL
 		MOV	CL,AH
 		ADD	AL,19
-		CALL	HexDec
+		CALL	BinDec
 		XCHG	CX,AX
-		CALL	HexDec
+		CALL	BinDec
 		CMP	ES:Country.DateFmt,1
 		JE	@@Swap
 		JB	@@ChkSpace
@@ -2070,14 +2070,14 @@ PutTime		PROC	FAR
 		PUSH	AX
 		AND	AX,1Fh
 		ADD	AX,AX
-		CALL	HexDec
+		CALL	BinDec
 		MOV	BX,AX
 		POP	AX
 		MOV	CL,5
 		SHR	AX,CL
 		PUSH	AX
 		AND	AX,3Fh
-		CALL	HexDec
+		CALL	BinDec
 		MOV	DX,AX
 		POP	AX
 		MOV	CL,6
@@ -2095,7 +2095,7 @@ PutTime		PROC	FAR
 		MOV	CH,'a'
 		JE	@@ConvHours
 		MOV	CH,'p'
-  @@ConvHours:	CALL	HexDec
+  @@ConvHours:	CALL	BinDec
 		CMP	AL,'0'
 		JNE	@@Write
 		MOV	AL,' '
@@ -2223,14 +2223,14 @@ PutDescr	ENDP
 ;	Return:	AL,AH - high and low digits
 ;---------------------------------------------------------------
 		.CODE	Subs
-HexDec		PROC	FAR
+BinDec		PROC	FAR
 		USES	CX
 		MOV	AH,0
 		MOV	CL,10
 		DIV	CL
 		ADD	AX,'00'
 		RET
-HexDec		ENDP
+BinDec		ENDP
 
 ;---------------------------------------------------------------
 ;	Correct first parameter

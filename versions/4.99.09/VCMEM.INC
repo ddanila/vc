@@ -241,7 +241,7 @@ F65_20:		CMP	BX,SegDOS		; DOS area
 		POP	DS
 		MOV	AX,DS:VerDOS
 		MOV	BH,AH
-		CALL	HexDec
+		CALL	BinDec
 		CMP	AL,'0'
 		JE	F65_21
 		STOSB
@@ -250,7 +250,7 @@ F65_21:		MOV	AL,AH
 		MOV	AL,'.'
 		STOSB
 		MOV	AL,BH
-		CALL	HexDec
+		CALL	BinDec
 		STOSW
 		MOV	AL,0
 		STOSB
