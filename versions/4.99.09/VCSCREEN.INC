@@ -7,57 +7,98 @@
 ;---------------------------------------------------------------
 ;	Set screen parameters
 ;---------------------------------------------------------------
+;
+;#define BDA_vpage_ofs MK_FP(0x40, 0x4E)
+;#define ASYNC_MODE 1
+;
+; MonoMode = (ScrMod == 7) ? true : false
+; if (TstEGA) MonoMode = GetEGAInfo()
+;
+; if (MonoMode || SnowMod == ASYNC_MODE || TstEGA) noSnow = true
+;
+; // assume CGA if display disabled (in retrace) for 7 or more test cycles
+; for (i = 32768; i > 0; i--) {
+;      for (c = 7; c > 0 && inp(0x3DA) & 1; c--) ;
+;      if (c == 0) break
+; }
+; noSnow = (c != 0) ? true : false
+;
+; GetVideoMode(&mode, &vpage, &cols)
+; Screen.Offs = (vpage == 0) ? 0 : BDA_vpage_ofs
+; Screen.Segm = (MonoMode) ? 0xB000 : 0xB800
+;
+; TopView = false
+; if (TopView_GetShadowBuf(Screen.Segm) != Screen.Segm) {
+;     Screen.Segm = TopView_GetShadowBuf()
+;     TopView = true
+;     NoSnow = true
+; }
+;
 		.CODE	Subs
 ScreenParms	PROC	FAR
-		MOV	BH,0			; ColorMono
+		MOV	BH,0			; Color mode
 		CMP	DS:ScrMod,7
 		JNE	@@MonoEGA
 		MOV	BH,1
-  @@MonoEGA:	CMP	DS:TstEGA,0
+
+  @@MonoEGA:
+		CMP	DS:TstEGA,0
 		JZ	@@ColorMono
 		MOV	BL,10h
 		MOV	AH,12h
-		INT	10h
-  @@ColorMono:	MOV	DS:ColorMono,BH
-		MOV	AH,1			; Snow
-		CMP	DS:ColorMono,0
-		JNZ	@@Snow3
+		INT	10h			; GetEGAInfo()
+
+  @@ColorMono:
+		MOV	DS:MonoMode,BH
+		MOV	AH,1			; no Snow workaround
+		CMP	DS:MonoMode,0
+		JNZ	@@SetSnowMode
 		CMP	DS:SnowMod,1
-		JE	@@Snow3
+		JE	@@SetSnowMode
 		MOV	DX,03DAh
 		MOV	BX,8000h
-		JB	@@Snow1
+		JB	@@RetraceNext
 		CMP	DS:TstEGA,BL
-		JNE	@@Snow3
-  @@Snow1:	STI
+		JNE	@@SetSnowMode
+
+  @@RetraceNext:
+		STI
 		DEC	BX
-		JE	@@Snow3
+		JE	@@SetSnowMode
 		MOV	CX,7			; Const2_1 ???
 		CLI
-  @@Snow2:	IN	AL,DX
+
+  @@RetraceEndWait:
+		IN	AL,DX
 		TEST	AL,1
-		JZ	@@Snow1
-		LOOP	@@Snow2
-		MOV	AH,0
-  @@Snow3:	STI
-		MOV	DS:Snow,AH
+		JZ	@@RetraceNext
+		LOOP	@@RetraceEndWait	; test cycle ~40 clocks on 8086
+		MOV	AH,0			; enable Snow workaround
+
+  @@SetSnowMode:
+		STI
+		MOV	DS:noSnow,AH
 		XOR	DI,DI			; Screen Offset
 		MOV	AH,0Fh
 		INT	10h
 		OR	BH,BH
-		JE	@@ScrOffs
+		JE	@@ScrOffs		; video page 0
 		PUSH	DS
 		MOV	DS,DI
-		MOV	DI,DS:[44Eh]
+		MOV	DI,DS:[44Eh]		; BDA.vpage_ofs
 		POP	DS
-  @@ScrOffs:	MOV	DS:Screen.Offs,DI
+
+  @@ScrOffs:
+		MOV	DS:Screen.Offs,DI
 		MOV	BX,0B800h		; Screen Segment
-		CMP	DS:ColorMono,0
+		CMP	DS:MonoMode,0
 		JZ	@@TopView
 		MOV	BH,0B0h
-  @@TopView:	MOV	ES,BX			; Virtual screen buffer
+
+  @@TopView:
+		MOV	ES,BX			; Virtual screen buffer
 		MOV	AH,0FEh
-		INT	10h
+		INT	10h			; TopView_GetShadowBuf()
 		MOV	CX,ES
 		PUSH	DS
 		POP	ES
@@ -65,8 +106,10 @@ ScreenParms	PROC	FAR
 		CMP	CX,BX
 		JE	@@SetSegm
 		MOV	AL,1
-		MOV	DS:Snow,AL
-  @@SetSegm:	MOV	DS:Screen.Segm,CX
+		MOV	DS:noSnow,AL
+
+  @@SetSegm:
+		MOV	DS:Screen.Segm,CX
 		MOV	DS:TopView,AL
 		RET
 ScreenParms	ENDP
@@ -348,7 +391,7 @@ Window		PROC	FAR
 		PUSH	ES
 		POP	DS
 		POP	ES
-		MOV	AL,ES:Snow
+		MOV	AL,ES:noSnow
 		MOV	CL,DL
 		MOV	DL,ES:Columns
 		LES	DI,ES:Screen
@@ -405,7 +448,7 @@ SavScr		PROC	FAR
 		MOV	SI,ES:Screen.Offs
 		MOV	DH,ES:Lines
 		MOV	DL,ES:Columns
-		MOV	AL,ES:Snow
+		MOV	AL,ES:noSnow
 		MOV	ES,ES:ScreenBuf
 		XOR	DI,DI
 		CALL	MovScr
@@ -430,7 +473,7 @@ MovScr		PROC	NEAR
 		MUL	BH
 		PUSH	AX
 		OR	BL,BL
-		JNZ	@@MoveBlock
+		JNZ	@@MoveBlock		; no Snow workaround
 		PUSH	DX
 		MOV	DX,03DAh
   @@ChkSnow1:	IN	AL,DX
@@ -476,7 +519,7 @@ ColAddr		PROC	FAR
 		MOV	AL,1
   @@ColOffs:	CBW
 		ADD	AX,AX
-		CMP	ES:ColorMono,0
+		CMP	ES:MonoMode,0
 		JZ	@@ColAdr
 		INC	AX
   @@ColAdr:	ADD	DI,AX
@@ -747,4 +790,3 @@ Rnd		PROC	NEAR
 		MOV	ES:Rand2,AX
 		RET
 Rnd		ENDP
-
