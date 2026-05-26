@@ -224,12 +224,21 @@ GoResident:	PUSH	CS
 ; Init_RestoreVideoMode()
 ; FixCursorSize()
 ; SetupLCaseMap()
+; MakeIni()
 ; GetTopMem() // result unused ?
 ; SetupVCenv()
 ; SetupTEMPenv()
 ; InitVars()
+; SetupInput()
+; SaveCurDrv()
+; SetLines_CharHeight()
+; ScreenParms()
+; DetectDesqView()
+; GetVerDOS()
+; InitFilePanels()
 ; GetDOSColor()
 ; SetDOSPromptRow()
+; HidCur()
 ; SaveScreen()
 ; IniMous()
 ; PutMnu(None_M)
@@ -1067,7 +1076,7 @@ SetLines_CharHeight	PROC	NEAR
 		MOV	DS:CharSize,CL
 SetLines_CharHeight	ENDP
 
-		CALL	ScreenParms		; DetectColor_Snow // TODO rename
+		CALL	ScreenParms
 
 DetectDesqView	PROC	NEAR
 		MOV	CX,'DE'			; Check DESQWIEV
