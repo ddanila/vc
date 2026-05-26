@@ -14,14 +14,14 @@
 ; MonoMode = (ScrMod == 7) ? true : false
 ; if (TstEGA) MonoMode = GetEGAInfo()
 ;
-; if (MonoMode || SnowMod == ASYNC_MODE || TstEGA) noSnow = true
+; if (MonoMode || SnowMod == ASYNC_MODE || TstEGA) NoSnow = true
 ;
 ; // assume CGA if display disabled (in retrace) for 7 or more test cycles
 ; for (i = 32768; i > 0; i--) {
 ;      for (c = 7; c > 0 && inp(0x3DA) & 1; c--) ;
 ;      if (c == 0) break
 ; }
-; noSnow = (c != 0) ? true : false
+; NoSnow = (c != 0) ? true : false
 ;
 ; GetVideoMode(&mode, &vpage, &cols)
 ; Screen.Offs = (vpage == 0) ? 0 : BDA_vpage_ofs
@@ -77,7 +77,7 @@ ScreenParms	PROC	FAR
 
   @@SetSnowMode:
 		STI
-		MOV	DS:noSnow,AH
+		MOV	DS:NoSnow,AH
 		XOR	DI,DI			; Screen Offset
 		MOV	AH,0Fh
 		INT	10h
@@ -106,7 +106,7 @@ ScreenParms	PROC	FAR
 		CMP	CX,BX
 		JE	@@SetSegm
 		MOV	AL,1
-		MOV	DS:noSnow,AL
+		MOV	DS:NoSnow,AL
 
   @@SetSegm:
 		MOV	DS:Screen.Segm,CX
@@ -391,7 +391,7 @@ Window		PROC	FAR
 		PUSH	ES
 		POP	DS
 		POP	ES
-		MOV	AL,ES:noSnow
+		MOV	AL,ES:NoSnow
 		MOV	CL,DL
 		MOV	DL,ES:Columns
 		LES	DI,ES:Screen
@@ -448,7 +448,7 @@ SavScr		PROC	FAR
 		MOV	SI,ES:Screen.Offs
 		MOV	DH,ES:Lines
 		MOV	DL,ES:Columns
-		MOV	AL,ES:noSnow
+		MOV	AL,ES:NoSnow
 		MOV	ES,ES:ScreenBuf
 		XOR	DI,DI
 		CALL	MovScr
