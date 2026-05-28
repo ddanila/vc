@@ -1774,7 +1774,7 @@ F59_06:		MOV	AH,AL
 		JNZ	Func04
 		CALL	SavMous
 		MOV	AL,0
-		CALL	CurMous
+		CALL	ShowMouse
 		MOV	SI,DS:ListCursor
 		ADD	SI,SI
 		MOV	AX,WORD PTR TmpBuf[SI]
@@ -1794,7 +1794,7 @@ F69_00:		PUSH	ES			; Alt F9 - EGA lines
 		JZ	Func04
 		CALL	SavMous
 		MOV	AL,0
-		CALL	CurMous
+		CALL	ShowMouse
 		MOV	AL,DS:ScrMod
 		MOV	AH,0
 		INT	10h

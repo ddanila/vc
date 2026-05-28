@@ -592,7 +592,7 @@ F34_62:		CALL	PutPrompt
 		JMP	Panels00
 F34_63:		CALL	SavMous
 		MOV	AL,0
-		CALL	CurMous
+		CALL	ShowMouse
 		MOV	SI,1
 		JMP	F69_10
 
@@ -1010,4 +1010,3 @@ F32_33:		MOV	BL,0
 		JE	F34_40
 		MOV	BL,1
 		JMP	F34_40
-

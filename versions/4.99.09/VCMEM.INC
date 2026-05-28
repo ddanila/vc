@@ -461,7 +461,7 @@ F65_44:		INC	CH
 		INC	DI
 		CALL	SavMous			; Save mouse cursor
 		MOV	AL,0
-		CALL	CurMous
+		CALL	ShowMouse
 		PUSH	DS			; Restore vectors
 		CALL	RestVct
 		POP	DS

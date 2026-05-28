@@ -712,7 +712,7 @@ F16_02:		MOV	DS:KeyBar,1
 		CALL	Cursor1
 		CALL	SavMous
 		MOV	AL,0
-		CALL	CurMous
+		CALL	ShowMouse
 		JMP	SetDOSPromptRow
 
 F17_00:		PUSH	DS			; ^R

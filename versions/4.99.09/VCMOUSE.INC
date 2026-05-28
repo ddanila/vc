@@ -54,7 +54,7 @@ IniMous		PROC	FAR
 		MOV	AX,4
 		INT	33h
   @@MouseOn:	MOV	AL,1
-		CALL	CurMous
+		CALL	ShowMouse
 		RET
 IniMous		ENDP
 
@@ -93,10 +93,10 @@ SavMous		PROC	FAR
 SavMous		ENDP
 
 ;---------------------------------------------------------------
-;	Set mouse cursor
-;		   AL - set/reset
+;	Show mouse cursor
+;		   AL - hide/show
 ;---------------------------------------------------------------
-CurMous		PROC	FAR
+ShowMouse		PROC	FAR
 		USES	AX
 		CMP	ES:Mouse,0
 		JZ	@@Exit
@@ -105,7 +105,7 @@ CurMous		PROC	FAR
 		ADC	AL,0
 		INT	33h
   @@Exit:	RET
-CurMous		ENDP
+ShowMouse		ENDP
 
 ;---------------------------------------------------------------
 ;	Get mouse cursor
@@ -309,4 +309,3 @@ InWind		PROC	FAR
 		CMP	DL,CL
   @@Exit:	RET
 InWind		ENDP
-

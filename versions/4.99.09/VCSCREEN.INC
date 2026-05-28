@@ -212,12 +212,12 @@ Int10m		PROC	FAR
 		USES	BP
 		PUSH	AX
 		MOV	AL,0
-		CALL	CurMous
+		CALL	ShowMouse
 		POP	AX
 		INT	10h
 		PUSH	AX
 		MOV	AL,1
-		CALL	CurMous
+		CALL	ShowMouse
 		POP	AX
 		RET
 Int10m		ENDP
@@ -384,7 +384,7 @@ Window		PROC	FAR
 		MOV	ES,CS:DataSegment
 		PUSH	ES
 		MOV	AL,0
-		CALL	CurMous
+		CALL	ShowMouse
 		PUSH	ES
 		CALL	BasAdr
 		MOV	SI,DI
@@ -435,7 +435,7 @@ Window		PROC	FAR
 		MOV	AH,0FFh
 		INT	10h
   @@MouseOn:	MOV	AL,1
-		CALL	CurMous
+		CALL	ShowMouse
 		RET
 Window		ENDP
 
@@ -602,7 +602,7 @@ ClsLine		ENDP
 Blank		PROC	NEAR
 		USES	AX,BX,CX,DX,SI,DI,BP
 		MOV	AL,0
-		CALL	CurMous
+		CALL	ShowMouse
 		MOV	AH,0Fh
 		INT	10h
 		MOV	AH,3
@@ -772,7 +772,7 @@ Blank		PROC	NEAR
 		MOV	AH,1
 		INT	10h
 		MOV	AL,1
-		CALL	CurMous
+		CALL	ShowMouse
 		RET
 Blank		ENDP
 

@@ -1288,7 +1288,7 @@ SaveScreen	ENDP
 		MOV	DS:CharSize,AH
 		CALL	SavMous
 		MOV	AL,0
-		CALL	CurMous
+		CALL	ShowMouse
 		MOV	SI,1
 		JMP	F69_10
 
@@ -2941,7 +2941,7 @@ RunCmd13:	XOR	BX,BX
 		CALL	Window
 		CALL	SavMous
 		MOV	AL,0
-		CALL	CurMous
+		CALL	ShowMouse
 		MOV	AH,DS:DosLin
 		CALL	Cursor
 		OR	CL,CL
@@ -3352,7 +3352,7 @@ ExitVC		PROC	NEAR
 		XOR	BX,BX
 		CALL	Window
 		MOV	AL,0
-		CALL	CurMous
+		CALL	ShowMouse
 		MOV	AH,DS:DosLin
 		DEC	AH
 		CALL	Cursor
