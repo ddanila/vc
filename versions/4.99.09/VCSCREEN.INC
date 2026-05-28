@@ -10,18 +10,24 @@
 ;
 ;#define BDA_vpage_ofs MK_FP(0x40, 0x4E)
 ;#define ASYNC_MODE 1
+;#define AUTO_MODE 2
 ;
 ; MonoMode = (ScrMod == 7) ? true : false
 ; if (TstEGA) MonoMode = GetEGAInfo()
 ;
-; if (MonoMode || SnowMod == ASYNC_MODE || TstEGA) NoSnow = true
-;
-; // assume CGA if display disabled (in retrace) for 7 or more test cycles
-; for (i = 32768; i > 0; i--) {
-;      for (c = 7; c > 0 && inp(0x3DA) & 1; c--) ;
-;      if (c == 0) break
+; if (MonoMode || SnowMod == ASYNC_MODE ||
+;      (SnowMod == AUTO_MODE && TstEGA)) {
+;     NoSnow = true
+; else {
+;     // assume CGA if display disabled (in retrace) for more than 7 test cycles
+;     for (i = 32768; i > 0; i--) {
+;          _disable()
+;          for (c = 7; c > 0 && inp(0x3DA) & 1; c--) ;
+;          _enable()
+;          if (c == 0) break
+;     }
+;     NoSnow = (c != 0) ? true : false
 ; }
-; NoSnow = (c != 0) ? true : false
 ;
 ; GetVideoMode(&mode, &vpage, &cols)
 ; Screen.Offs = (vpage == 0) ? 0 : BDA_vpage_ofs
@@ -122,7 +128,7 @@ PrintStr	PROC	FAR
   @@GetChar:	LODSB
 		CMP	AL,0
 		JE	@@Exit
-		MOV	BL,7
+		MOV	BL,7			; gray on black (not needed for text modes)
 		MOV	AH,0Eh
 		INT	10h
 		JMP	@@GetChar
@@ -130,17 +136,16 @@ PrintStr	PROC	FAR
 PrintStr	ENDP
 
 ;---------------------------------------------------------------
-;	Set cursor
-;		   AL - column
-;		   AH - line
+;	Set cursor position
+;		   AL - column, AH - line
 ;---------------------------------------------------------------
 gotoxy		PROC	FAR
 		USES	AX,BX,DX
 		MOV	DX,AX
 		MOV	AH,0Fh
-		INT	10h
+		INT	10h			; GetVideoMode(&mode, &vpage, &cols)
 		MOV	AH,2
-		INT	10h
+		INT	10h			; SetCurPos(vpage, x, y)
 		RET
 gotoxy		ENDP
 
@@ -181,7 +186,7 @@ ChgCur		PROC	FAR
 ChgCur		ENDP
 
 ;---------------------------------------------------------------
-;	Hide cursor
+;	Hide cursor - move cursor to row outside screen
 ;---------------------------------------------------------------
 HidCur		PROC	FAR
 		USES	AX
@@ -227,6 +232,9 @@ Int10m		ENDP
 ;		BH,BL - coordinats
 ;	Return:	ES:DI - address
 ;---------------------------------------------------------------
+;
+; return MK_FP(ScreenBuf, (y * Columns + x) * 2)
+;
 BasAdr		PROC	FAR
 		USES	AX,BX
 		MOV	ES,CS:DataSegment
@@ -376,9 +384,34 @@ ResUser		ENDP
 
 ;---------------------------------------------------------------
 ;	Output window
-;		BH,BL - begin
-;		DH,DL - size
+;		BH - start y, BL - start x
+;		DH - height, DL - width
 ;---------------------------------------------------------------
+;
+; ShowMouse(false)
+; from = BasAdr(x, y)
+; to = MK_FP(FP_SEG(Screen), FP_OFF(Screen) + FP_OFF(from))
+;
+; if (h > 1) {
+;     // copy full rows (set x = 0). Equivalent of BasAdr(0, y)
+;     from = MK_FP(FP_SEG(from), FP_OFF(from) - x * 2)
+;     to = MK_FP(FP_SEG(Screen), FP_OFF(Screen) - x * 2)
+;     MovScr(to, from, Columns/*w*/, h, NoSnow)
+; } else { // inlined for single line
+;     for (i = 0; i < w; i += 2) {
+;          if (NoSnow == false) {
+;              for (; inp(0x3DA) & 1; ) ; // wait for end of retrace
+;              _disable()
+;              for (; inp(0x3DA) & 1 == 0; ) ; // wait for start of retrace
+;          }
+;          (short)to[i] = (short)from[i]
+;          _enable()
+;     }
+; }
+;
+; if (TopView) TopView_ShadowBuf2Scr(to, w * h)
+; ShowMouse(true)
+;
 Window		PROC	FAR
 		USES	AX,BX,CX,DX,SI,DI,DS,ES
 		MOV	ES,CS:DataSegment
@@ -392,49 +425,63 @@ Window		PROC	FAR
 		POP	DS
 		POP	ES
 		MOV	AL,ES:NoSnow
-		MOV	CL,DL
-		MOV	DL,ES:Columns
-		LES	DI,ES:Screen
+		MOV	CL,DL			; real_w
+		MOV	DL,ES:Columns		; w = Columns
+		LES	DI,ES:Screen		; to = Screen[0]
 		ADD	DI,SI
 		CMP	DH,1
 		JE	@@OneLine
 		MOV	BH,0
 		ADD	BX,BX
 		SUB	SI,BX
-		SUB	DI,BX
-		PUSH	DI
-		PUSH	DX
+		SUB	DI,BX			; x = 0 -> copy full rows
+		PUSH	DI			; FP_OFF(to)
+		PUSH	DX			; w, h
 		CALL	MovScr
 		POP	AX
 		MUL	AH
-		MOV	CX,AX
-		POP	DI
+		MOV	CX,AX			; w * h
+		POP	DI			; FP_OFF(to)
 		JMP	@@ShadowBuf
-  @@OneLine:	MOV	CH,0
+
+  @@OneLine:
+		MOV	CH,0
 		PUSH	DI
 		PUSH	CX
 		MOV	AH,AL
 		MOV	DX,03DAh
-  @@Next:	OR	AH,AH
-		JNZ	@@Move
-  @@ChkSnow1:	IN	AL,DX
+
+  @@Next:
+		OR	AH,AH
+		JNZ	@@Move			; NoSnow = true
+
+  @@RetraceEndWait:
+		IN	AL,DX
 		TEST	AL,1
-		JNZ	@@ChkSnow1
+		JNZ	@@RetraceEndWait
 		CLI
-  @@ChkSnow2:	IN	AL,DX
+
+  @@RetraceStartWait:
+		IN	AL,DX
 		TEST	AL,1
-		JZ	@@ChkSnow2
-  @@Move:	MOVSW
+		JZ	@@RetraceStartWait
+
+  @@Move:
+		MOVSW
 		STI
 		LOOP	@@Next
-		POP	CX
-		POP	DI
-  @@ShadowBuf:	POP	ES
+		POP	CX			; w * h
+		POP	DI			; FP_OFF(to)
+
+  @@ShadowBuf:
+		POP	ES
 		CMP	ES:TopView,0
 		JZ	@@MouseOn
 		MOV	AH,0FFh
-		INT	10h
-  @@MouseOn:	MOV	AL,1
+		INT	10h			; TopView_ShadowBuf2Scr(to, w * h)
+
+  @@MouseOn:
+		MOV	AL,1
 		CALL	ShowMouse
 		RET
 Window		ENDP
@@ -442,6 +489,9 @@ Window		ENDP
 ;---------------------------------------------------------------
 ;	Save screen
 ;---------------------------------------------------------------
+;
+; MovScr(ScreenBuf, Screen, Columns/*w*/, Lines/*h*/, NoSnow)
+;
 SavScr		PROC	FAR
 		USES	AX,BX,CX,DX,SI,DI,DS,ES
 		MOV	DS,ES:Screen.Segm
@@ -554,12 +604,12 @@ Shadow		ENDP
 ;		   AL - color
 ;		ES:DI - buffer to fill
 ;---------------------------------------------------------------
-ColorFill		PROC	FAR
+ColorFill	PROC	FAR
 		INC	DI
 		STOSB
 		LOOP	ColorFill
 		RET
-ColorFill		ENDP
+ColorFill	ENDP
 
 ;---------------------------------------------------------------
 ;	Move ASCIIZ line to screen buffer
@@ -776,6 +826,16 @@ Blank		PROC	NEAR
 		RET
 Blank		ENDP
 
+;---------------------------------------------------------------
+;	Pseudo-random number generator
+;	Return: AX - pseudo-random number
+;---------------------------------------------------------------
+;
+; oldRand2 = Rand2
+; Rand2 = (short)(Rand1 * 3 + Rand2 * 3 + 23457)
+; Rand1 = oldRand2
+; return Rand2
+;
 Rnd		PROC	NEAR
 		USES	BX,CX,DX
 		MOV	BX,3
