@@ -2478,7 +2478,7 @@ F77_01:		PUSH	DS
 		CALL	Window
 		MOV	AX,ES:SearchCur0
 		ADD	AX,BX
-		CALL	Cursor
+		CALL	gotoxy
 		POP	BX
 		POP	DX
 		POP	DS

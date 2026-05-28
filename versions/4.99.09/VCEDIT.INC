@@ -768,7 +768,7 @@ T00_61:	MOV	BX,DS:EdLine
 	SUB	BX,DS:EdLin0
 	MOV	AH,BL
 	ADD	AX,DS:EdBase
-	CALL	Cursor
+	CALL	gotoxy
 
 T00_70:	CALL	GetMous			; Mouse
 	TEST	AL,7

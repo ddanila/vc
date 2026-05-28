@@ -134,7 +134,7 @@ PrintStr	ENDP
 ;		   AL - column
 ;		   AH - line
 ;---------------------------------------------------------------
-Cursor		PROC	FAR
+gotoxy		PROC	FAR
 		USES	AX,BX,DX
 		MOV	DX,AX
 		MOV	AH,0Fh
@@ -142,7 +142,7 @@ Cursor		PROC	FAR
 		MOV	AH,2
 		INT	10h
 		RET
-Cursor		ENDP
+gotoxy		ENDP
 
 ;---------------------------------------------------------------
 ;	Set cursor on command prompt
@@ -153,7 +153,7 @@ Cursor1		PROC	FAR
 		SUB	AL,ES:OutCol
 		ADD	AL,ES:BegCol
 		MOV	AH,ES:DosLin
-		CALL	Cursor
+		CALL	gotoxy
 		RET
 Cursor1		ENDP
 
@@ -187,7 +187,7 @@ HidCur		PROC	FAR
 		USES	AX
 		MOV	AX,7F00h
 		IFDEF	OFFICIAL
-		CALL	Cursor
+		CALL	gotoxy
 		ENDIF
 		RET
 HidCur		ENDP

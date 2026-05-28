@@ -1681,7 +1681,7 @@ ExecArcInChCall	PROC	NEAR
 		MOV	ES:[DI+1],AH
 		JMP	@@Exit
   @@SetCursor:	MOV	AX,BX
-		CALL	Cursor
+		CALL	gotoxy
 		JMP	@@Exit
   @@CheckKey:	CMP	AH,0FCh
 		JAE	@@Exit
@@ -2710,4 +2710,3 @@ ExecArcDateSep	PROC	NEAR
 		STC
   @@Exit:	RET
 ExecArcDateSep	ENDP
-

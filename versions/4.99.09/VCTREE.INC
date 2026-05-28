@@ -2081,7 +2081,7 @@ ChDirList:	CALL	DialogList
 		CMP	AX,CX
 		JE	@@LeaveTime
 		ADD	AX,SI
-		CALL	Cursor
+		CALL	gotoxy
 		JMP	@@Mouse
   @@LeaveTime:	CALL	Yield
 		JMP	@@Mouse
@@ -2215,7 +2215,7 @@ ChDirSearch	PROC	NEAR			; Output search line
 		CALL	Window
 		MOV	AX,BX
 		ADD	AX,DS:SearchCur0
-		CALL	Cursor
+		CALL	gotoxy
 		RET
 ChDirSearch	ENDP
 

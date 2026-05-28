@@ -264,7 +264,7 @@ ErrDrvSub	PROC	NEAR
 		CMP	AX,0FFFFh
 		JNE	@@Drive
 		LEA	AX,[BX+42Ch]
-		CALL	Cursor
+		CALL	gotoxy
 		JMP	@@Exit
   @@Drive:	CMP	AH,0FCh
 		JAE	@@Exit
