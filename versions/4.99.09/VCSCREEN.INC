@@ -18,8 +18,8 @@
 ; if (MonoMode || SnowMod == ASYNC_MODE ||
 ;      (SnowMod == AUTO_MODE && TstEGA)) {
 ;     NoSnow = true
-; else {
-;     // assume CGA if display disabled (in retrace) for more than 7 test cycles
+; } else {
+;     // assume CGA if display disabled (in retrace) for 7 test cycles
 ;     for (i = 32768; i > 0; i--) {
 ;          _disable()
 ;          for (c = 7; c > 0 && inp(0x3DA) & 1; c--) ;
