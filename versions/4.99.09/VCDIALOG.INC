@@ -2775,7 +2775,7 @@ MnMn40		PROC	NEAR			; Show menus
 		MOV	CL,DL
 		MOV	CH,0
 		PUSH	DI
-		CALL	MvsColr
+		CALL	ColorFill
 		POP	DI
 		POP	CX
 		PUSH	CX
@@ -2798,7 +2798,7 @@ MnMn41		PROC	NEAR			; Show current menu
 		ADD	CX,CX
 		ADD	DI,CX
 		MOV	CL,CS:[SI]
-		CALL	MvsColr
+		CALL	ColorFill
 		RET
 MnMn41		ENDP
 

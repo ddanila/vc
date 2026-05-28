@@ -961,7 +961,7 @@ F40_10		PROC	NEAR
 		CALL	BasAdr
 		PUSH	DI
 		PUSH	CX
-		CALL	MvsColr
+		CALL	ColorFill
 		POP	CX
 		POP	DI
 F40_11:		MOV	AL,ES:[DI]
@@ -1010,7 +1010,7 @@ F40_31:		MOV	AH,MnuDr_C
 		MOV	CL,DL
 		SUB	CL,4
 		MOV	CH,0
-		CALL	MvsColr
+		CALL	ColorFill
 		MOV	AH,MnuMi_C
 		CALL	Color
 		MOV	AL,'-'

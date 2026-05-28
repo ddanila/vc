@@ -554,12 +554,12 @@ Shadow		ENDP
 ;		   AL - color
 ;		ES:DI - buffer to fill
 ;---------------------------------------------------------------
-MvsColr		PROC	FAR
+ColorFill		PROC	FAR
 		INC	DI
 		STOSB
-		LOOP	MvsColr
+		LOOP	ColorFill
 		RET
-MvsColr		ENDP
+ColorFill		ENDP
 
 ;---------------------------------------------------------------
 ;	Move ASCIIZ line to screen buffer

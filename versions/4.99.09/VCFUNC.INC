@@ -1973,7 +1973,7 @@ DriveCursor	PROC	NEAR
 		MOV	AL,AH
 		PUSH	ES
 		CALL	BasAdr
-		CALL	MvsColr
+		CALL	ColorFill
 		POP	ES
 		PUSH	BX
 		MOV	AX,ES:DriveType
@@ -1988,7 +1988,7 @@ DriveCursor	PROC	NEAR
 		CALL	Color
 		MOV	AL,AH
 		CALL	BasAdr
-		CALL	MvsColr
+		CALL	ColorFill
 		POP	BX
 		CALL	Window
 		RET

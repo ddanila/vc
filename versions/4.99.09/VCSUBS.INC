@@ -2382,7 +2382,7 @@ SetCur		PROC	FAR
 		MOV	CL,DL
 		MOV	CH,0
 		MOV	AL,AH
-		CALL	MvsColr
+		CALL	ColorFill
 		INC	DX
 		CALL	Window
   @@Exit:	RET
