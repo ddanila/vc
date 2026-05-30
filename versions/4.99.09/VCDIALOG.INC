@@ -20,7 +20,7 @@ MinBox		PROC	FAR
 		JZ	@@PutBox
 		PUSH	AX
 		MOV	AH,ShadFl
-		CALL	ColAddr
+		CALL	GetColorAddr
 		POP	AX
 		XCHG	AL,ES:[DI]
 		PUSH	DI

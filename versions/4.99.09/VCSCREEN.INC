@@ -546,36 +546,51 @@ MovScr		PROC	NEAR
 MovScr		ENDP
 
 ;---------------------------------------------------------------
-;	Get color
-;		   AH - color number
+;	Get color of ui element
+;		   AH - ui element
 ;	Return:	   AH - color
 ;---------------------------------------------------------------
 Color		PROC	FAR
 		USES	DI,ES
 		MOV	ES,CS:DataSegment
-		CALL	ColAddr
+		CALL	GetColorAddr
 		MOV	AH,ES:[DI]
 		RET
 Color		ENDP
 
-ColAddr		PROC	FAR
+;---------------------------------------------------------------
+;	Get pointer to color of ui element using current palette
+;		   AH - ui element
+;	Return:	   ES:DI - pointer to color
+;---------------------------------------------------------------
+;
+; if (DispType > d_LapTop) pal = d_Color
+;
+; // palettes: 0 - Mono(16gray), 1 == 3 - MonoMode, 2 - Color, 4 == 5 - LapTop
+; return &ColTab[colorname][pal * 2 + MonoMode]
+;
+GetColorAddr	PROC	FAR
 		USES	AX
 		MOV	AL,6
-		MUL	AH
+		MUL	AH			; colorname *= 6
 		MOV	DI,AX
 		MOV	AL,ES:DispType
 		CMP	AL,3
 		JB	@@ColOffs
 		MOV	AL,d_Color
-  @@ColOffs:	CBW
-		ADD	AX,AX
+
+  @@ColOffs:
+		CBW
+		ADD	AX,AX			; pal = DispType * 2
 		CMP	ES:MonoMode,0
 		JZ	@@ColAdr
 		INC	AX
-  @@ColAdr:	ADD	DI,AX
+
+  @@ColAdr:
+		ADD	DI,AX
 		ADD	DI,OFFSET ColTab
 		RET
-ColAddr		ENDP
+GetColorAddr	ENDP
 
 ;---------------------------------------------------------------
 ;	Shadow
@@ -600,7 +615,7 @@ Shadow		PROC	FAR
 Shadow		ENDP
 
 ;---------------------------------------------------------------
-;	Fill color
+;	Fill with color
 ;		   AL - color
 ;		ES:DI - buffer to fill
 ;---------------------------------------------------------------
