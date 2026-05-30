@@ -176,7 +176,7 @@ ChgCur		PROC	FAR
 		CMP	ES:ScrMod,7
 		JNE	@@LapTop
 		MOV	CX,0B0Ch
-  @@LapTop:	CMP	ES:ColTyp,2
+  @@LapTop:	CMP	ES:DispType,d_LapTop
 		JNE	@@SetCur
 		MOV	CH,0
   @@SetCur:	MOV	AH,1
@@ -563,10 +563,10 @@ ColAddr		PROC	FAR
 		MOV	AL,6
 		MUL	AH
 		MOV	DI,AX
-		MOV	AL,ES:ColTyp
+		MOV	AL,ES:DispType
 		CMP	AL,3
 		JB	@@ColOffs
-		MOV	AL,1
+		MOV	AL,d_Color
   @@ColOffs:	CBW
 		ADD	AX,AX
 		CMP	ES:MonoMode,0

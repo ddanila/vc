@@ -161,7 +161,7 @@ DefInit		DB	07h,07h,1Bh,07h,07h,07h	;  0 - Main windows
 		DB	0			; Clock
 		DB	1			; AutoCD
 		DB	1			; AutoSav
-		DB	1			; ColTyp
+		DB	d_Color			; DispType
 		DB	5			; BlDelay
 		DB	1			; LoadFl
 		DB	1			; UseSwap
@@ -2223,9 +2223,9 @@ Key2E:		MOV	DS:TmpData.ComnIni.ExecTyp,1
 		JMP	Init77
 KeyNo2E:	MOV	DS:TmpData.ComnIni.ExecTyp,0
 		JMP	Init77
-KeyBW:		MOV	DS:TmpData.ComnIni.ColTyp,0
+KeyBW:		MOV	DS:TmpData.ComnIni.DispType,d_Mono
 		JMP	Init77
-KeyLCD:		MOV	DS:TmpData.ComnIni.ColTyp,2
+KeyLCD:		MOV	DS:TmpData.ComnIni.DispType,d_LapTop
 		JMP	Init77
 KeyNoZoom:	MOV	DS:TmpData.ComnIni.ZoomWin,0
 		JMP	Init77

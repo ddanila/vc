@@ -486,7 +486,7 @@ F34_54:		ADD	DI,AX
 		POP	DI
 		POP	DS
 		MOV	BYTE PTR DS:[DI+15],0
-		MOV	AL,DS:ColTyp
+		MOV	AL,DS:DispType
 		MOV	DS:[DI+9],AL
 		CMP	DS:Mouse,0
 		JE	F34_55

@@ -2214,21 +2214,21 @@ Interface_P	DB	Conf_C, CnfRe_C, CnfBo_C, 0
 		DW	OkCn_S
 		DW	0
 Interface_B	BOXHD	< Interface_P, 100h, M62_10, Dialog_K, Opt_M, Interface_H, 0 >
-		BOXMN	<3,14, 1, 0,8Ah,  30Ah, Clock  , 0 >	; Clock
-		BOXMN	<3, 0, 2, 1,8Ah,  40Ah, Prompt , 0 >	; Path prompt
-		BOXMN	<3, 1, 3, 2,8Ah,  50Ah, MenuVs , 0 >	; Menu visible
-		BOXMN	<3, 2, 4, 3,8Ah,  60Ah, AltBar , 0 >	; Alt selects menu
-		BOXMN	<3, 3, 5, 4,8Bh,  70Ah, EscBar , 0 >	; Esc toggles panels
-		BOXMN	<3, 4, 6, 5,8Bh,  80Ah, ClrBuf , 0 >	; Clear keyboard buffer
-		BOXMN	<3, 5, 7, 6,8Bh,  90Ah, QuitAck, 0 >	; Confirm on quit
-		BOXMN	<3, 6, 8, 7,8Bh, 0A0Ah, ErrSnd , 0 >	; Error sound
-		BOXMN	<3, 7, 9, 8, 12, 0D0Ah, LftMous, 0 >	; Left handed mouse
-		BOXMN	<3, 8,14, 9, 13, 0E0Ah, MousRes, 0 >	; Fast mouse reset
-		BOXMN	<2, 9,8Bh, 0,10,  32Eh, ColTyp , 3 >	; Screen colors
-		BOXMN	<2,0CAh,12,5,11,  82Eh, SnowMod, 3 >	; Snow mode
-		BOXMN	<3,0CBh,13,8,12, 0D2Eh, ZoomWin, 0 >	; Zooming boxes
-		BOXMN	<1, 12,14, 9,13, 0E3Ah, TmpBuf , 5 >	; Zoom stages
-		BOXMN	<4, 13, 0,14,14, 13F6h, OkCn_D , 0 >	; Ok / Cancel
+		BOXMN	<3,14, 1, 0,8Ah,  30Ah, Clock   , 0 >	; Clock
+		BOXMN	<3, 0, 2, 1,8Ah,  40Ah, Prompt  , 0 >	; Path prompt
+		BOXMN	<3, 1, 3, 2,8Ah,  50Ah, MenuVs  , 0 >	; Menu visible
+		BOXMN	<3, 2, 4, 3,8Ah,  60Ah, AltBar  , 0 >	; Alt selects menu
+		BOXMN	<3, 3, 5, 4,8Bh,  70Ah, EscBar  , 0 >	; Esc toggles panels
+		BOXMN	<3, 4, 6, 5,8Bh,  80Ah, ClrBuf  , 0 >	; Clear keyboard buffer
+		BOXMN	<3, 5, 7, 6,8Bh,  90Ah, QuitAck , 0 >	; Confirm on quit
+		BOXMN	<3, 6, 8, 7,8Bh, 0A0Ah, ErrSnd  , 0 >	; Error sound
+		BOXMN	<3, 7, 9, 8, 12, 0D0Ah, LftMous , 0 >	; Left handed mouse
+		BOXMN	<3, 8,14, 9, 13, 0E0Ah, MousRes , 0 >	; Fast mouse reset
+		BOXMN	<2, 9,8Bh, 0,10,  32Eh, DispType, 3 >	; Screen colors
+		BOXMN	<2,0CAh,12,5,11,  82Eh, SnowMod , 3 >	; Snow mode
+		BOXMN	<3,0CBh,13,8,12, 0D2Eh, ZoomWin , 0 >	; Zooming boxes
+		BOXMN	<1, 12,14, 9,13, 0E3Ah, TmpBuf  , 5 >	; Zoom stages
+		BOXMN	<4, 13, 0,14,14, 13F6h, OkCn_D  , 0 >	; Ok / Cancel
 		DB	0
 InterfErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Interface00_S

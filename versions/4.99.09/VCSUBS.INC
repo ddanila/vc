@@ -1886,7 +1886,7 @@ PutNam1		ENDP
 PutNam2		PROC	NEAR
 		MOV	CL,' '
 		MOV	CH,ES:FileMarks[0]
-		CMP	ES:ColTyp,2
+		CMP	ES:DispType,d_LapTop
 		JNE	@@NoLapTop
 		TEST	AH,40h
 		JZ	@@NoLapTop
