@@ -19,21 +19,9 @@
 ; if (MonoMode || SnowMod == ASYNC_MODE ||
 ;      (SnowMod == AUTO_MODE && TstEGA)) {
 ;     NoSnow = true
-; } else { // SYNC_MODE
-;     // enable snow workaround if display disabled (in retrace) for 7 test cycles
-;     // Always true condition:
-;     //
-;     // 8088 4.77Mhz clock: 1/4.77Mhz = ~210ns
-;     // CGA HSync: 15.7kHz or 1/15.7kHz = ~63700ns -> every 304 clocks
-;     //  from them horizontal retrace ~4000ns = ~20 clocks:
-;     //  https://web.archive.org/web/20131217170534/https://minuszerodegrees.net/mda_cga_ega/cga_sync_hor.bmp
-;     // CGA VSync: 60Hz or 1/60Hz = ~16700000ns -> every 262 * 304 = 79648 clocks
-;     //  from them vertical retrace ~190000ns = ~905 clocks:
-;     //  https://web.archive.org/web/20131217170542/https://minuszerodegrees.net/mda_cga_ega/cga_sync_ver.bmp
-;     //
-;     // In the worst case (display enabled), the code sequence
-;     // IN,TEST,JZ,STI,DEC,JZ,MOV,CLI(8+4+13+2+3+13+4+2) executes up to 32768 times,
-;     // until it detects vertical retrace, which is longer than 7 test(8+4+4+15) cycles.
+; } else { // SYNC_MODE (CGA snow workaround)
+;     // assume CRT monitor if display disabled (in retrace) for 7 test cycles.
+;     // Laptops with CGA compatible cards and LCD monitors have short blank periods.
 ;     for (i = 32768; i > 0; i--) {
 ;          _disable()
 ;          for (c = 7; c > 0 && inp(0x3DA) & 1; c--) ;
