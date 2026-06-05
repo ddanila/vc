@@ -450,7 +450,7 @@ ScrPage		DB	?			; Current screen page number
 TstEGA		DB	?			; 1 if EGA or VGA present
 ModeFlag	DB	?			; Error setting video mode
 MonoMode	DB	?			; Monochrome mode
-NoSnow		DB	?			; Snow on/off
+SkipCGASnowFix	DB	?			; 1 if no need for Snow workaround
 ExtKeyb		DB	?			; Extended keyboard
 StdIn		DB	?			; Input through INT 21h
 StdFile		DB	?			; Input from file
