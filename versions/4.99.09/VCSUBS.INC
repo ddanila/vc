@@ -1885,16 +1885,20 @@ PutNam1		ENDP
 
 PutNam2		PROC	NEAR
 		MOV	CL,' '
-		MOV	CH,ES:FileMarks[0]
+		MOV	CH,ES:FileMarks[0]	; '░'
 		CMP	ES:DispType,d_LCD
-		JNE	@@NoLapTop
+		JNE	@@NotLCD
 		TEST	AH,40h
-		JZ	@@NoLapTop
-		MOV	CX,WORD PTR ES:FileMarks[1]
-  @@NoLapTop:	TEST	AH,6
+		JZ	@@NotLCD
+		MOV	CX,WORD PTR ES:FileMarks[1] ; '▐', '█'
+
+  @@NotLCD:
+		TEST	AH,6
 		JZ	@@SetAttr
 		MOV	CL,CH
-  @@SetAttr:	MOV	AL,CL
+
+  @@SetAttr:
+		MOV	AL,CL
 		RET
 PutNam2		ENDP
 

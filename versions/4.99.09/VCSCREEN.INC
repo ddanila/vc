@@ -190,10 +190,10 @@ AdjustCursorSize	PROC	FAR
 		PUSH	CX
 		MOV	CX,0607h
 		CMP	ES:ScrMod,7
-		JNE	@@LapTop
+		JNE	@@CheckLCD
 		MOV	CX,0B0Ch
 
-  @@LapTop:
+  @@CheckLCD:
 		CMP	ES:DispType,d_LCD
 		JNE	@@SetCur
 		MOV	CH,0
