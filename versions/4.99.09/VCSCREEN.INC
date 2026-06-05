@@ -165,27 +165,45 @@ Cursor1		PROC	FAR
 Cursor1		ENDP
 
 ;---------------------------------------------------------------
-;	Get cursor size & set it
+;	Adjust cursor size depending on video mode and display type(LCD)
 ;	Return:	CX - cursor size
 ;---------------------------------------------------------------
-ChgCur		PROC	FAR
+;
+; GetCurPos(0/*vpage*/, &cursor)
+; if (ScrMod == 7) {
+;     cursor.start = 11
+;     cursor.end = 12
+; } else {
+;     cursor.start = 6
+;     cursor.end = 7
+; }
+; // make cursor more visible on LCD monitor
+; if (DispType == d_LapTop) cursor.start = 0
+;
+; SetCurSize(&cursor)
+;
+AdjustCursorSize	PROC	FAR
 		USES	BX,DX,BP
 		MOV	BH,0
 		MOV	AH,3
-		INT	10h
+		INT	10h			; GetCurPos()
 		PUSH	CX
 		MOV	CX,0607h
 		CMP	ES:ScrMod,7
 		JNE	@@LapTop
 		MOV	CX,0B0Ch
-  @@LapTop:	CMP	ES:DispType,d_LapTop
+
+  @@LapTop:
+		CMP	ES:DispType,d_LapTop
 		JNE	@@SetCur
 		MOV	CH,0
-  @@SetCur:	MOV	AH,1
-		INT	10h
+
+  @@SetCur:
+		MOV	AH,1
+		INT	10h			; SetCurSize()
 		POP	CX
 		RET
-ChgCur		ENDP
+AdjustCursorSize	ENDP
 
 ;---------------------------------------------------------------
 ;	Hide cursor - move cursor to row outside screen
@@ -514,32 +532,67 @@ SavScr		ENDP
 ;		   AL - snow
 ;		DS:SI => ES:DI
 ;---------------------------------------------------------------
+;
+; while (h > 0) {
+;    rows = (h < 7) ? h : 7 // transfer up to 7 rows in one vertical retrace
+;    scrsize = w * rows
+;    if (NoSnow == false) {
+;        for (; inp(0x3DA) & 1; ) ; // wait for end of retrace
+;        for (;;) {
+;             _enable()
+;             _disable()
+;             // wait for start of retrace
+;             if (inp(0x3DA) & 1 == 0) continue
+;             // make sure it's vertical retrace on CRT monitor
+;             for (c = 10; c > 0 && inp(0x3DA) & 1; c--) ;
+;             if (c == 0) break
+;        }
+;    }
+;    memcpy(to, from, scrsize)
+;    _enable()
+;    h -= rows
+; }
+;
 MovScr		PROC	NEAR
 		CLD
 		MOV	BL,AL
 		MOV	BH,7			; Const1 ???
-  @@NextBlock:	CMP	DH,BH
+
+  @@NextBlock:
+		CMP	DH,BH
 		JAE	@@BlockSize
 		MOV	BH,DH
-  @@BlockSize:	MOV	AL,DL
+
+  @@BlockSize:
+		MOV	AL,DL
 		MUL	BH
 		PUSH	AX
 		OR	BL,BL
 		JNZ	@@MoveBlock		; no Snow workaround
 		PUSH	DX
 		MOV	DX,03DAh
-  @@ChkSnow1:	IN	AL,DX
+
+  @@RetraceEndWait:
+		IN	AL,DX
 		TEST	AL,1
-		JNZ	@@ChkSnow1
-  @@ChkSnow2:	STI
+		JNZ	@@RetraceEndWait
+
+  @@RetraceStartWait:
+		STI
 		MOV	CX,10			; Const2 ???
 		CLI
-  @@ChkSnow3:	IN	AL,DX
+
+  @@InRetrace:
+		IN	AL,DX
 		TEST	AL,1
-		JZ	@@ChkSnow2
-		LOOP	@@ChkSnow3
+		JZ	@@RetraceStartWait
+		LOOP	@@InRetrace
+
+  @@VRetrace:					; display disabled set for too long for horiz. retrace
 		POP	DX
-  @@MoveBlock:	POP	CX
+
+  @@MoveBlock:
+		POP	CX
 		REP	MOVSW
 		STI
 		SUB	DH,BH

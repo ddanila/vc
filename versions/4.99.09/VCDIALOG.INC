@@ -754,7 +754,7 @@ Dialog		PROC	FAR
 		MOV	ES:Quote,AL
 		XCHG	ES:MinMnuFlag,AL
 		PUSH	AX
-		CALL	ChgCur
+		CALL	AdjustCursorSize
 		PUSH	CX
 		PUSH	BP			; Output box
 		MOV	AL,CS:[BP].bMenu
