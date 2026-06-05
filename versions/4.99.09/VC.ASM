@@ -2225,7 +2225,7 @@ KeyNo2E:	MOV	DS:TmpData.ComnIni.ExecTyp,0
 		JMP	Init77
 KeyBW:		MOV	DS:TmpData.ComnIni.DispType,d_Mono
 		JMP	Init77
-KeyLCD:		MOV	DS:TmpData.ComnIni.DispType,d_LapTop
+KeyLCD:		MOV	DS:TmpData.ComnIni.DispType,d_LCD
 		JMP	Init77
 KeyNoZoom:	MOV	DS:TmpData.ComnIni.ZoomWin,0
 		JMP	Init77

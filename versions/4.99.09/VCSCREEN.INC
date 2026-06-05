@@ -178,7 +178,7 @@ Cursor1		ENDP
 ;     cursor.end = 7
 ; }
 ; // make cursor more visible on LCD monitor
-; if (DispType == d_LapTop) cursor.start = 0
+; if (DispType == d_LCD) cursor.start = 0
 ;
 ; SetCurSize(&cursor)
 ;
@@ -194,7 +194,7 @@ AdjustCursorSize	PROC	FAR
 		MOV	CX,0B0Ch
 
   @@LapTop:
-		CMP	ES:DispType,d_LapTop
+		CMP	ES:DispType,d_LCD
 		JNE	@@SetCur
 		MOV	CH,0
 
@@ -619,9 +619,9 @@ Color		ENDP
 ;	Return:	   ES:DI - pointer to color
 ;---------------------------------------------------------------
 ;
-; if (DispType > d_LapTop) pal = d_Color
+; if (DispType > d_LCD) pal = d_Color
 ;
-; // palettes: 0 - Mono(16gray), 1 == 3 - MonoMode, 2 - Color, 4 == 5 - LapTop
+; // palettes: 0 - Mono(16gray), 1 == 3 - MonoMode, 2 - Color, 4 == 5 - LCD
 ; return &ColTab[colorname][pal * 2 + MonoMode]
 ;
 GetColorAddr	PROC	FAR
