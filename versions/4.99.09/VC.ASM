@@ -107,48 +107,259 @@ DefDirInfo	DB	'dirinfo;file_id.diz;readme;'	; DirInfoFiles
 ;----------------------- Default settings ----------------------
 		.DATA
 		DB	13,10,13,10,'DATA',13,10
-DefInit		DB	07h,07h,1Bh,07h,07h,07h	;  0 - Main windows
-		DB	07h,07h,1Ah,07h,07h,07h	;  1 - Directories
-		DB	70h,70h,30h,70h,70h,70h	;  2 - Cursor
-		DB	0Fh,0Fh,1Eh,0Fh,0Fh,0Fh	;  3 - Selected files
-		DB	7Fh,09h,3Eh,09h,70h,70h	;  4 - Cursor for selected files
-		DB	0Fh,0Fh,1Eh,0Fh,0Fh,0Fh	;  5 - "Name   Size ..."
-		DB	07h,07h,07h,07h,07h,07h	;  6 - Key bar numbers
-		DB	70h,70h,30h,70h,70h,70h	;  7 - Key bar titles
-		DB	70h,70h,30h,70h,70h,70h	;  8 - Menu bar
-		DB	0Fh,0Fh,0Fh,0Fh,0Fh,0Fh	;  9 - Menu bar cursor
-		DB	70h,70h,30h,70h,70h,70h	; 10 - Menu box border
-		DB	70h,70h,3Fh,70h,70h,70h	; 11 - Menu box text
-		DB	7Fh,70h,3Eh,70h,70h,70h	; 12 - Menu box high letters
-		DB	07h,0Fh,0Fh,0Fh,0Fh,0Fh	; 13 - Menu box text cursor
-		DB	0Fh,0Fh,0Eh,0Fh,0Fh,0Fh	; 14 - Menu box high letters cursor
-		DB	70h,70h,30h,70h,70h,70h	; 15 - Menu box dark lines
-		DB	70h,70h,33h,70h,70h,70h	; 16 - Menu box dark lines '-'
-		DB	07h,07h,70h,07h,07h,07h	; 17 - Function box
-		DB	0Fh,0Fh,7Eh,0Fh,0Fh,0Fh	; 18 - Function box bright
-		DB	70h,70h,30h,70h,70h,70h	; 19 - Function box cursor
-		DB	07h,07h,3Fh,07h,07h,07h	; 20 - Configuration window
-		DB	70h,70h,0Fh,70h,70h,70h	; 21 - Configuration cursor
-		DB	0Fh,0Fh,3Eh,0Fh,0Fh,0Fh	; 22 - Configuration window bright
-		DB	7Fh,09h,0Eh,09h,70h,70h	; 23 - Configuration cursor bright
-		DB	70h,70h,3Fh,70h,70h,70h	; 24 - History window
-		DB	07h,07h,0Fh,07h,07h,07h	; 25 - History cursor
-		DB	7Fh,70h,3Eh,70h,70h,70h	; 26 - History bright
-		DB	07h,07h,13h,07h,07h,07h	; 27 - Menu help border
-		DB	70h,70h,30h,70h,70h,70h	; 28 - Menu help window
-		DB	07h,07h,30h,07h,07h,07h	; 29 - Help window
-		DB	0Fh,0Fh,3Fh,0Fh,0Fh,0Fh	; 30 - Help window bold
-		DB	70h,70h,0Fh,70h,70h,70h	; 31 - Help reversive
-		DB	0Fh,09h,3Eh,09h,0Fh,0Fh	; 32 - Help underline
-		DB	07h,07h,4Fh,07h,07h,07h	; 33 - Error windows
-		DB	70h,70h,70h,70h,70h,70h	; 34 - Error window cursor
-		DB	0Fh,0Fh,4Eh,0Fh,0Fh,0Fh	; 35 - Error window bright
-		DB	70h,70h,30h,70h,70h,70h	; 36 - Clock
-		DB	0Fh,0Fh,1Eh,0Fh,0Fh,0Fh	; 37 - Arrows in view/edit
-		DB	07h,07h,0Bh,07h,07h,07h	; 38 - Screen blank
-		DB	0Fh,0Fh,0Fh,0Fh,0Fh,0Fh	; 39 - Screen blank light stars
-		DB	02h,02h,01h,02h,00h,00h	; 40 - Shadow flag
-		DB	02h,02h,02h,02h,02h,02h	; 41 - Blink / High background / None
+; First color is foreground, second - background
+DefInit		DB	White OR Black SHL 4	;  0 - Main windows; Monochrome
+		DB	White OR Black SHL 4	;    Monochrome + MonoMode
+		DB	BrCyan OR Blue SHL 4	;    Color
+		DB	White OR Black SHL 4	;    Color + MonoMode
+		DB	White OR Black SHL 4	;    LCD
+		DB	White OR Black SHL 4	;    LCD + MonoMode
+		DB	White OR Black SHL 4	;  1 - Directories; Monochrome
+		DB	White OR Black SHL 4	;    Monochrome + MonoMode
+		DB	BrGreen OR Blue SHL 4	;    Color
+		DB	White OR Black SHL 4	;    Color + MonoMode
+		DB	White OR Black SHL 4	;    LCD
+		DB	White OR Black SHL 4	;    LCD + MonoMode
+		DB	Black OR White SHL 4	;  2 - Cursor; Monochrome
+		DB	Black OR White SHL 4	;    Monochrome + MonoMode
+		DB	Black OR Cyan SHL 4	;    Color
+		DB	Black OR White SHL 4	;    Color + MonoMode
+		DB	Black OR White SHL 4	;    LCD
+		DB	Black OR White SHL 4	;    LCD + MonoMode
+		DB	BrWhite OR Black SHL 4	;  3 - Selected files; Monochrome
+		DB	BrWhite OR Black SHL 4	;    Monochrome + MonoMode
+		DB	BrYellow OR Blue SHL 4	;    Color
+		DB	BrWhite OR Black SHL 4	;    Color + MonoMode
+		DB	BrWhite OR Black SHL 4	;    LCD
+		DB	BrWhite OR Black SHL 4	;    LCD + MonoMode
+		DB	BrWhite OR White SHL 4	;  4 - Cursor for selected files; Monochrome
+		DB	BrBlue OR Black SHL 4	;    Monochrome + MonoMode: 1001b -> bits 0-2 = underline, bit 3 = brightness
+		DB	BrYellow OR Cyan SHL 4	;    Color
+		DB	BrBlue OR Black SHL 4	;    Color + MonoMode: 1001b -> bits 0-2 = underline, bit 3 = brightness
+		DB	Black OR White SHL 4	;    LCD
+		DB	Black OR White SHL 4	;    LCD + MonoMode
+		DB	BrWhite OR Black SHL 4	;  5 - "Name   Size ..."; Monochrome
+		DB	BrWhite OR Black SHL 4	;    Monochrome + MonoMode
+		DB	BrYellow OR Blue SHL 4	;    Color
+		DB	BrWhite OR Black SHL 4	;    Color + MonoMode
+		DB	BrWhite OR Black SHL 4	;    LCD
+		DB	BrWhite OR Black SHL 4	;    LCD + MonoMode
+		DB	White OR Black SHL 4	;  6 - Key bar numbers; Monochrome
+		DB	White OR Black SHL 4	;    Monochrome + MonoMode
+		DB	White OR Black SHL 4	;    Color
+		DB	White OR Black SHL 4	;    Color + MonoMode
+		DB	White OR Black SHL 4	;    LCD
+		DB	White OR Black SHL 4	;    LCD + MonoMode
+		DB	Black OR White SHL 4	;  7 - Key bar titles; Monochrome
+		DB	Black OR White SHL 4	;    Monochrome + MonoMode
+		DB	Black OR Cyan SHL 4	;    Color
+		DB	Black OR White SHL 4	;    Color + MonoMode
+		DB	Black OR White SHL 4	;    LCD
+		DB	Black OR White SHL 4	;    LCD + MonoMode
+		DB	Black OR White SHL 4	;  8 - Menu bar; Monochrome
+		DB	Black OR White SHL 4	;    Monochrome + MonoMode
+		DB	Black OR Cyan SHL 4	;    Color
+		DB	Black OR White SHL 4	;    Color + MonoMode
+		DB	Black OR White SHL 4	;    LCD
+		DB	Black OR White SHL 4	;    LCD + MonoMode
+		DB	BrWhite OR Black SHL 4	;  9 - Menu bar cursor; Monochrome
+		DB	BrWhite OR Black SHL 4	;    Monochrome + MonoMode
+		DB	BrWhite OR Black SHL 4	;    Color
+		DB	BrWhite OR Black SHL 4	;    Color + MonoMode
+		DB	BrWhite OR Black SHL 4	;    LCD
+		DB	BrWhite OR Black SHL 4	;    LCD + MonoMode
+		DB	Black OR White SHL 4	; 10 - Menu box border; Monochrome
+		DB	Black OR White SHL 4	;    Monochrome + MonoMode
+		DB	Black OR Cyan SHL 4	;    Color
+		DB	Black OR White SHL 4	;    Color + MonoMode
+		DB	Black OR White SHL 4	;    LCD
+		DB	Black OR White SHL 4	;    LCD + MonoMode
+		DB	Black OR White SHL 4	; 11 - Menu box text; Monochrome
+		DB	Black OR White SHL 4	;    Monochrome + MonoMode
+		DB	BrWhite OR Cyan SHL 4	;    Color
+		DB	Black OR White SHL 4	;    Color + MonoMode
+		DB	Black OR White SHL 4	;    LCD
+		DB	Black OR White SHL 4	;    LCD + MonoMode
+		DB	BrWhite OR White SHL 4	; 12 - Menu box high letters; Monochrome
+		DB	Black OR White SHL 4	;    Monochrome + MonoMode
+		DB	BrYellow OR Cyan SHL 4	;    Color
+		DB	Black OR White SHL 4	;    Color + MonoMode
+		DB	Black OR White SHL 4	;    LCD
+		DB	Black OR White SHL 4	;    LCD + MonoMode
+		DB	White OR Black SHL 4	; 13 - Menu box text cursor; Monochrome
+		DB	BrWhite OR Black SHL 4	;    Monochrome + MonoMode
+		DB	BrWhite OR Black SHL 4	;    Color
+		DB	BrWhite OR Black SHL 4	;    Color + MonoMode
+		DB	BrWhite OR Black SHL 4	;    LCD
+		DB	BrWhite OR Black SHL 4	;    LCD + MonoMode
+		DB	BrWhite OR Black SHL 4	; 14 - Menu box high letters cursor; Monochrome
+		DB	BrWhite OR Black SHL 4	;    Monochrome + MonoMode
+		DB	BrYellow OR Black SHL 4	;    Color
+		DB	BrWhite OR Black SHL 4	;    Color + MonoMode
+		DB	BrWhite OR Black SHL 4	;    LCD
+		DB	BrWhite OR Black SHL 4	;    LCD + MonoMode
+		DB	Black OR White SHL 4	; 15 - Menu box dark lines; Monochrome
+		DB	Black OR White SHL 4	;    Monochrome + MonoMode
+		DB	Black OR Cyan SHL 4	;    Color
+		DB	Black OR White SHL 4	;    Color + MonoMode
+		DB	Black OR White SHL 4	;    LCD
+		DB	Black OR White SHL 4	;    LCD + MonoMode
+		DB	Black OR White SHL 4	; 16 - Menu box dark lines '-'; Monochrome
+		DB	Black OR White SHL 4	;    Monochrome + MonoMode
+		DB	Cyan OR Cyan SHL 4	;    Color: invisible
+		DB	Black OR White SHL 4	;    Color + MonoMode
+		DB	Black OR White SHL 4	;    LCD
+		DB	Black OR White SHL 4	;    LCD + MonoMode
+		DB	White OR Black SHL 4	; 17 - Function box; Monochrome
+		DB	White OR Black SHL 4	;    Monochrome + MonoMode
+		DB	Black OR White SHL 4	;    Color
+		DB	White OR Black SHL 4	;    Color + MonoMode
+		DB	White OR Black SHL 4	;    LCD
+		DB	White OR Black SHL 4	;    LCD + MonoMode
+		DB	BrWhite OR Black SHL 4	; 18 - Function box bright; Monochrome
+		DB	BrWhite OR Black SHL 4	;    Monochrome + MonoMode
+		DB	BrYellow OR White SHL 4	;    Color
+		DB	BrWhite OR Black SHL 4	;    Color + MonoMode
+		DB	BrWhite OR Black SHL 4	;    LCD
+		DB	BrWhite OR Black SHL 4	;    LCD + MonoMode
+		DB	Black OR White SHL 4	; 19 - Function box cursor; Monochrome
+		DB	Black OR White SHL 4	;    Monochrome + MonoMode
+		DB	Black OR Cyan SHL 4	;    Color
+		DB	Black OR White SHL 4	;    Color + MonoMode
+		DB	Black OR White SHL 4	;    LCD
+		DB	Black OR White SHL 4	;    LCD + MonoMode
+		DB	White OR Black SHL 4	; 20 - Configuration window; Monochrome
+		DB	White OR Black SHL 4	;    Monochrome + MonoMode
+		DB	BrWhite OR Cyan SHL 4	;    Color
+		DB	White OR Black SHL 4	;    Color + MonoMode
+		DB	White OR Black SHL 4	;    LCD
+		DB	White OR Black SHL 4	;    LCD + MonoMode
+		DB	Black OR White SHL 4	; 21 - Configuration cursor; Monochrome
+		DB	Black OR White SHL 4	;    Monochrome + MonoMode
+		DB	BrWhite OR Black SHL 4	;    Color
+		DB	Black OR White SHL 4	;    Color + MonoMode
+		DB	Black OR White SHL 4	;    LCD
+		DB	Black OR White SHL 4	;    LCD + MonoMode
+		DB	BrWhite OR Black SHL 4	; 22 - Configuration window bright; Monochrome
+		DB	BrWhite OR Black SHL 4	;    Monochrome + MonoMode
+		DB	BrYellow OR Cyan SHL 4	;    Color
+		DB	BrWhite OR Black SHL 4	;    Color + MonoMode
+		DB	BrWhite OR Black SHL 4	;    LCD
+		DB	BrWhite OR Black SHL 4	;    LCD + MonoMode
+		DB	BrWhite OR White SHL 4	; 23 - Configuration cursor bright; Monochrome
+		DB	BrBlue OR Black SHL 4	;    Monochrome + MonoMode: 1001b -> bits 0-2 = underline, bit 3 = brightness
+		DB	BrYellow OR Black SHL 4	;    Color
+		DB	BrBlue OR Black SHL 4	;    Color + MonoMode: 1001b -> bits 0-2 = underline, bit 3 = brightness
+		DB	Black OR White SHL 4	;    LCD
+		DB	Black OR White SHL 4	;    LCD + MonoMode
+		DB	Black OR White SHL 4	; 24 - History window; Monochrome
+		DB	Black OR White SHL 4	;    Monochrome + MonoMode
+		DB	BrWhite OR Cyan SHL 4	;    Color
+		DB	Black OR White SHL 4	;    Color + MonoMode
+		DB	Black OR White SHL 4	;    LCD
+		DB	Black OR White SHL 4	;    LCD + MonoMode
+		DB	White OR Black SHL 4	; 25 - History cursor; Monochrome
+		DB	White OR Black SHL 4	;    Monochrome + MonoMode
+		DB	BrWhite OR Black SHL 4	;    Color
+		DB	White OR Black SHL 4	;    Color + MonoMode
+		DB	White OR Black SHL 4	;    LCD
+		DB	White OR Black SHL 4	;    LCD + MonoMode
+		DB	BrWhite OR White SHL 4	; 26 - History bright; Monochrome
+		DB	Black OR White SHL 4	;    Monochrome + MonoMode
+		DB	BrYellow OR Cyan SHL 4	;    Color
+		DB	Black OR White SHL 4	;    Color + MonoMode
+		DB	Black OR White SHL 4	;    LCD
+		DB	Black OR White SHL 4	;    LCD + MonoMode
+		DB	White OR Black SHL 4	; 27 - Menu help border; Monochrome
+		DB	White OR Black SHL 4	;    Monochrome + MonoMode
+		DB	Cyan OR Blue SHL 4	;    Color
+		DB	White OR Black SHL 4	;    Color + MonoMode
+		DB	White OR Black SHL 4	;    LCD
+		DB	White OR Black SHL 4	;    LCD + MonoMode
+		DB	Black OR White SHL 4	; 28 - Menu help window; Monochrome
+		DB	Black OR White SHL 4	;    Monochrome + MonoMode
+		DB	Black OR Cyan SHL 4	;    Color
+		DB	Black OR White SHL 4	;    Color + MonoMode
+		DB	Black OR White SHL 4	;    LCD
+		DB	Black OR White SHL 4	;    LCD + MonoMode
+		DB	White OR Black SHL 4	; 29 - Help window; Monochrome
+		DB	White OR Black SHL 4	;    Monochrome + MonoMode
+		DB	Black OR Cyan SHL 4	;    Color
+		DB	White OR Black SHL 4	;    Color + MonoMode
+		DB	White OR Black SHL 4	;    LCD
+		DB	White OR Black SHL 4	;    LCD + MonoMode
+		DB	BrWhite OR Black SHL 4	; 30 - Help window bold; Monochrome
+		DB	BrWhite OR Black SHL 4	;    Monochrome + MonoMode
+		DB	BrWhite OR Cyan SHL 4	;    Color
+		DB	BrWhite OR Black SHL 4	;    Color + MonoMode
+		DB	BrWhite OR Black SHL 4	;    LCD
+		DB	BrWhite OR Black SHL 4	;    LCD + MonoMode
+		DB	Black OR White SHL 4	; 31 - Help reversive; Monochrome
+		DB	Black OR White SHL 4	;    Monochrome + MonoMode
+		DB	BrWhite OR Black SHL 4	;    Color
+		DB	Black OR White SHL 4	;    Color + MonoMode
+		DB	Black OR White SHL 4	;    LCD
+		DB	Black OR White SHL 4	;    LCD + MonoMode
+		DB	BrWhite OR Black SHL 4	; 32 - Help underline; Monochrome
+		DB	BrBlue OR Black SHL 4	;    Monochrome + MonoMode: 1001b -> bits 0-2 = underline, bit 3 = brightness
+		DB	BrYellow OR Cyan SHL 4	;    Color
+		DB	BrBlue OR Black SHL 4	;    Color + MonoMode: 1001b -> bits 0-2 = underline, bit 3 = brightness
+		DB	BrWhite OR Black SHL 4	;    LCD
+		DB	BrWhite OR Black SHL 4	;    LCD + MonoMode
+		DB	White OR Black SHL 4	; 33 - Error windows; Monochrome
+		DB	White OR Black SHL 4	;    Monochrome + MonoMode
+		DB	BrWhite OR Red SHL 4	;    Color
+		DB	White OR Black SHL 4	;    Color + MonoMode
+		DB	White OR Black SHL 4	;    LCD
+		DB	White OR Black SHL 4	;    LCD + MonoMode
+		DB	Black OR White SHL 4	; 34 - Error window cursor; Monochrome
+		DB	Black OR White SHL 4	;    Monochrome + MonoMode
+		DB	Black OR White SHL 4	;    Color
+		DB	Black OR White SHL 4	;    Color + MonoMode
+		DB	Black OR White SHL 4	;    LCD
+		DB	Black OR White SHL 4	;    LCD + MonoMode
+		DB	BrWhite OR Black SHL 4	; 35 - Error window bright; Monochrome
+		DB	BrWhite OR Black SHL 4	;    Monochrome + MonoMode
+		DB	BrYellow OR Red SHL 4	;    Color
+		DB	BrWhite OR Black SHL 4	;    Color + MonoMode
+		DB	BrWhite OR Black SHL 4	;    LCD
+		DB	BrWhite OR Black SHL 4	;    LCD + MonoMode
+		DB	Black OR White SHL 4	; 36 - Clock; Monochrome
+		DB	Black OR White SHL 4	;    Monochrome + MonoMode
+		DB	Black OR Cyan SHL 4	;    Color
+		DB	Black OR White SHL 4	;    Color + MonoMode
+		DB	Black OR White SHL 4	;    LCD
+		DB	Black OR White SHL 4	;    LCD + MonoMode
+		DB	BrWhite OR Black SHL 4	; 37 - Arrows in view/edit; Monochrome
+		DB	BrWhite OR Black SHL 4	;    Monochrome + MonoMode
+		DB	BrYellow OR Blue SHL 4	;    Color
+		DB	BrWhite OR Black SHL 4	;    Color + MonoMode
+		DB	BrWhite OR Black SHL 4	;    LCD
+		DB	BrWhite OR Black SHL 4	;    LCD + MonoMode
+		DB	White OR Black SHL 4	; 38 - Screen blank; Monochrome
+		DB	White OR Black SHL 4	;    Monochrome + MonoMode
+		DB	BrCyan OR Black SHL 4	;    Color
+		DB	White OR Black SHL 4	;    Color + MonoMode
+		DB	White OR Black SHL 4	;    LCD
+		DB	White OR Black SHL 4	;    LCD + MonoMode
+		DB	BrWhite OR Black SHL 4	; 39 - Screen blank light stars; Monochrome
+		DB	BrWhite OR Black SHL 4	;    Monochrome + MonoMode
+		DB	BrWhite OR Black SHL 4	;    Color
+		DB	BrWhite OR Black SHL 4	;    Color + MonoMode
+		DB	BrWhite OR Black SHL 4	;    LCD
+		DB	BrWhite OR Black SHL 4	;    LCD + MonoMode
+		DB	2			; 40 - Shadow flag; Monochrome: 0 - no shadow, else make shadow
+		DB	2			;    Monochrome + MonoMode
+		DB	1			;    Color
+		DB	2			;    Color + MonoMode
+		DB	0			;    LCD
+		DB	0			;    LCD + MonoMode
+		DB	2			; 41 - Blink / High background / None; Monochrome
+		DB	2			;    Monochrome + MonoMode
+		DB	2			;    Color
+		DB	2			;    Color + MonoMode
+		DB	2			;    LCD
+		DB	2			;    LCD + MonoMode
 		DB	1			; FulScr
 		DB	0A7h			; PanelSize
 		DB	0			; MenuVs
@@ -215,7 +426,7 @@ DefInit		DB	07h,07h,1Bh,07h,07h,07h	;  0 - Main windows
 		DW	LenHist			; LenHistory
 		DW	MinFls			; MinFiles
 		DB	MaxProg			; MaxTSRs
-DefWCB		DB	0			; WinTyp
+DefWCB		DB	p_File			; WinTyp
 		DB	0			; BrfFul
 		DB	0			; LongNames
 		DB	12			; NameWidth
