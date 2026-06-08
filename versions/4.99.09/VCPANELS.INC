@@ -2173,7 +2173,7 @@ PutInf		PROC	FAR
 		MOV	DX,OFFSET Line1_D
 		CALL	PtIn20
 		MOV	AX,DS:FreeMem		; Free memory
-		CMP	DS:DataLocation,2
+		CMP	DS:DataLocation,XMS
 		JAE	@@FreeMem
 		CMP	DS:LoadFl,0
 		JNE	@@FreeMem

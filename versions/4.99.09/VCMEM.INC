@@ -119,7 +119,7 @@ F65_02:		INC	AX
 F65_03:		MOV	CX,CS
 		CMP	AX,CX
 		JNE	F65_05
-		CMP	ES:DataLocation,2
+		CMP	ES:DataLocation,XMS
 		JAE	F65_04
 		CMP	ES:LoadFl,0
 		JE	F65_05
@@ -259,7 +259,7 @@ F65_21:		MOV	AL,AH
 F65_22:		PUSH	SI			; Releasable program
 		CMP	DS:ChkTSR,0
 		JZ	F65_26
-		CMP	DS:DataLocation,3
+		CMP	DS:DataLocation,EMS
 		JNE	F65_23
 		PUSH	DX
 		PUSH	BX
@@ -791,4 +791,3 @@ MemSetName	PROC	FAR
 		MOV	BYTE PTR ES:[BX],0
 		RET
 MemSetName	ENDP
-

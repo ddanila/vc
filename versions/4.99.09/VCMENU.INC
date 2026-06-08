@@ -662,7 +662,7 @@ F39_58:		CALL	Shadow
 		CALL	F40_20
 		MOV	AL,DS:LoadFl
 		CALL	F40_20
-		CMP	ES:DataLocation,2
+		CMP	ES:DataLocation,XMS
 		JB	F39_85
 		POP	BX
 		MOV	AL,17
