@@ -63,6 +63,7 @@ jobs:
           VERSION: ${{ matrix.version }}
           HARNESS_FILES_HASH: ${{ hashFiles('tests/**', 'Makefile', '.github/workflows/e2e.yml') }}
         run: |
+          git config --global --add safe.directory "$PWD"
           kvikdos_sha=$(git rev-parse HEAD:vendor/kvikdos)
           fingerprint=$(printf '%s %s' "$HARNESS_FILES_HASH" "$kvikdos_sha" | sha256sum | awk '{print $1}')
           out="$PWD/SHA256SUMS-$VERSION"
