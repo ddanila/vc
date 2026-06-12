@@ -327,7 +327,7 @@ MkDir_dialog_impl:
 		MOV	ES:[DI].AttrF,10h	; FA_DIR
 		MOV	ES:[DI].LenShortNamF,CX
 		MOV	ES:[DI].LenLongNamF,0
-		ADD	DI,SIZE FilEnt		; &FilEnt.NameF
+		ADD	DI,OFFSET NameF		; &FilEnt.NameF
 		DEC	CX
 		REP	MOVSB
 		MOV	AL,0

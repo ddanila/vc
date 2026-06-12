@@ -6,9 +6,14 @@
 
 		.MODEL	Tiny,C
 		.CODE
-Zero:		.STARTUP
+		.STARTUP
+IFDEF	__JWASM__
+		OPTION oldstructs
+		.DOSSEG
+ELSE
 		LOCALS	@@
 		JUMPS
+ENDIF
 		DB	'RESIDENT',10,13
 		JMP	Init00
 
@@ -48,7 +53,7 @@ rChkTSR		DB	0
 rLocation	DB	0FFh
 rEPB		DW	0, 0, 0, 5Ch, 0, 6Ch, 0
 
-CallTable	LABEL
+CallTable	LABEL	WORD
 Exec21		DW	0
 Exec2E		DW	0
 LoadNextCmd	DW	0
@@ -63,9 +68,9 @@ TmpOvlName	EQU	TmpMainPath		; Path and name of ovl file
 TmpOvlBuffer	EQU	TmpMainPath		; Buffer for loading overlay
 TmpPath		DB	LenPath+12 DUP(?)	; Path and name of swap file
 TmpCode		DW	?			; Code segment for overlay
-TmpData		DAT	?			; Initial copy of ComnIni, WCBs
-TmpExt		LABEL
-Last		LABEL
+TmpData		DAT	<>			; Initial copy of ComnIni, WCBs
+TmpExt		LABEL	BYTE
+Last		LABEL	BYTE
 
 ;---------------------------------------------------------------
 		.CONST
@@ -682,7 +687,12 @@ OutStd		ENDP
 ;---------------------------------------------------------------
 OutErr		PROC	NEAR
 		MOV	BX,2
-OutDev:		PUSH	CX
+IFDEF	__JWASM__
+OutDev::
+ELSE
+OutDev:
+ENDIF
+		PUSH	CX
 		PUSH	SI
 		MOV	SI,DX
 		MOV	CX,0FFFFh
@@ -694,15 +704,19 @@ OutDev:		PUSH	CX
 		MOV	AH,40h
 		INT	21h
 		POP	CX
-EmptyProc:	RET
+IFDEF	__JWASM__
+EmptyProc::
+ELSE
+EmptyProc:
+ENDIF
+		RET
 OutErr		ENDP
 
 ;---------------------------------------------------------------
 ;	Save break flag & Disable break
 ;	Return:	   DL - break flag
 ;---------------------------------------------------------------
-SetBreak	PROC	NEAR
-		USES	AX,DS
+SetBreak	PROC	NEAR	USES	AX DS
 		PUSHF
 		MOV	AX,3300h
 		INT	21h
@@ -746,8 +760,7 @@ GetStat		ENDP
 ;	Set allocation strategy & link state
 ;		   BP - allocation strategy & link state
 ;---------------------------------------------------------------
-SetStat		PROC	NEAR
-		USES	AX
+SetStat		PROC	NEAR	USES	AX
 		PUSHF
 		CMP	BP,0FFFFh
 		JE	@@Exit
@@ -765,11 +778,12 @@ SetStat		PROC	NEAR
 SetStat		ENDP
 
 ;---------------------------------------------------------------
-BegRelease:	DB	13,10,13,10,'RELEASE',13,10
+BegRelease:
+		DB	13,10,13,10,'RELEASE',13,10
 
-SetVect21	PROC	NEAR			; Windows 95 shows incorrect
-		USES	ES			; size of FAT-32 disks if
-		XOR	AX,AX			; use INT 21h AH=25h
+; Windows 95 shows incorrect size of FAT-32 disks if use INT 21h AH=25h
+SetVect21	PROC	NEAR	USES ES
+		XOR	AX,AX
 		MOV	ES,AX
 		CLI
 		MOV	ES:[4*21h].Offs,DX
@@ -794,7 +808,12 @@ New21		PROC	FAR			; INT 21h
 		JMP	@@Old21
   @@Func49:	CALL	FreeBlk
   @@Old21:	POPF
-  Old21:	JMP	CS:Vect21
+IFDEF	__JWASM__
+  Old21::
+ELSE
+  Old21:
+ENDIF
+		JMP	CS:Vect21
 New21		ENDP
 
 New27		PROC	FAR			; INT 27h
@@ -818,8 +837,7 @@ New27		ENDP
 ;	Save vectors & program name
 ;		DS:DX - file name
 ;---------------------------------------------------------------
-ExeProg		PROC	FAR
-		USES	AX,CX,SI,DI,ES
+ExeProg		PROC	FAR	USES	AX CX SI DI ES
 		CLD
 		PUSH	CS
 		POP	ES
@@ -857,8 +875,7 @@ ExeProg		ENDP
 ;	Add resident program to list
 ;		   DX - number of paragraphs
 ;---------------------------------------------------------------
-AddProg		PROC	FAR
-		USES	AX,BX,CX,SI,DI,BP,DS,ES
+AddProg		PROC	FAR	USES	AX BX CX SI DI BP DS ES
 		STI
 		CMP	CS:Counter,MaxProg
 		JB	@@Realloc
@@ -962,8 +979,7 @@ AddProg		ENDP
 ;	Free memory block
 ;		   ES - segment for deallocation
 ;---------------------------------------------------------------
-FreeBlk		PROC	FAR
-		USES	AX,CX,SI,DI,DS
+FreeBlk		PROC	FAR	USES	AX CX SI DI DS
 		CLD
 		MOV	SI,OFFSET PrgList
 		MOV	DI,SI
@@ -992,8 +1008,7 @@ FreeBlk		ENDP
 ;	Check sum
 ;		   DS - PrgSeg
 ;---------------------------------------------------------------
-ChkBlk		PROC	NEAR
-		USES	CX,SI,DI
+ChkBlk		PROC	NEAR	USES	CX SI DI
 		MOV	AL,DS:[0Eh]
 		MOV	AH,5
 		MUL	AH
@@ -1013,8 +1028,7 @@ ChkBlk		ENDP
 ;	Release programs
 ;		   DS - PrgSeg
 ;---------------------------------------------------------------
-Release		PROC	FAR
-		USES	AX,BX,CX,DX,SI,DI,DS,ES
+Release		PROC	FAR	USES	AX BX CX DX SI DI DS ES
 		PUSH	BP
 		CALL	GetStat
 		CLD
@@ -1063,7 +1077,7 @@ Release		ENDP
 ;---------------------------------------------------------------
 ;	Release data
 ;---------------------------------------------------------------
-ReData		LABEL
+ReData		LABEL	BYTE
 IntTab		DD	256	DUP(?)
 SavePtr		DD	?
 Vect21		DD	?
@@ -1075,7 +1089,8 @@ PrgList		LABEL	WORD
 		ORG	ReData
 
 ;---------------------------------------------------------------
-SubsRAM:	DW	Exec21RAM
+SubsRAM:
+		DW	Exec21RAM
 		DW	Exec2ERAM
 		DW	LoadNextRAM
 		DW	LoadOvlRAM
@@ -1099,7 +1114,12 @@ Exec2ERAM	PROC	NEAR
 		POP	SS
 		MOV	SP,DS:StackPoint
 		STI
-DoExitRAM:	RET
+IFDEF	__JWASM__
+DoExitRAM::
+ELSE
+DoExitRAM:
+ENDIF
+		RET
 Exec2ERAM	ENDP
 
 LoadNextRAM	PROC	NEAR
@@ -1143,7 +1163,8 @@ LoadOvlRAM	ENDP
 LenSubsRAM	=	$ - SubsRAM
 
 ;---------------------------------------------------------------
-SubsSwap:	DW	Exec21Swap
+SubsSwap:
+		DW	Exec21Swap
 		DW	Exec2ESwap
 		DW	LoadNextSwap
 		DW	LoadOvlSwap
@@ -1167,7 +1188,12 @@ Exec2ESwap	PROC	NEAR
 		POP	SS
 		MOV	SP,DS:StackPoint
 		STI
-DoExitSwap:	RET
+IFDEF	__JWASM__
+DoExitSwap::
+ELSE
+DoExitSwap:
+ENDIF
+		RET
 Exec2ESwap	ENDP
 
 LoadNextSwap	PROC	NEAR
@@ -1249,7 +1275,8 @@ LoadOvlSwap	ENDP
 LenSubsSwap	=	$ - SubsSwap
 
 ;---------------------------------------------------------------
-SubsXMS:	DW	Exec21XMS
+SubsXMS:
+		DW	Exec21XMS
 		DW	Exec2EXMS
 		DW	LoadNextXMS
 		DW	LoadOvlXMS
@@ -1415,7 +1442,8 @@ ExtMove		EMOV	<>
 LenSubsXMS	=	$ - SubsXMS
 
 ;---------------------------------------------------------------
-SubsEMS:	DW	Exec21EMS
+SubsEMS:
+		DW	Exec21EMS
 		DW	Exec2EEMS
 		DW	LoadNextEMS
 		DW	LoadOvlEMS
@@ -1427,7 +1455,12 @@ ErrorEMS_S	DB	13,10, 'Expanded Memory status error.'
 
 Exec21EMS	PROC	NEAR
 		MOV	CX,OFFSET NewExec21EMS-Load55+ProcsEMS
-  Exec2XEMS:	POP	AX
+IFDEF	__JWASM__
+  Exec2XEMS::
+ELSE
+  Exec2XEMS:
+ENDIF
+		POP	AX
 		PUSH	CS
 		PUSH	AX
 		PUSH	SS
@@ -1670,7 +1703,7 @@ Init02:		LODSW
 		JC	Init13
 		CALL	Init15
 		JC	Init13
-		CMP	DS:[SI+8],1000h		; Check size of this segment
+		CMP	WORD PTR DS:[SI+8],1000h		; Check size of this segment
 		JAE	Init13
 		CMP	CX,10h
 		JAE	Init13
@@ -2390,7 +2423,7 @@ Init74:		TEST	DL,DS:[BX+1]
 		JNZ	Init75
 		OR	DL,DS:[BX+2]
 		OR	BP,DS:[BX+4]
-		JMP	DS:[BX+6]
+		JMP	WORD PTR DS:[BX+6]
 Init75:		MOV	DX,OFFSET Sequence_S
 		MOV	AL,KeySequence_E
 Init76:		CALL	OutErr
@@ -3142,8 +3175,7 @@ NewExec2EEMS	PROC	FAR
 		RET
 NewExec2EEMS	ENDP
 
-RestEMS		PROC	NEAR
-		USES	AX
+RestEMS		PROC	NEAR	USES	AX
 		PUSHF
 		XOR	BX,BX
 		MOV	DX,CS:DataHandleEMS
@@ -3187,7 +3219,12 @@ New21EMS	PROC	FAR			; INT 21h
 		JMP	Old21EMS
   @@Func49:	MOV	CX,OFFSET FreeBlk
 		CALL	ProcEMS
-  Old21EMS:	POP	CX
+IFDEF	__JWASM__
+  Old21EMS::
+ELSE
+  Old21EMS:
+ENDIF
+		POP	CX
 		POPF
 		JMP	CS:Vect21EMS
 New21EMS	ENDP
@@ -3208,8 +3245,7 @@ New27EMS	PROC	FAR			; INT 27h
 		JMP	CS:Vect27EMS
 New27EMS	ENDP
 
-ProcEMS		PROC	NEAR
-		USES	AX,BX
+ProcEMS		PROC	NEAR	USES	AX BX
 		PUSH	DX
 		MOV	DX,CS:CodeHandleEMS
 		MOV	AH,47h
@@ -3524,8 +3560,7 @@ ReadFile	ENDP
 ;		DS:BP - buffer
 ;	Return:	   BP - end of buffer
 ;---------------------------------------------------------------
-ReadExt		PROC	NEAR
-		USES	DI
+ReadExt		PROC	NEAR	USES	DI
 		MOV	CX,13
 		REP	MOVSB
 		MOV	CX,SP

@@ -158,7 +158,7 @@ FILENT		STRUC
   DescrF	DW	?
   LenShortNamF	DW	?
   LenLongNamF	DW	?
-  NameF		LABEL	BYTE
+  NameF		EQU	BYTE PTR $
 FILENT		ENDS
 
 ; Subdirectory entry of TREEINFO file.
@@ -168,7 +168,7 @@ DIRENT		STRUC
   DirShortLen	DB	?		; Length of short subdirectory name
   DirWinLen	DW	?		; Length of Win95 subdirectory name
   DirOS2Len	DW	?		; Length of OS/2 subdirectory name
-  DirName	LABEL	BYTE		; Subdirectory name in ASCIIZ
+  DirName	EQU	BYTE PTR $	; Subdirectory name in ASCIIZ
 DIRENT		ENDS
 
 ; Structure of TREEINFO file.
@@ -177,7 +177,7 @@ DIRTREE		STRUC
   TreeLabel	DB	11 DUP(?)	; Volume label
   TreeCrLf	DB	2  DUP(?)	; CrLf
   TreeSerNum	DB	4  DUP(?)	; Serial number
-  TreeList	LABEL	BYTE		; List of subdirectories
+  TreeList	EQU	BYTE PTR $	; List of subdirectories
 		DW	?		; Check sum of the list
 DIRTREE		ENDS
 
@@ -187,7 +187,7 @@ DESCRSEG	STRUC
   DscrSize	DW	?		; File size
   DscrName	DW	?		; Name offset
   DscrAttr	DB	?		; Attributes
-  DscrBegin	LABEL	BYTE		; Begin of file
+  DscrBegin	EQU	BYTE PTR $	; Begin of file
 DESCRSEG	ENDS
 
 ; The dialog box header structure definition.
@@ -210,13 +210,13 @@ BOXMN		STRUC
   mRight	DB	0		; Right link
   mBase		DW	?		; Menu base
   mPoint	DW	?
-  mSelTot	LABEL	BYTE
+  mSelTot	EQU	BYTE PTR $
   mCtrl		DW	?
 BOXMN		ENDS
 
 ; The star structure definition.
 STAR		STRUC
-  StarClk	LABEL	BYTE		; Time counter
+  StarClk	EQU	BYTE PTR $	; Time counter
   StarMod	DW	?		; Low byte - counter, High - explosion
   StarPos	DW	?		; Coordinates of star
 STAR		ENDS
@@ -260,7 +260,7 @@ ZIPFILEHD	STRUC
 		DW	?		; internal file attributes
   ZipAttr	DD	?		; external file attributes
 		DD	?		; relative offset of local header
-  ZipName	LABEL	BYTE		; filename (variable size)
+  ZipName	EQU	BYTE PTR $	; filename (variable size)
 					; extra field (variable size)
 					; file comment (variable size)
 ZIPFILEHD	ENDS
@@ -343,7 +343,7 @@ TreeTyp		DB	?			; Offset in tree levels
 ChgFlg		DB	?			; Flag to force reread the panel
 WinLongPath	DB	LenPath DUP(?)		; Long path of panel
 ArcExt		DB	4 DUP(?)		; Type of archive file
-ArcFiles	LABEL	BYTE
+ArcFiles	EQU	BYTE PTR $
 WCBdef		ENDS
 
 ;------------------------- Data segment ------------------------
@@ -545,9 +545,9 @@ DosPath		DB	LenPath DUP(?)		; Current path
 DosShortPath	DB	LenPath DUP(?)		; Current short path
 VcDir		DB	LenPath DUP(?)		; Path of VC directory
 VcSet		DB	LenPath DUP(?)		; Path from VC= variable
-Country		CNTRY	?			; Country information
-DTA		DTAs	?			; Data tramsnir area
-FindData	FDR	?			; Find data record
+Country		CNTRY	<>			; Country information
+DTA		DTAs	<>			; Data tramsnir area
+FindData	FDR	<>			; Find data record
 OS2AttrBuf	DB	22 DUP(?)		; Buffer for OS/2 file attributes
 DosBuf		DB	LenCmdLine+1 DUP(?)	; Command line
 LowTab		DB	128 DUP(?)		; Lower case table
@@ -561,9 +561,9 @@ ArchiveExt	DB	4 DUP(?)		; Archive extension
 ExecArcArcPath	DB	LenPath DUP(?)		; Path in archive for ExecArc
 IniBuffer	DB	3+2*WCBini+CmnIni+2 DUP(?)
 TmpErr		DB	256 DUP(?)		; Temporary buffer for errors
-Stars		STAR	NmbStrs DUP(?)		; Stars buffer
+Stars		STAR	NmbStrs DUP(<>)		; Stars buffer
 HelpBuf		DB	LenHelp	DUP(?)		; Help buffer
-MainExt		LABEL	BYTE			; Buffer for the control files
+MainExt		EQU	BYTE PTR $		; Buffer for the control files
 MainDat		ENDS
 
 ; Saved data structure definition.

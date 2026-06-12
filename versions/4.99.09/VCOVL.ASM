@@ -659,7 +659,7 @@ RebuildPanelFiles	PROC	NEAR
 		CMP	DI,ES:EndBuf
 		JAE	@@Exit			; last file
 		MOV	BP,DI
-		ADD	DI,SIZE FilEnt		; &FilEnt.NameF
+		ADD	DI,OFFSET NameF		; &FilEnt.NameF
 
   @@SetName:
 		LODSB
