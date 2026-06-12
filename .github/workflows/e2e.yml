@@ -20,6 +20,8 @@ jobs:
       image: ghcr.io/ddanila/msdos/ci:latest
       options: --device /dev/kvm
     timeout-minutes: 15
+    permissions:
+      contents: write
 
     strategy:
       fail-fast: false
@@ -51,19 +53,87 @@ jobs:
           retention-days: 14
           if-no-files-found: warn
 
+      # SHA256SUMS-<version> records what the e2e suite consumes: the built
+      # artifacts (prefixed with the toolchain, so jwasm builds can be added
+      # as extra lines later) plus a fingerprint of the test harness itself.
+      # The '#' line is ignored by `sha256sum -c`.
+      - name: Compute artifact checksums
+        shell: bash
+        env:
+          VERSION: ${{ matrix.version }}
+          HARNESS_FILES_HASH: ${{ hashFiles('tests/**', 'Makefile', '.github/workflows/e2e.yml') }}
+        run: |
+          kvikdos_sha=$(git rev-parse HEAD:vendor/kvikdos)
+          fingerprint=$(printf '%s %s' "$HARNESS_FILES_HASH" "$kvikdos_sha" | sha256sum | awk '{print $1}')
+          out="$PWD/SHA256SUMS-$VERSION"
+          {
+            echo "# harness: $fingerprint"
+            cd "build/$VERSION"
+            for f in *.COM *.EXE *.OVL; do
+              [ -f "$f" ] && sha256sum "$f"
+            done | sort -k2 | awk '{print $1 "  tasm/" $2}'
+          } > "$out"
+          cat "$out"
+
+      # Skip the smoke tests when the artifacts and the harness are
+      # byte-identical to the last green e2e run on the build branch
+      # (published as a SHA256SUMS asset on the rolling release). Any
+      # mismatch or a missing asset falls back to running the full suite.
+      - name: Check against last green e2e
+        id: skipcheck
+        shell: bash
+        env:
+          VERSION: ${{ matrix.version }}
+        run: |
+          fetch() {
+            if command -v curl >/dev/null 2>&1; then
+              curl -fsSL --retry 3 -o "$2" "$1"
+            else
+              wget -q -O "$2" "$1"
+            fi
+          }
+          skip=false
+          url="https://github.com/$GITHUB_REPOSITORY/releases/download/latest-build/SHA256SUMS-$VERSION"
+          if fetch "$url" /tmp/last-green-sums && [ -s /tmp/last-green-sums ]; then
+            if cmp -s "SHA256SUMS-$VERSION" /tmp/last-green-sums; then
+              skip=true
+              echo "Artifacts and harness unchanged since last green e2e run - skipping smoke tests." \
+                | tee -a "$GITHUB_STEP_SUMMARY"
+            else
+              echo "Checksums differ from last green run - running full e2e."
+              diff "SHA256SUMS-$VERSION" /tmp/last-green-sums || true
+            fi
+          else
+            echo "No SHA256SUMS-$VERSION on latest-build release - running full e2e."
+          fi
+          echo "skip=$skip" >> "$GITHUB_OUTPUT"
+
       - name: Build kvikdos test binaries
+        if: steps.skipcheck.outputs.skip != 'true'
         run: make build-tests
 
       - name: kvikdos suite (4.05)
-        if: matrix.version == '4.05'
+        if: matrix.version == '4.05' && steps.skipcheck.outputs.skip != 'true'
         run: make test-kvikdos-4.05
 
       - name: kvikdos suite (4.99.09)
-        if: matrix.version == '4.99.09'
+        if: matrix.version == '4.99.09' && steps.skipcheck.outputs.skip != 'true'
         run: make test-kvikdos-4.99.09
 
       - name: QEMU e2e (${{ matrix.version }})
+        if: steps.skipcheck.outputs.skip != 'true'
         run: make test-qemu-${{ matrix.version }}
+
+      # Reached only if the smoke tests above passed: record this build as
+      # the last green run so identical future builds can skip the suite.
+      - name: Publish checksums to rolling release
+        if: github.ref == 'refs/heads/build' && github.event_name == 'push' && steps.skipcheck.outputs.skip != 'true'
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: latest-build
+          name: Latest build
+          prerelease: true
+          files: SHA256SUMS-${{ matrix.version }}
 
       - name: Upload e2e artifacts
         if: always()
@@ -71,6 +141,7 @@ jobs:
         with:
           name: e2e-${{ matrix.version }}
           path: |
+            SHA256SUMS-${{ matrix.version }}
             build/${{ matrix.version }}/stage/build.log
             build/${{ matrix.version }}/stage/debugcon.log
             build/${{ matrix.version }}/stage/serial.log
