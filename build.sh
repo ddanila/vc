@@ -199,6 +199,31 @@ DEL *.MAP'
 # and DPMI16BI.OVL TASMX prints "Stub error (200x)" on its own.
 TASM_FILES=(TASMX.EXE TLINK.EXE TLINK.CFG DPMI16BI.OVL RTM.EXE)
 
+# Vendored JWasm binary for this host, if any (third_party/jwasm/README.md).
+jwasm_binary() {
+    case "$(uname -s)-$(uname -m)" in
+        Linux-x86_64) echo "$ROOT/third_party/jwasm/bin/jwasm-linux-x86_64" ;;
+        Darwin-arm64) echo "$ROOT/third_party/jwasm/bin/jwasm-macos-arm64" ;;
+        *)            return 1 ;;
+    esac
+}
+
+# Additional native JWasm build of 4.99.09's VC.COM — runs on the host, no
+# DOS/QEMU. TASM stays the canonical toolchain: the JWasm output differs
+# from it in 9 known instruction encodings (third_party/jwasm/README.md).
+# VC.OVL is not JWasm-buildable yet, so only VC.COM is produced.
+build_jwasm_4_99_09() {
+    local src="$1" out="$2"
+    local jwasm
+    if ! jwasm="$(jwasm_binary)"; then
+        echo "    jwasm: no vendored binary for $(uname -s)/$(uname -m), skipping" >&2
+        return 0
+    fi
+    echo "==> building 4.99.09 VC.COM with jwasm"
+    mkdir -p "$out/jwasm"
+    (cd "$src" && "$jwasm" -q -Zg -Zne -DOFFICIAL -bin -Fo "$out/jwasm/VC.COM" VC.ASM)
+}
+
 build_version() {
     local version="$1"
     local src="$ROOT/versions/$version"
@@ -334,6 +359,10 @@ EOF
         return 1
     fi
     echo "==> $version: $copied artifact(s) in $out"
+
+    if [[ "$version" == "4.99.09" ]]; then
+        build_jwasm_4_99_09 "$src" "$out"
+    fi
 }
 
 versions=("$@")
