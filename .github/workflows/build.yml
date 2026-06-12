@@ -8,6 +8,10 @@ on:
     branches: [build]
     paths-ignore: ['README.md', 'SECURITY.md']
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
