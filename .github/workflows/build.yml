@@ -62,11 +62,13 @@ jobs:
           import glob, os, sys, zipfile
           out, src = sys.argv[1], sys.argv[2]
           files = sorted(glob.glob(os.path.join(src, "*.COM")) +
-                         glob.glob(os.path.join(src, "*.OVL")))
+                         glob.glob(os.path.join(src, "*.OVL")) +
+                         glob.glob(os.path.join(src, "jwasm", "*.COM")))
           with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
               for f in files:
-                  z.write(f, arcname=os.path.basename(f))
-                  print("+", os.path.basename(f), os.path.getsize(f), "bytes")
+                  arc = os.path.relpath(f, src)
+                  z.write(f, arcname=arc)
+                  print("+", arc, os.path.getsize(f), "bytes")
           PY
 
       - name: Build release body
