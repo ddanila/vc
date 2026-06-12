@@ -71,7 +71,7 @@ jobs:
             echo "# harness: $fingerprint"
             cd "build/$VERSION"
             for f in *.COM *.EXE *.OVL; do
-              [ -f "$f" ] && sha256sum "$f"
+              if [ -f "$f" ]; then sha256sum "$f"; fi
             done | sort -k2 | awk '{print $1 "  tasm/" $2}'
           } > "$out"
           cat "$out"
