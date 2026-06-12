@@ -546,7 +546,7 @@ DosShortPath	DB	LenPath DUP(?)		; Current short path
 VcDir		DB	LenPath DUP(?)		; Path of VC directory
 VcSet		DB	LenPath DUP(?)		; Path from VC= variable
 Country		CNTRY	<>			; Country information
-DTA		DTAs	<>			; Data transfer area
+DTA		DTAs	<>			; Disk transfer area
 FindData	FDR	<>			; Find data record
 OS2AttrBuf	DB	22 DUP(?)		; Buffer for OS/2 file attributes
 DosBuf		DB	LenCmdLine+1 DUP(?)	; Command line
