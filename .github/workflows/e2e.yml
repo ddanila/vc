@@ -50,6 +50,7 @@ jobs:
             build/${{ matrix.version }}/*.COM
             build/${{ matrix.version }}/*.EXE
             build/${{ matrix.version }}/*.OVL
+            build/${{ matrix.version }}/jwasm/*.COM
           retention-days: 14
           if-no-files-found: warn
 
@@ -73,6 +74,9 @@ jobs:
             for f in *.COM *.EXE *.OVL; do
               if [ -f "$f" ]; then sha256sum "$f"; fi
             done | sort -k2 | awk '{print $1 "  tasm/" $2}'
+            for f in jwasm/*.COM jwasm/*.OVL; do
+              if [ -f "$f" ]; then sha256sum "$f"; fi
+            done | sort -k2
           } > "$out"
           cat "$out"
 

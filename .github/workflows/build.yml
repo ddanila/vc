@@ -45,6 +45,7 @@ jobs:
           path: |
             build/${{ matrix.version }}/*.COM
             build/${{ matrix.version }}/*.OVL
+            build/${{ matrix.version }}/jwasm/*.COM
             build/${{ matrix.version }}/stage/build.log
             build/${{ matrix.version }}/stage/debugcon.log
             build/${{ matrix.version }}/stage/serial.log
