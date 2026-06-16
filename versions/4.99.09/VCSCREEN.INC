@@ -248,8 +248,8 @@ Int10m		PROC	FAR
 Int10m		ENDP
 
 ;---------------------------------------------------------------
-;	Convert coordinars to address
-;		BH,BL - coordinats
+;	Convert coordinates to address
+;		BH,BL - y,x coordinates
 ;	Return:	ES:DI - address
 ;---------------------------------------------------------------
 ;

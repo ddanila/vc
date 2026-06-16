@@ -866,7 +866,7 @@ ExecArcCmd	PROC	FAR
 		INT	21h
 		POP	DS
 
-		OR	SI,SI			; Restore reditection
+		OR	SI,SI			; Restore redirection
 		JE	@@RedirBack
 		MOV	BX,SI
 		MOV	CX,1
@@ -1110,7 +1110,7 @@ ExecArcHook21	PROC	FAR
 		PUSH	AX
 		JMP	@@Exit
 
-  @@Func07:	CMP	AH,7			; Unfiltred Console input
+  @@Func07:	CMP	AH,7			; Direct Console input (no echo)
 		JNE	@@Func08
   @@InpChar:	CALL	ExecArcInChar
 		JMP	@@InpChar1

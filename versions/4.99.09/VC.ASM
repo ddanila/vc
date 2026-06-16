@@ -2600,7 +2600,7 @@ Init86:		MOV	DS:OvlPrmPoint.Segm,CS
 		MOV	CX,LenPath+12
 		REP	MOVSB
 
-;------------------- Choose memoty location --------------------
+;------------------- Choose memory location --------------------
 		.CONST
 DrvName		DB	'EMMXXXX0'
 NameCode_S	DB	'VC0 code'

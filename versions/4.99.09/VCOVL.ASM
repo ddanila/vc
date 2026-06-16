@@ -48,7 +48,7 @@ FncTab		DW	4800h, F00_00		; Up
 		DW	011Bh, F74_00		; Esc     - clear command line / on/off
 		DW	000Dh, F78_00		; ^M      - restore marks
 		DW	000Fh, F11_00		; ^O      - on/off panels
-		DW	0010h, F12_00		; ^P      - on/off unactive panel
+		DW	0010h, F12_00		; ^P      - on/off inactive panel
 		DW	0015h, F15_00		; ^U      - swap panels
 		DW	0002h, F16_00		; ^B      - on/off key bar
 		DW	0012h, F17_00		; ^R      - re-read
@@ -96,7 +96,7 @@ FncTab		DW	4800h, F00_00		; Up
 		DW	6800h, F61_00		; Alt F1  - change left drive
 		DW	6900h, F62_00		; Alt F2  - change right drive
 		DW	6A00h, F63_00		; Alt F3  - internal viewer
-		DW	6B00h, F64_00		; Alt F4  - internal editer
+		DW	6B00h, F64_00		; Alt F4  - internal editor
 		DW	6C00h, F65_00		; Alt F5  - memory info
 		DW	6D00h, F66_00		; Alt F6  - directory sizes
 		DW	6E00h, F67_00		; Alt F7  - file find
@@ -2121,7 +2121,7 @@ Mouse41:	DEC	BX
 		JAE	Mouse51
 		CMP	CL,BL
 		JAE	Mouse46
-		MOV	BH,DS:WinTyp		; Set cutsor
+		MOV	BH,DS:WinTyp		; Set cursor
 		OR	BH,DS:BrfFul
 		JNE	Mouse44
 		PUSH	AX
@@ -2231,7 +2231,7 @@ Mouse61:	CALL	MouseDblClick
 EmptyProc:	IRET
 
 ;---------------------------------------------------------------
-;	Run commans from User Menu, Extensions files
+;	Run commands from User Menu, Extensions files
 ;		DS:SI - commands
 ;		   AL - 1 external viewer/editor, 2 - from archive
 ;---------------------------------------------------------------

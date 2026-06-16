@@ -383,12 +383,12 @@ DialBox		ENDP
 ;		CS:DX - address of points table
 ;		CS:BP - address of color table
 ;		   AL - limit (0 - check length)
-;			Alailabe macros:
+;			Available macros:
 ;			0FFh,n		- insert n spaces (n<128)
 ;			0FFh,n,Char	- duplicate Char n-128 times (n>128)
 ;			^^		- insert ^
 ;			^N		- normal text
-;			^R		- reverced text
+;			^R		- reversed text
 ;			^B		- bold text
 ;			^U		- underlined text
 ;			^Axx		- insert ASCII char (xx - hex)
@@ -515,9 +515,9 @@ NgLine		PROC	FAR
   @@GoNextChar:	POP	SI
 		POP	DS
 		JMP	@@NextChar
-  @@StringCS:	PUSH	CS			; ^nnnC - string ftom CS:
+  @@StringCS:	PUSH	CS			; ^nnnC - string from CS:
 		POP	DS
-  @@StringES:	PUSH	ES			; ^nnnE - string ftom ES:
+  @@StringES:	PUSH	ES			; ^nnnE - string from ES:
 		PUSH	DI
 		PUSH	SS
 		POP	ES
@@ -2530,8 +2530,8 @@ LenItem		ENDP
 ;	Flip Flop
 ;		BH,BL - begin
 ;		   AL - key bar
-;		   CL - paremeter
-;	Return:	   CL - paremeter
+;		   CL - parameter
+;	Return:	   CL - parameter
 ;		   AX - key code
 ;---------------------------------------------------------------
 FlipFl		PROC	NEAR

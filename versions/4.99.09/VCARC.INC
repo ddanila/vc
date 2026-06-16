@@ -68,7 +68,7 @@ PutDescriptor	ENDP
 ;	Test archive extension
 ;		DS:SI - archive pathname
 ;		   DL - 0=all extensions, 1=only main ext
-;	Return:	   CX - numder of arc or pointer, ArchiveExt=Main ext
+;	Return:	   CX - number of arc or pointer, ArchiveExt=Main ext
 ;		   CY - error
 ;---------------------------------------------------------------
 		.CONST
@@ -176,7 +176,7 @@ ChkArcExt	ENDP
 
 ;---------------------------------------------------------------
 ;	Find archive command
-;		DS:SI - numder of arc or pointer
+;		DS:SI - number of arc or pointer
 ;		   AL - number of command
 ;	Return:	   NC - Ok, DS:SI - pointer to command
 ;		   CY - error
@@ -224,7 +224,7 @@ FindArcCmd	ENDP
 ;---------------------------------------------------------------
 ;	Test archive by extension and it is on a disk
 ;		DS:SI - archive pathname
-;	Return:	   CX - numder of arc or pointer
+;	Return:	   CX - number of arc or pointer
 ;		  DTA - archive file parameters
 ;		   CY - error, AX - error code
 ;---------------------------------------------------------------
@@ -666,7 +666,7 @@ DelAllTempArcs	ENDP
 ;	Detect type of archive
 ;		DS:SI - archive name
 ;		   BP - limit in WorkBuffer
-;	Return:	   NC - Ok, CX - numder of arc or pointer
+;	Return:	   NC - Ok, CX - number of arc or pointer
 ;			    ArchiveExt filled with extension
 ;		   CY - error, AX - error code
 ;---------------------------------------------------------------

@@ -24,7 +24,7 @@ VwShift		DB	?		; Shift 1 byte in DBCS mode
 Vw100pc		DB	?		; 100% displayed
 VwSrTextHex	DB	?		; String was found in Text/Hex mode
 VwSrLen		DW	?		; Length of the found string
-VwSearch	DD	?		; Saerch offset
+VwSearch	DD	?		; Search offset
 VwTbl		TblData	?		; Translation table
 VwBuffer	LABEL	BYTE		; View data
 ViewData	ENDS
@@ -2574,4 +2574,3 @@ StartSearch	PROC	NEAR
 		CALL	PrepareSearch
 		RET
 StartSearch	ENDP
-

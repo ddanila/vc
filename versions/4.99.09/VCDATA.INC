@@ -16,7 +16,7 @@ LenStk		EQU	100h		; Stack size
 LenPath		EQU	3+256+1+1	; Length of path name
 LenCmdLine	EQU	126		; Length of command line
 LenColr		EQU	42		; Length of color table
-LenHist		EQU	512		; Length of hisory buffer
+LenHist		EQU	512		; Length of history buffer
 LenStr		EQU	64		; Visible length of path & file string
 LenStrFull	EQU	512		; Full length of path & file string
 LenFilt		EQU	25		; Length of custom filter
@@ -29,7 +29,7 @@ LenSwtch	EQU	20		; Length of COMMAND.COM switches
 MinFls		EQU	256		; Minimum files in window
 MinTree		EQU	512		; Minimum tree size
 MinView		EQU	8000		; Minimum view buffer size
-MaxProg		EQU	18		; Maximal resident quantaty
+MaxProg		EQU	18		; Maximal number of TSRs
 MaxFilts	EQU	10		; Maximal number of filters
 NmbStrs		EQU	32		; Number of stars
 ExpandSize	EQU	2000		; Expand size of segments
@@ -133,7 +133,7 @@ CNTRY		STRUC
 		DB	?		; Currency format
 		DB	?		; Number of meaning digits in currency
   TimeFmt	DB	?		; Time format
-  CaseMap	DD	?		; Addres of case map
+  CaseMap	DD	?		; Address of case map
 		DB	2 DUP(?)	; Data separator
 		DB	8 DUP(?)	; Reserved
 CNTRY		ENDS
@@ -310,7 +310,7 @@ Visible		DB	?			; Panel is off/on
 FiltAttr	DB	?			; Filter attributes
 FiltTyp		DB	?			; Filter number
 SortTyp		DB	?			; Sort order
-SortRev		DB	?			; Reverced sort
+SortRev		DB	?			; Reversed sort
 ShowSize	DB	?			; Show size in full panel
 ShowRatio	DB	?			; Show ratio in full panel
 ShowDate	DB	?			; Show date in full panel
@@ -331,13 +331,13 @@ ArcPath		DB	LenPath DUP(?)		; Path in archive
 CrnPath		DB	LenPath DUP(?)		; Current directory in the tree panel
 WCBsave		=	$			; End of WCB part saved in memory
 
-LongNamFlag	DB	?			; Long names were loadad
+LongNamFlag	DB	?			; Long names were loaded
 EndFul		DW	?			; End of file buffer including all files
 ExtFile		DW	?			; Address of extension file
 SizeWCB		DW	?			; Size of WCB segment
 TreeCur		DW	?			; Pointer in tree panel
 TreeFirst	DW	?			; First line in tree panel
-TreeCrnt	DW	?			; Current path enrty in tree
+TreeCrnt	DW	?			; Current path entry in tree
 TreeOffset	DB	?			; Offset in tree panel
 TreeTyp		DB	?			; Offset in tree levels
 ChgFlg		DB	?			; Flag to force reread the panel
@@ -385,7 +385,7 @@ AltView		DB	?			; Alt-F3 - external viewer
 AltEdit		DB	?			; Alt-F4 - external editor
 ClrBuf		DB	?			; Clear buffer flag
 Active		DB	?			; Active panel
-Ctrl_O		DB	?			; Visible status of unactive panel
+Ctrl_O		DB	?			; Visible status of inactive panel
 ChkTSR		DB	?			; TSR manager
 IncDirs		DB	?			; Include subdirectories
 DescrProcess	DB	?			; Process description
@@ -412,7 +412,7 @@ Pointers	DB	 7 DUP (?)		; Mouse pointers characters
 FileMarks	DB	 3 DUP (?)		; File mark characters
 ItemOn		DB	?			; Item switched on
 LenCmdLn	DW	?			; Length of command lines
-LenHistory	DW	?			; Lenght of history buffer
+LenHistory	DW	?			; Length of history buffer
 MinFiles	DW	?			; Reserved memory for files
 MaxTSRs		DB	?			; Maximal numbers of TSR
 DefBlock	=	$
@@ -508,7 +508,7 @@ WindowsPoint	DW	?			; Pointer to save windows area
 WorkBuffer	DW	?			; Buffer for copy, view, edit...
 Memorys		DW	?			; Total memory
 HstAdr		DW	?			; History pointer
-DataLocation	DB	?			; Locatoin: RAM/Swap/EMS/XMS
+DataLocation	DB	?			; Location: RAM/Swap/EMS/XMS
 DatPoint	DW	?			; Pointer to data save buffer
 DatHandle	DW	?			; Data handle
 ClusterSize	DD	?			; Size of cluster
@@ -526,8 +526,8 @@ KeyStroke	DW	?			; Key stroke
 MousePos	DW	?			; Last mouse position
 MouseTime	DD	?			; Last mouse press time
 MouseCmd	DW	?			; Last mouse command
-TaskStack	DW	?			; Task switsher stack
-TaskAddr	DD	?			; Task switsher return address
+TaskStack	DW	?			; Task switcher stack
+TaskAddr	DD	?			; Task switcher return address
 AutoTim		DD	?			; Auto press key time
 Screen		DD	?			; Address of screen
 ErrVct		DD	?			; Original vector 24h

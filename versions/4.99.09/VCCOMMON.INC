@@ -183,7 +183,7 @@ MvzHist		PROC	FAR
 MvzHist		ENDP
 
 ;---------------------------------------------------------------
-;	Clear rest of line DS:SI, legth CX
+;	Clear rest of line DS:SI, length CX
 ;---------------------------------------------------------------
 FilZero		PROC	FAR
 		USES	DI,ES
@@ -198,7 +198,7 @@ FilZero		PROC	FAR
 FilZero		ENDP
 
 ;---------------------------------------------------------------
-;	Clear rest of history DS:SI, legth CX
+;	Clear rest of history DS:SI, length CX
 ;---------------------------------------------------------------
 FilHist		PROC	FAR
 		USES	SI,DI,ES
@@ -1271,7 +1271,7 @@ TstDrv		PROC	FAR
 		JE	@@Exit
 		MOV	AL,Logical
 		JMP	@@Exit
-  @@GetFlags:	XOR	DX,DX			; Analise flags
+  @@GetFlags:	XOR	DX,DX			; Analyze flags
 		MOV	AX,4409h
 		INT	21h
 		MOV	AL,Network

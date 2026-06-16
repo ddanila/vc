@@ -86,7 +86,7 @@ MemMenu_D	DB	11,  0
 		.CODE
 F65_00:		PUSH	ES			; Alt F5 - memory info
 		POP	DS
-		MOV	AX,5802h		; MCB analisis
+		MOV	AX,5802h		; MCB analysis
 		INT	21h
 		PUSH	AX
 		PUSHF
@@ -149,7 +149,7 @@ F65_06:		INC	AX
 		MOV	AX,5803h
 		INT	21h
 
-F65_10:		MOV	DS:ListTotal,0		; Program analisis
+F65_10:		MOV	DS:ListTotal,0		; Program analysis
 		MOV	AX,ES
 		ADD	AX,DS:SizeDataSeg
 		MOV	BX,DS:WorkBuffer
@@ -507,7 +507,7 @@ F65_53:		POP	CX
 		JMP	Func04
 
 ;---------------------------------------------------------------
-;	Memory info subfinction
+;	Memory info subfunction
 ;---------------------------------------------------------------
 		.CODE	Subs
 MemProc		PROC	NEAR

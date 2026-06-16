@@ -1425,7 +1425,7 @@ QuickViewDir	PROC	NEAR
 QuickViewDir	ENDP
 
 ;---------------------------------------------------------------
-;	Output contents of panel 
+;	Output contents of panel
 ;		   DS - WCBseg
 ;---------------------------------------------------------------
 		.CONST
@@ -1877,7 +1877,7 @@ PutTree		PROC	FAR
   @@NextBranch: INC	BX
 		LOOP	@@Branches
 
-  @@PutBranch:	PUSH	SI			; Output horisontal branch
+  @@PutBranch:	PUSH	SI			; Output horizontal branch
 		MOV	CX,DS:TreeLenH
 		SUB	CX,TreeCount
 		JBE	@@EndBranch

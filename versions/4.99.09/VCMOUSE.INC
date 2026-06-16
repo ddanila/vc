@@ -59,7 +59,7 @@ IniMous		PROC	FAR
 IniMous		ENDP
 
 ;---------------------------------------------------------------
-;	Set type of mouse sursor
+;	Set type of mouse cursor
 ;		   AL - cursor type
 ;---------------------------------------------------------------
 TypMous		PROC	FAR

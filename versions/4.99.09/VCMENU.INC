@@ -1208,7 +1208,7 @@ M10_00:		MOV	CL,CH			; Sort
 		MOV	CH,DS:BrfFul
 		JMP	M01_01
 
-M15_00:		MOV	BX,OFFSET SortRev	; Reverced sort
+M15_00:		MOV	BX,OFFSET SortRev	; Reversed sort
 		CALL	InvPanelVar
 		CALL	HidCur
 		JMP	M18_20

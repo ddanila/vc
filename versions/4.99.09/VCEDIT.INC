@@ -8,7 +8,7 @@ COMMENT	|
 EditBuf	EQU	MenuBuf			; Edit line buffer
 UndoBuf	EQU	ErrBuf			; Undo buffer
 LenEdit	EQU	LenMenu			; Length of edit buffer
-	; The length of undo buffer must be greate then edit buffer
+	; The length of undo buffer must be greater than length of edit buffer
 |
 
 EdData	STRUC
@@ -1790,7 +1790,7 @@ T50_05:	POP	AX
 	RET
 T50_00	ENDP
 
-T51_00	PROC	NEAR			; Updata line from buffer
+T51_00	PROC	NEAR			; Update line from buffer
 	CMP	ES:EdTxHex,0
 	JNZ	T51_01
 	CMP	ES:EdUpdat,0
@@ -1925,7 +1925,7 @@ T51_34:	POP	BX
 	POP	DX
 	SUB	ES:EdLen.Lo,BX
 	SBB	ES:EdLen.Hi,DX
-T51_40:	CLD				; Updata line
+T51_40:	CLD				; Update line
 	MOV	BX,ES:EdOffst.Lo
 	MOV	DX,ES:EdOffst.Hi
 	CALL	T61_00
@@ -2149,7 +2149,7 @@ T55_11:	CMP	DX,ES:EdSizLn
 	RET
 T55_10	ENDP
 
-T56_00	PROC	NEAR			; Calculte coordinats
+T56_00	PROC	NEAR			; Calculate coordinates
 	CALL	T61_00
 T56_01:	MOV	ES:EdOffst.Lo,BX
 	MOV	ES:EdOffst.Hi,DX
@@ -2725,4 +2725,3 @@ T80_17:	POPF
 	RET
 T80_00	ENDP
 |
-
