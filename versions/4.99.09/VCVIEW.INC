@@ -1559,11 +1559,11 @@ ViewReload	PROC	NEAR
 		MOV	DS:VwOffset.Lo,BX
 		MOV	DS:VwOffset.Hi,SI
 		XOR	AX,AX
-		JMP	@@Reduse
+		JMP	@@Reduce
   @@CmpLoaded:	MOV	DX,DS:VwLoaded
 		CMP	DX,AX
 		JBE	@@Status
-  @@Reduse:	MOV	DS:VwLoaded,AX
+  @@Reduce:	MOV	DS:VwLoaded,AX
 		INC	CX
   @@Status:	PUSH	DS
 		MOV	AX,DS:VwLen.Lo

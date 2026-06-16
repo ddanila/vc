@@ -61,7 +61,7 @@ ExecArcPathEnd	EQU	WORD PTR TmpErr[38]
 		.CONST
 NotImpl_S	DB	"Function is not implemented for this archive",0
 ExecArcErr_S	DB	"Can't execute the program",0
-ExecArcLstEr_S	DB	"Error writting list of the files for",0
+ExecArcLstEr_S	DB	"Error writing list of the files for",0
 ExecArcLong_S	DB	"Command line too long",0
 ExecArcLevel_S	DB	' ^0E errorlevel ^1I ',0
 ExecArcInLine_S	DB	' ^0E ',0
@@ -1572,12 +1572,12 @@ ExecArcDialog	PROC	NEAR
   @@SetPointer:	MOV	AX,SI
 		STOSW
 		CMP	SI,DS:ExecArcPntEnd
-		JAE	@@Analise
+		JAE	@@Analyze
   @@NextLine:	LODSB
 		CMP	AL,0Ah
 		JNE	@@NextLine
 		JMP	@@CheckEnd
-  @@Analise:	XOR	AX,AX
+  @@Analyze:	XOR	AX,AX
 		STOSW
 		STD				; Cut empty lines at end
 		LEA	SI,[DI-4]
@@ -2236,7 +2236,7 @@ ExecArcChar	PROC	NEAR
 		MOV	SI,DI
 		JMP	@@CheckLine0
 
-  @@GetItem:	PUSH	ES			; Analize path and name
+  @@GetItem:	PUSH	ES			; Analyze path and name
 		MOV	DI,DS:ExecArcPathEnd
 		MOV	SI,DS:ExecArcPathBeg
 		OR	SI,SI

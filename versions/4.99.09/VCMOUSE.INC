@@ -187,7 +187,7 @@ ResMouseCmd	PROC	FAR
 ResMouseCmd	ENDP
 
 ;---------------------------------------------------------------
-;	Mouse commend repeat
+;	Mouse command repeat
 ;		   SI - command
 ;	Return:	 CY=1 - do command
 ;		 CY=0 - wait
