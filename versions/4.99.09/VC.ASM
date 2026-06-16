@@ -138,9 +138,9 @@ DefInit		DB	White OR Black SHL 4	;  0 - Main windows; Monochrome
 		DB	BrWhite OR Black SHL 4	;    LCD
 		DB	BrWhite OR Black SHL 4	;    LCD + MonoMode
 		DB	BrWhite OR White SHL 4	;  4 - Cursor for selected files; Monochrome
-		DB	BrBlue OR Black SHL 4	;    Monochrome + MonoMode: 1001b -> bits 0-2 = underline, bit 3 = brightness
+		DB	MdaUnderln OR MdaBright	;    Monochrome + MonoMode
 		DB	BrYellow OR Cyan SHL 4	;    Color
-		DB	BrBlue OR Black SHL 4	;    Color + MonoMode: 1001b -> bits 0-2 = underline, bit 3 = brightness
+		DB	MdaUnderln OR MdaBright	;    Color + MonoMode
 		DB	Black OR White SHL 4	;    LCD
 		DB	Black OR White SHL 4	;    LCD + MonoMode
 		DB	BrWhite OR Black SHL 4	;  5 - "Name   Size ..."; Monochrome
@@ -252,9 +252,9 @@ DefInit		DB	White OR Black SHL 4	;  0 - Main windows; Monochrome
 		DB	BrWhite OR Black SHL 4	;    LCD
 		DB	BrWhite OR Black SHL 4	;    LCD + MonoMode
 		DB	BrWhite OR White SHL 4	; 23 - Configuration cursor bright; Monochrome
-		DB	BrBlue OR Black SHL 4	;    Monochrome + MonoMode: 1001b -> bits 0-2 = underline, bit 3 = brightness
+		DB	MdaUnderln OR MdaBright	;    Monochrome + MonoMode
 		DB	BrYellow OR Black SHL 4	;    Color
-		DB	BrBlue OR Black SHL 4	;    Color + MonoMode: 1001b -> bits 0-2 = underline, bit 3 = brightness
+		DB	MdaUnderln OR MdaBright	;    Color + MonoMode
 		DB	Black OR White SHL 4	;    LCD
 		DB	Black OR White SHL 4	;    LCD + MonoMode
 		DB	Black OR White SHL 4	; 24 - History window; Monochrome
@@ -306,9 +306,9 @@ DefInit		DB	White OR Black SHL 4	;  0 - Main windows; Monochrome
 		DB	Black OR White SHL 4	;    LCD
 		DB	Black OR White SHL 4	;    LCD + MonoMode
 		DB	BrWhite OR Black SHL 4	; 32 - Help underline; Monochrome
-		DB	BrBlue OR Black SHL 4	;    Monochrome + MonoMode: 1001b -> bits 0-2 = underline, bit 3 = brightness
+		DB	MdaUnderln OR MdaBright	;    Monochrome + MonoMode
 		DB	BrYellow OR Cyan SHL 4	;    Color
-		DB	BrBlue OR Black SHL 4	;    Color + MonoMode: 1001b -> bits 0-2 = underline, bit 3 = brightness
+		DB	MdaUnderln OR MdaBright	;    Color + MonoMode
 		DB	BrWhite OR Black SHL 4	;    LCD
 		DB	BrWhite OR Black SHL 4	;    LCD + MonoMode
 		DB	White OR Black SHL 4	; 33 - Error windows; Monochrome

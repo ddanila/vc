@@ -66,17 +66,19 @@ d_Color		EQU	1
 d_LCD	EQU	2
 
 ; UI Colors
+; https://web.archive.org/web/20041214211529/https://www.seasip.info/VintagePC/mda.html#memmap
+MdaUnderln	EQU	1
+MdaBright	EQU	8
 ; https://en.wikipedia.org/wiki/Enhanced_Graphics_Adapter
 Black		EQU	0
 Blue		EQU	1
 Cyan		EQU	3
 Red		EQU	4
 White		EQU	7
-BrBlue		EQU	9
-BrGreen	EQU	10
+BrGreen		EQU	10
 BrCyan		EQU	11
 BrYellow	EQU	14
-BrWhite	EQU	15
+BrWhite		EQU	15
 
 ;---------------------- Global structures ----------------------
 ; Far address structure definition.
