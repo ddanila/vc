@@ -47,6 +47,13 @@ p_Tree		EQU	1		; Tree panel type
 p_Info		EQU	2		; Info panel type
 p_QView		EQU	3		; QuickView panel type
 
+; Sort modes
+s_Name		EQU	0
+s_Ext		EQU	1
+s_Time		EQU	2
+s_Size		EQU	3
+s_None		EQU	4
+
 ; Memory modes
 BASEMEM		EQU	0
 SWAP		EQU	1

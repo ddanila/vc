@@ -438,7 +438,7 @@ DefWCB		DB	p_File			; WinTyp
 		DB	1			; Visible
 		DB	37h			; FiltAttr
 		DB	0			; MasTyp
-		DB	4			; SortTyp
+		DB	s_None			; SortTyp
 		DB	0			; SortRev
 		DB	1			; ShowSize
 		DB	1			; ShowRatio

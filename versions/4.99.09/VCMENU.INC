@@ -817,9 +817,9 @@ F39_77:		CMP	DS:Visible,AH
 		PUSH	BX			; File panel
 		PUSH	AX
 		MOV	AL,DS:SortTyp
-		CMP	AL,4
+		CMP	AL,s_None
 		JBE	F39_78
-		MOV	AL,4
+		MOV	AL,s_None		; invalid sort mode, set Unsorted
 F39_78:		ADD	BH,AL
 		ADD	BX,0A01h
 		CALL	BasAdr
@@ -834,7 +834,7 @@ F39_78:		ADD	BH,AL
 		POP	BX
 		STOSB
 F39_79:		POP	ES
-		CMP	DS:SortTyp,4
+		CMP	DS:SortTyp,s_None
 		JAE	F39_82
 		JMP	F39_83
 F39_80:		POP	ES
@@ -1204,7 +1204,7 @@ M08_01:		MOV	BX,OFFSET LongNames
 M10_00:		MOV	CL,CH			; Sort
 		SUB	CL,10
 		MOV	DS:SortRev,0
-		MOV	DS:SortTyp,0FFh
+		MOV	DS:SortTyp,0FFh		; invalidate
 		MOV	CH,DS:BrfFul
 		JMP	M01_01
 
@@ -1535,7 +1535,7 @@ F66_01:		MOV	AL,Cmd_M
 		CALL	Window
 		MOV	AL,1
 		CALL	DirSize
-		CMP	DS:SortTyp,3
+		CMP	DS:SortTyp,s_Size
 		JNE	F66_02
 		CALL	M18_30
 F66_02:		CALL	ResWin

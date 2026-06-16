@@ -1178,7 +1178,7 @@ FileSort	ENDP
 CompEntries	PROC	NEAR
 		USES	AX,CX
 		MOV	AL,DS:SortTyp
-		CMP	AL,4
+		CMP	AL,s_None
 		JB	@@CmpDirAttr
 		MOV	AX,DS:[DI].NumbF
 		CMP	AX,DS:[SI].NumbF
