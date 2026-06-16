@@ -1213,7 +1213,7 @@ CompEntries	PROC	NEAR
 		RET
   @@ChkSys2:	TEST	CH,4
 		JZ	@@Exit
-  @@ByName:	CMP	AL,1
+  @@ByName:	CMP	AL,s_Ext
 		JAE	@@ByExt
   @@CmpNames:	PUSH	SI
 		PUSH	DI
@@ -1239,7 +1239,7 @@ CompEntries	PROC	NEAR
 		POP	SI
 		JE	@@CmpNames
 		JMP	@@ChkRev
-  @@ByTime:	CMP	AL,2
+  @@ByTime:	CMP	AL,s_Time
 		JNE	@@BySize
 		MOV	AX,DS:[SI].DateF
 		CMP	AX,DS:[DI].DateF
