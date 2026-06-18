@@ -522,7 +522,7 @@ Exec04:		MOV	DI,OFFSET Command_S	; Run COMMAND /C ...
 		CALL	CS:Exec21
 		CALL	SetBreak
 		JNC	Exec06
-		CMP	AX,3
+		CMP	AX,WORD PTR 3
 		JBE	Exec05
 		MOV	DX,OFFSET RunErr_S
 		CALL	OutErr
@@ -1012,7 +1012,7 @@ ChkBlk		PROC	NEAR	USES	CX SI DI
 		MOV	AL,DS:[0Eh]
 		MOV	AH,5
 		MUL	AH
-		ADD	AX,2+12+1+4
+		ADD	AX,WORD PTR (2+12+1+4)
 		MOV	CX,AX
 		XOR	SI,SI
 		XOR	DI,DI
@@ -1832,7 +1832,7 @@ Init06:		POP	CX
 		POP	AX
 		PUSH	AX
 		PUSH	DS
-		ADD	AX,10h
+		ADD	AX,WORD PTR 10h
 		MOV	DS,AX
 		PUSH	DS
 		JCXZ	Init08
@@ -2818,7 +2818,7 @@ Load21:		MOV	AX,4300h		; Get XMS address
 		INC	DX
 		MOV	AH,9
 		CALL	DS:ControlXMS
-		CMP	AX,1
+		CMP	AX,WORD PTR 1
 		JNE	Load23
 		MOV	DS:CodeHandle,DX
 		MOV	AX,2*13			; Allocate data handle
@@ -2837,7 +2837,7 @@ Load22:		DEC	AX
 		MOV	DX,AX
 		MOV	AH,9
 		CALL	DS:ControlXMS
-		CMP	AX,1
+		CMP	AX,WORD PTR 1
 		JE	Load25
 Load23:		MOV	DX,OFFSET InsuffXMS_S
 		CMP	BL,0A0h
@@ -2864,7 +2864,7 @@ Load25:		MOV	DS:DataHandle,DX
 Load26:		MOV	DS:[SI].DestOffset.Lo,AX
 		MOV	AH,0Bh
 		CALL	DS:ControlXMS
-		CMP	AX,1
+		CMP	AX,WORD PTR 1
 		JNE	Load24
 		CALL	Load81			; Load and move code
 		JC	Load27
@@ -2885,7 +2885,7 @@ Load26:		MOV	DS:[SI].DestOffset.Lo,AX
 		MOV	DS:[SI].DestOffset.Hi,AX
 		MOV	AH,0Bh
 		CALL	DS:ControlXMS
-		CMP	AX,1
+		CMP	AX,WORD PTR 1
 		JNE	Load24
 		MOV	DX,OFFSET LoadXMS_S
 		MOV	SI,OFFSET SubsXMS
@@ -2913,7 +2913,7 @@ Load32:		MOV	CX,20h
 		MOV	AH,5Bh
 		INT	21h
 		JNC	Load34
-		CMP	AX,50h
+		CMP	AX,WORD PTR 50h
 		JNE	Load36
 		MOV	SI,DI
 		MOV	CX,3
@@ -3463,7 +3463,7 @@ Load81		PROC	NEAR
 		CMP	AX,DX
 		JAE	@@BlockSize
 		MOV	AX,DX
-  @@BlockSize:	ADD	AX,10h
+  @@BlockSize:	ADD	AX,WORD PTR 10h
 		MOV	DS:CodeSegLength,AX
 		MOV	AX,DS:[SI+8]
 		SUB	DX,AX

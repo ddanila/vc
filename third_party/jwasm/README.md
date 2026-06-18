@@ -36,11 +36,15 @@ no `-Map`, hence the stub include and the manual link:
     make -f GccUnix.mak "extra_c_flags=-DNDEBUG -O2 -Icompat" || true  # link step fails
     cc build/GccUnixR/*.o -o jwasm-macos-arm64 && strip jwasm-macos-arm64
 
-## Known output difference vs TASM
+## Byte-identical to TASM
 
-`jwasm -Zg -Zne -DOFFICIAL -bin VC.ASM` produces a VC.COM that differs from
-the TASM build in exactly 9 instructions (27 bytes): for `CMP AX,imm` /
+`jwasm -Zg -Zne -DOFFICIAL -bin -FoVC.COM VC.ASM` produces a VC.COM that is byte-for-byte
+identical to the TASM build.
+
+Previously the two differed in 9 instructions (27 bytes): for `CMP AX,imm` /
 `ADD AX,imm` with a small immediate, TASM emits the accumulator form
-(`3D iw` / `05 iw`) while JWasm emits the sign-extended form (`83 /7 ib` /
-`83 /0 ib`). Same instruction length, so no offsets shift. See PR #21 for
-the full list.
+(`3D iw` / `05 iw`) while JWasm picks the equal-length sign-extended form
+(`83 /7 ib` / `83 /0 ib`). Qualifying those immediates with `WORD PTR` in
+`VC.ASM` forces JWasm onto the accumulator form and is a no-op for TASM (which
+already used it), so both toolchains now agree. See PR #21 for the original
+list of the 9 sites.
