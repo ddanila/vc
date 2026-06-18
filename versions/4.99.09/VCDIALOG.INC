@@ -1070,7 +1070,7 @@ DialogHistDn:	POP	SI			; History Down
 		POP	BX
 		POP	DI
   @@GoToCase:	MOV	CL,0
-		CMP	CS:[DI].mType,4
+		CMP	CS:[DI].mType,w_Button
 		JNE	@@CallSub
 		CALL	DialogBuf
 		MOV	CL,SS:[SI]
@@ -1189,7 +1189,7 @@ DialogShTab:	SUB	DI,SIZE BoxMn		; Shift-Tab
 		JNC	@@GoToDial
 		ADD	SI,SIZE BoxMn
 		JMP	@@ChkItems
-  @@GoToDial:	CMP	CS:[DI].mType,4
+  @@GoToDial:	CMP	CS:[DI].mType,w_Button
 		JNE	@@GoNextDial
 		PUSH	SI
 		PUSH	DX
@@ -1252,7 +1252,7 @@ DialogHome:	MOV	AL,80h			; Home, PgUp
 		ADD	AX,SIZE BoxHd
 		MOV	DI,AX
 		POP	AX
-		CMP	CS:[DI].mType,2
+		CMP	CS:[DI].mType,w_Radio
 		JNE	@@DialNext
 		TEST	AL,80h
 		JZ	@@DialNext
@@ -1265,7 +1265,7 @@ DialogHome:	MOV	AL,80h			; Home, PgUp
 		MOV	SS:[SI+1],AL
 		JMP	@@DialNext
 DialogEnd:	CALL	DialogLast		; End
-		CMP	CS:[DI].mType,4
+		CMP	CS:[DI].mType,w_Button
 		JNE	DialogPgDn
 		CALL	DialogBuf
 		MOV	BYTE PTR SS:[SI],0
@@ -1273,7 +1273,7 @@ DialogPgDn:	CALL	DialogLast		; PgDn
 		JMP	@@DialNext
 
 DialogEnter:	XOR	AX,AX			; Enter
-		CMP	CS:[DI].mType,4
+		CMP	CS:[DI].mType,w_Button
 		JNE	@@SaveVars
 		CALL	DialogBuf
 		MOV	AL,SS:[SI]
@@ -1380,7 +1380,7 @@ DialogBuf	PROC	NEAR			; Find buffer
 		MOV	SI,[BP]
 		ADD	SI,SIZE BoxHd
   @@FndBuf:	DEC	AX
-		CMP	CS:[SI].mType,2
+		CMP	CS:[SI].mType,w_Radio
 		JA	@@CmpBuf
 		PUSHF
 		DEC	AX

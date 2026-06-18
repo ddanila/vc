@@ -562,7 +562,7 @@ F87_60		PROC	NEAR			; Test date & time
 F87_61:		MOV	ES:AttribDate,0FFFFh
 		MOV	ES:AttribTime,0FFFFh
 		ADD	SI,SIZE BoxHd
-F87_62:		CMP	CS:[SI].mType,1
+F87_62:		CMP	CS:[SI].mType,w_InpStr
 		JE	F87_63
 		DEC	DI
 		ADD	SI,SIZE BoxMn
