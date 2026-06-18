@@ -47,6 +47,12 @@ p_Tree		EQU	1		; Tree panel type
 p_Info		EQU	2		; Info panel type
 p_QView		EQU	3		; QuickView panel type
 
+; Widget types
+w_InpStr	EQU	1
+w_Radio		EQU	2
+w_CheckBox	EQU	3
+w_Button	EQU	4
+
 ; Sort modes
 s_Name		EQU	0
 s_Ext		EQU	1
@@ -219,8 +225,8 @@ BOXMN		STRUC
   mRight	DB	0		; Right link
   mBase		DW	?		; Menu base
   mPoint	DW	?
-  mSelTot	EQU	BYTE PTR $
-  mCtrl		DW	?
+  mSelTot	EQU	BYTE PTR $	; Number of w_Radio choices
+  mCtrl		DW	?		; w_InpStr: sizeof(w_InpStr), w_Button: position, $MinMnuDefault if -1
 BOXMN		ENDS
 
 ; The star structure definition.

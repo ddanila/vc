@@ -25,7 +25,7 @@ Label_P		DB	Box_C, BoxCu_C, 0, 0
 		DW	Empty_S
 		DW	0
 Label_B		BOXHD	< Label_P, 500h, 0, Dialog_K, Cmd_M, Label_H, 0 >
-		BOXMN	< 1, 0,0,0,0, 305h, LineBuf1, 80h+11 >
+		BOXMN	< w_InpStr, 0,0,0,0, 305h, LineBuf1, 80h+11 >
 		DB	0
 LabelFix_P	DB	Box_C, BoxCu_C, 0, 0
 		DW	Label_S
@@ -34,7 +34,7 @@ LabelFix_P	DB	Box_C, BoxCu_C, 0, 0
 		DW	Ok_S
 		DW	0
 LabelFix_B	BOXHD	< LabelFix_P, 500h, 0, Dialog_K, Cmd_M, Label_H, 0 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 LabelDel_T	DW	Volume
 LabelDel_P	DB	Err_C, ErInv_C, ErInv_C, 0
@@ -46,7 +46,7 @@ LabelDel_P	DB	Err_C, ErInv_C, ErInv_C, 0
 LabelSetErr_T	DW	LabelSetErr_S, LineBuf1
 LabelDelErr_T	DW	LabelDelErr_S, Volume
 LabelDel_B	BOXHD	< LabelDel_P, 700h, 0, Dialog_K, Def_M, Default_H, 5 >
-		BOXMN	< 4, 0,0,0,0, 4F7h, DelCancel_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4F7h, DelCancel_D, 0 >
 		DB	0
 LabelErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Label_S
@@ -55,7 +55,7 @@ LabelErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 LabelErr_B	BOXHD	< LabelErr_P, 700h, 0, Dialog_K, Def_M, Default_H, 2 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 
 		.CODE

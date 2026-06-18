@@ -47,7 +47,7 @@ CritError_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Empty_S
 		DW	0
 CritError_B	BOXHD	< CritError_P, 900h, 0, Error_K, Def_M, None_H, 7>
-		BOXMN	< 4, 0,0,0,0, 400h, 0, 0>
+		BOXMN	< w_Button, 0,0,0,0, 400h, 0, 0>
 		DB	0
 RtAb_D		DB	7, 0
 		DB	7, 8
@@ -306,7 +306,7 @@ Phant_P		DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	OkCan_S
 		DW	0
 Phant_B		BOXHD	< Phant_P, 900h, 0, Error_K, Def_M, None_H, 5 >
-		BOXMN	< 4, 0,0,0,0, 3FAh, OkCan_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 3FAh, OkCan_D, 0 >
 		DB	0
 OkCan_D		DB	4, 0
 		DB	8, 5
@@ -369,4 +369,3 @@ ChgDisk		PROC	FAR
   @@Phantom:	CALL	Phantom
 		RET
 ChgDisk		ENDP
-

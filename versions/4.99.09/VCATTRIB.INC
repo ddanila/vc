@@ -54,20 +54,20 @@ AttrName_P	DB	Box_C, BoxCu_C, Box_C, BoxBr_C
 		DW	SetCancel_S
 		DW	0
 AttrFile_B	BOXHD	< AttrName_P, 400h, F87_60, Dialog_K, Fls_M, Attrib_H, 0 >
-		BOXMN	< 3, 6,1,0,4, 407h, AttrSet+0, 0 >	; Read only
-		BOXMN	< 3, 0,2,1,4, 507h, AttrSet+1, 0 >	; Archive
-		BOXMN	< 3, 1,3,2,5, 607h, AttrSet+2, 0 >	; Hidden
-		BOXMN	< 3, 2,6,3,5, 707h, AttrSet+3, 0 >	; System
-		BOXMN	< 1, 3,5,1,4, 517h, AttrDate ,10 >	; Date
-		BOXMN	< 1, 4,6,3,5, 717h, AttrTime ,10 >	; Time
-		BOXMN	< 4, 5,0,6,6, 9F6h, SetCancel_D, 0 >	; Set / Cancel
+		BOXMN	< w_CheckBox, 6,1,0,4, 407h, AttrSet+0,   0 >	; Read only
+		BOXMN	< w_CheckBox, 0,2,1,4, 507h, AttrSet+1,   0 >	; Archive
+		BOXMN	< w_CheckBox, 1,3,2,5, 607h, AttrSet+2,   0 >	; Hidden
+		BOXMN	< w_CheckBox, 2,6,3,5, 707h, AttrSet+3,   0 >	; System
+		BOXMN	< w_InpStr,   3,5,1,4, 517h, AttrDate,    10 >	; Date
+		BOXMN	< w_InpStr,   4,6,3,5, 717h, AttrTime,    10 >	; Time
+		BOXMN	< w_Button,   5,0,6,6, 9F6h, SetCancel_D, 0 >	; Set / Cancel
 		DB	0
 AttrDir_B	BOXHD	< AttrName_P, 400h, 0, Dialog_K, Fls_M, Attrib_H, 0 >
-		BOXMN	< 3, 4,1,0,0, 40Dh, AttrSet+0, 0 >	; Read only
-		BOXMN	< 3, 0,2,1,1, 50Dh, AttrSet+1, 0 >	; Archive
-		BOXMN	< 3, 1,3,2,2, 60Dh, AttrSet+2, 0 >	; Hidden
-		BOXMN	< 3, 2,4,3,3, 70Dh, AttrSet+3, 0 >	; System
-		BOXMN	< 4, 3,0,4,4, 9F6h, SetCancel_D, 0 >	; Set / Cancel
+		BOXMN	< w_CheckBox, 4,1,0,0, 40Dh, AttrSet+0,   0 >	; Read only
+		BOXMN	< w_CheckBox, 0,2,1,1, 50Dh, AttrSet+1,   0 >	; Archive
+		BOXMN	< w_CheckBox, 1,3,2,2, 60Dh, AttrSet+2,   0 >	; Hidden
+		BOXMN	< w_CheckBox, 2,4,3,3, 70Dh, AttrSet+3,   0 >	; System
+		BOXMN	< w_Button,   3,0,4,4, 9F6h, SetCancel_D, 0 >	; Set / Cancel
 		DB	0
 AttrNameEA_P	DB	Box_C, BoxCu_C, Box_C, BoxBr_C
 		DW	Attrib_S
@@ -84,22 +84,22 @@ AttrNameEA_P	DB	Box_C, BoxCu_C, Box_C, BoxBr_C
 		DW	SetCancel_S
 		DW	0
 AttrFileEA_B	BOXHD	< AttrNameEA_P, 400h, F87_60, Dialog_K, Fls_M, Attrib_H, 0 >
-		BOXMN	< 3, 7,1,0,4, 407h, AttrSet+0, 0 >	; Read only
-		BOXMN	< 3, 0,2,1,4, 507h, AttrSet+1, 0 >	; Archive
-		BOXMN	< 3, 1,3,2,5, 607h, AttrSet+2, 0 >	; Hidden
-		BOXMN	< 3, 2,6,3,5, 707h, AttrSet+3, 0 >	; System
-		BOXMN	< 1, 3,5,1,4, 517h, AttrDate ,10 >	; Date
-		BOXMN	< 1, 4,6,3,5, 717h, AttrTime ,10 >	; Time
-		BOXMN	< 3, 5,7,6,6,0A07h, AttribEA , 0 >	; EAs
-		BOXMN	< 4, 6,0,7,7,0CF6h, SetCancel_D, 0 >	; Set / Cancel
+		BOXMN	< w_CheckBox, 7,1,0,4, 407h,  AttrSet+0,   0 >	; Read only
+		BOXMN	< w_CheckBox, 0,2,1,4, 507h,  AttrSet+1,   0 >	; Archive
+		BOXMN	< w_CheckBox, 1,3,2,5, 607h,  AttrSet+2,   0 >	; Hidden
+		BOXMN	< w_CheckBox, 2,6,3,5, 707h,  AttrSet+3,   0 >	; System
+		BOXMN	< w_InpStr,   3,5,1,4, 517h,  AttrDate,    10 >	; Date
+		BOXMN	< w_InpStr,   4,6,3,5, 717h,  AttrTime,    10 >	; Time
+		BOXMN	< w_CheckBox, 5,7,6,6, 0A07h, AttribEA,    0 >	; EAs
+		BOXMN	< w_Button,   6,0,7,7, 0CF6h, SetCancel_D, 0 >	; Set / Cancel
 		DB	0
 AttrDirEA_B	BOXHD	< AttrNameEA_P, 400h, 0, Dialog_K, Fls_M, Attrib_H, 0 >
-		BOXMN	< 3, 5,1,0,0, 40Dh, AttrSet+0, 0 >	; Read only
-		BOXMN	< 3, 0,2,1,1, 50Dh, AttrSet+1, 0 >	; Archive
-		BOXMN	< 3, 1,3,2,2, 60Dh, AttrSet+2, 0 >	; Hidden
-		BOXMN	< 3, 2,4,3,3, 70Dh, AttrSet+3, 0 >	; System
-		BOXMN	< 3, 3,5,4,4,0A0Dh, AttribEA , 0 >	; EAs
-		BOXMN	< 4, 4,0,5,5,0CF6h, SetCancel_D, 0 >	; Set / Cancel
+		BOXMN	< w_CheckBox, 5,1,0,0, 40Dh,  AttrSet+0,   0 >	; Read only
+		BOXMN	< w_CheckBox, 0,2,1,1, 50Dh,  AttrSet+1,   0 >	; Archive
+		BOXMN	< w_CheckBox, 1,3,2,2, 60Dh,  AttrSet+2,   0 >	; Hidden
+		BOXMN	< w_CheckBox, 2,4,3,3, 70Dh,  AttrSet+3,   0 >	; System
+		BOXMN	< w_CheckBox, 3,5,4,4, 0A0Dh, AttribEA,    0 >	; EAs
+		BOXMN	< w_Button,   4,0,5,5, 0CF6h, SetCancel_D, 0 >	; Set / Cancel
 		DB	0
 AttrFiles_T	DW	Empty_S, AttrDate_S, AttrSpc_S, AttrTime_S
 AttrFiles_P	DB	Box_C, BoxCu_C, Box_C, BoxBr_C
@@ -114,17 +114,17 @@ AttrFiles_P	DB	Box_C, BoxCu_C, Box_C, BoxBr_C
 		DW	SetCancel_S
 		DW	0
 AttrFiles_B	BOXHD	< AttrFiles_P, 400h, F87_60, Dialog_K, Fls_M, Attrib_H, 0 >
-		BOXMN	< 3,10, 1, 0, 4, 407h, AttrSet+0, 0 >	; Read only
-		BOXMN	< 3, 0, 2, 1, 5, 507h, AttrSet+1, 0 >	; Archive
-		BOXMN	< 3, 1, 3, 2, 6, 607h, AttrSet+2, 0 >	; Hidden
-		BOXMN	< 3, 2,10, 3, 7, 707h, AttrSet+3, 0 >	; System
-		BOXMN	< 3, 3, 5, 0, 8, 40Ch, AttrClr+0, 0 >	; Read only
-		BOXMN	< 3, 4, 6, 1, 8, 50Ch, AttrClr+1, 0 >	; Archive
-		BOXMN	< 3, 5, 7, 2, 9, 60Ch, AttrClr+2, 0 >	; System
-		BOXMN	< 3, 6,10, 3, 9, 70Ch, AttrClr+3, 0 >	; Hidden
-		BOXMN	< 1, 7, 9, 5, 8, 51Ch, AttrDate ,10 >	; Date
-		BOXMN	< 1, 8,10, 7, 9, 71Ch, AttrTime ,10 >	; Time
-		BOXMN	< 4, 9, 0,10,10, 9F6h, SetCancel_D, 0 >	; Set / Cancel
+		BOXMN	< w_CheckBox, 10,1,0,4,  407h, AttrSet+0,   0 >	; Read only
+		BOXMN	< w_CheckBox, 0,2,1,5,   507h, AttrSet+1,   0 >	; Archive
+		BOXMN	< w_CheckBox, 1,3,2,6,   607h, AttrSet+2,   0 >	; Hidden
+		BOXMN	< w_CheckBox, 2,10,3,7,  707h, AttrSet+3,   0 >	; System
+		BOXMN	< w_CheckBox, 3,5,0,8,   40Ch, AttrClr+0,   0 >	; Read only
+		BOXMN	< w_CheckBox, 4,6,1,8,   50Ch, AttrClr+1,   0 >	; Archive
+		BOXMN	< w_CheckBox, 5,7,2,9,   60Ch, AttrClr+2,   0 >	; System
+		BOXMN	< w_CheckBox, 6,10,3,9,  70Ch, AttrClr+3,   0 >	; Hidden
+		BOXMN	< w_InpStr,   7,9,5,8,   51Ch, AttrDate,    10 >	; Date
+		BOXMN	< w_InpStr,   8,10,7,9,  71Ch, AttrTime,    10 >	; Time
+		BOXMN	< w_Button,   9,0,10,10, 9F6h, SetCancel_D, 0 >	; Set / Cancel
 		DB	0
 AttrFilesEA_P	DB	Box_C, BoxCu_C, Box_C, BoxBr_C
 		DW	Attrib_S
@@ -140,18 +140,18 @@ AttrFilesEA_P	DB	Box_C, BoxCu_C, Box_C, BoxBr_C
 		DW	SetCancel_S
 		DW	0
 AttrFilesEA_B	BOXHD	< AttrFilesEA_P, 400h, F87_60, Dialog_K, Fls_M, Attrib_H, 0 >
-		BOXMN	< 3,11, 1, 0, 4, 407h, AttrSet+0, 0 >	; Read only
-		BOXMN	< 3, 0, 2, 1, 5, 507h, AttrSet+1, 0 >	; Archive
-		BOXMN	< 3, 1, 3, 2, 6, 607h, AttrSet+2, 0 >	; Hidden
-		BOXMN	< 3, 2,10, 3, 7, 707h, AttrSet+3, 0 >	; System
-		BOXMN	< 3, 3, 5, 0, 8, 40Ch, AttrClr+0, 0 >	; Read only
-		BOXMN	< 3, 4, 6, 1, 8, 50Ch, AttrClr+1, 0 >	; Archive
-		BOXMN	< 3, 5, 7, 2, 9, 60Ch, AttrClr+2, 0 >	; System
-		BOXMN	< 3, 6,10, 3, 9, 70Ch, AttrClr+3, 0 >	; Hidden
-		BOXMN	< 1, 7, 9, 5, 8, 51Ch, AttrDate ,10 >	; Date
-		BOXMN	< 1, 8,10, 7, 9, 71Ch, AttrTime ,10 >	; Time
-		BOXMN	< 3, 9,11,10,10, 90Ch, AttribEA , 0 >	; EAs
-		BOXMN	< 4,10, 0,11,11,0BF6h, SetCancel_D, 0 >	; Set / Cancel
+		BOXMN	< w_CheckBox, 11,1,0,4,   407h,  AttrSet+0,   0 >	; Read only
+		BOXMN	< w_CheckBox, 0,2,1,5,    507h,  AttrSet+1,   0 >	; Archive
+		BOXMN	< w_CheckBox, 1,3,2,6,    607h,  AttrSet+2,   0 >	; Hidden
+		BOXMN	< w_CheckBox, 2,10,3,7,   707h,  AttrSet+3,   0 >	; System
+		BOXMN	< w_CheckBox, 3,5,0,8,    40Ch,  AttrClr+0,   0 >	; Read only
+		BOXMN	< w_CheckBox, 4,6,1,8,    50Ch,  AttrClr+1,   0 >	; Archive
+		BOXMN	< w_CheckBox, 5,7,2,9,    60Ch,  AttrClr+2,   0 >	; System
+		BOXMN	< w_CheckBox, 6,10,3,9,   70Ch,  AttrClr+3,   0 >	; Hidden
+		BOXMN	< w_InpStr,   7,9,5,8,    51Ch,  AttrDate,    10 >	; Date
+		BOXMN	< w_InpStr,   8,10,7,9,   71Ch,  AttrTime,    10 >	; Time
+		BOXMN	< w_CheckBox, 9,11,10,10, 90Ch,  AttribEA,    0 >	; EAs
+		BOXMN	< w_Button,   10,0,11,11, 0BF6h, SetCancel_D, 0 >	; Set / Cancel
 		DB	0
 AttrSet_P	DB	Box_C, 0, 0, 0
 		DW	Attrib_S
@@ -165,7 +165,7 @@ AttrBadTime_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 AttrBadTime_B	BOXHD	< AttrBadTime_P, 0C00h, 0, Dialog_K, Def_M, Default_H, 0 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 AttrErrFnd_T	DW	NoFnd_S, LineBuf1
 AttrErr_T	DW	AttrErr_S, LineBuf1
@@ -176,7 +176,7 @@ AttrErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	OkCan_S
 		DW	0
 AttrErr_B	BOXHD	< AttrErr_P, 900h, 0, Dialog_K, Def_M, Default_H, 2 >
-		BOXMN	< 4, 0,0,0,0, 4FAh, OkCan_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FAh, OkCan_D, 0 >
 		DB	0
 AttrErrDir_T	DW	AttrErrDir_S, LineBuf1
 AttrErrEAs_T	DW	AttrErrEAs_S, LineBuf1
@@ -187,7 +187,7 @@ AttrErrDir_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 AttrErrDir_B	BOXHD	< AttrErrDir_P, 900h, 0, Dialog_K, Def_M, Default_H, 2 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 
 SetCancel_D	DB	 7,  0

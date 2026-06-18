@@ -1240,14 +1240,14 @@ Filter_P	DB	Box_C, BoxCu_C, BoxBr_C, 0
 		DW	Filter6_S
 		DW	MaxFilts+1 DUP(0)
 Filter_B	BOXHD	< Filter_P, 8500h, FilterSub, Dialog_K, 0, Filter_H, 0 >
-		BOXMN	< 2,   7,1,0,2,  30Ah, TmpBuf+0, 0 >	  ; Filter
-		BOXMN	< 1,0C0h,7,1,2,  409h, TmpBuf+1,80h+LenFilt>; Custom
-		BOXMN	< 3, 1,3,80h,2,  32Ah, TmpBuf+35, 0 >	  ; Archive
-		BOXMN	< 3, 2,4,80h,3,  42Ah, TmpBuf+32, 0 >	  ; System
-		BOXMN	< 3, 3,5,80h,4,  52Ah, TmpBuf+31, 0 >	  ; Hidden
-		BOXMN	< 3, 4,6,80h,5,  62Ah, TmpBuf+34, 0 >	  ; Directories
-		BOXMN	< 3, 5,7,80h,6,  72Ah, TmpBuf+33, 0 >	  ; Absent
-		BOXMN	< 4, 6,80h,7,7,0FCF6h, OkCn_D   , 0 >	  ; Ok / Cancel
+		BOXMN	< w_Radio,    7,1,0,2,    30Ah,   TmpBuf+0,  0 >	; Filter
+		BOXMN	< w_InpStr,   0C0h,7,1,2, 409h,   TmpBuf+1,  80h+LenFilt >	; Custom
+		BOXMN	< w_CheckBox, 1,3,80h,2,  32Ah,   TmpBuf+35, 0 >	; Archive
+		BOXMN	< w_CheckBox, 2,4,80h,3,  42Ah,   TmpBuf+32, 0 >	; System
+		BOXMN	< w_CheckBox, 3,5,80h,4,  52Ah,   TmpBuf+31, 0 >	; Hidden
+		BOXMN	< w_CheckBox, 4,6,80h,5,  62Ah,   TmpBuf+34, 0 >	; Directories
+		BOXMN	< w_CheckBox, 5,7,80h,6,  72Ah,   TmpBuf+33, 0 >	; Absent
+		BOXMN	< w_Button,   6,80h,7,7,  0FCF6h, OkCn_D,    0 >	; Ok / Cancel
 		DB	0
 Filter_T	DW	TmpErr
 OkCn_D		DB	 6, 0
@@ -1565,7 +1565,7 @@ ModeError_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 ModeError_B	BOXHD	< ModeError_P, 900h, 0, Dialog_K, Cmd_M, Default_H, 0 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 ModeNoVESA_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Mode_S
@@ -1574,7 +1574,7 @@ ModeNoVESA_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 ModeNoVESA_B	BOXHD	< ModeNoVESA_P, 900h, 0, Dialog_K, Cmd_M, Default_H, 0 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 
 		.CODE	Subs
@@ -2046,7 +2046,7 @@ CmpDi_P		DB	Box_C, BoxCu_C, BoxCu_C, 0
 		DW	Ok_S
 		DW	0
 CmpDi_B		BOXHD	< CmpDi_P, 700h, 0, Dialog_K, Cmd_M, CompDirs_H, 0 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 
 		.CODE
@@ -2151,14 +2151,14 @@ General_P	DB	Conf_C, CnfRe_C, CnfBo_C, 0
 		DW	OkCn_S
 		DW	0
 General_B	BOXHD	< General_P, 100h, 0, Dialog_K, Opt_M, General_H, 0 >
-		BOXMN	<3, 7,1,0,0, 30Ah, ExecTyp , 0>	; Quick execute commands
-		BOXMN	<1, 0,2,1,1, 509h,Switches,80h+LenSwtch>; Command shell switches
-		BOXMN	<3, 1,3,2,2, 80Ah, AltView , 0>	; Alternative viewer
-		BOXMN	<3, 2,4,3,3, 90Ah, AltEdit , 0>	; Alternative editor
-		BOXMN	<3, 3,5,4,4,0C0Ah, AutoSav , 0>	; Auto save setup
-		BOXMN	<3, 4,6,5,5,0D0Ah, DriveB  , 0>	; Show logical drive B:
-		BOXMN	<3, 5,7,6,6,0E0Ah, ConvCase, 0>	; Lowercase short names
-		BOXMN	<4, 6,0,7,7,13F6h, OkCn_D  , 0>	; Ok / Cancel
+		BOXMN	< w_CheckBox, 7,1,0,0, 30Ah,  ExecTyp,  0 >	; Quick execute commands
+		BOXMN	< w_InpStr,   0,2,1,1, 509h,  Switches, 80h+LenSwtch >	; Command shell switches
+		BOXMN	< w_CheckBox, 1,3,2,2, 80Ah,  AltView,  0 >	; Alternative viewer
+		BOXMN	< w_CheckBox, 2,4,3,3, 90Ah,  AltEdit,  0 >	; Alternative editor
+		BOXMN	< w_CheckBox, 3,5,4,4, 0C0Ah, AutoSav,  0 >	; Auto save setup
+		BOXMN	< w_CheckBox, 4,6,5,5, 0D0Ah, DriveB,   0 >	; Show logical drive B:
+		BOXMN	< w_CheckBox, 5,7,6,6, 0E0Ah, ConvCase, 0 >	; Lowercase short names
+		BOXMN	< w_Button,   6,0,7,7, 13F6h, OkCn_D,   0 >	; Ok / Cancel
 		DB	0
 
 		.CODE
@@ -2214,21 +2214,21 @@ Interface_P	DB	Conf_C, CnfRe_C, CnfBo_C, 0
 		DW	OkCn_S
 		DW	0
 Interface_B	BOXHD	< Interface_P, 100h, M62_10, Dialog_K, Opt_M, Interface_H, 0 >
-		BOXMN	<3,14, 1, 0,8Ah,  30Ah, Clock   , 0 >	; Clock
-		BOXMN	<3, 0, 2, 1,8Ah,  40Ah, Prompt  , 0 >	; Path prompt
-		BOXMN	<3, 1, 3, 2,8Ah,  50Ah, MenuVs  , 0 >	; Menu visible
-		BOXMN	<3, 2, 4, 3,8Ah,  60Ah, AltBar  , 0 >	; Alt selects menu
-		BOXMN	<3, 3, 5, 4,8Bh,  70Ah, EscBar  , 0 >	; Esc toggles panels
-		BOXMN	<3, 4, 6, 5,8Bh,  80Ah, ClrBuf  , 0 >	; Clear keyboard buffer
-		BOXMN	<3, 5, 7, 6,8Bh,  90Ah, QuitAck , 0 >	; Confirm on quit
-		BOXMN	<3, 6, 8, 7,8Bh, 0A0Ah, ErrSnd  , 0 >	; Error sound
-		BOXMN	<3, 7, 9, 8, 12, 0D0Ah, LftMous , 0 >	; Left handed mouse
-		BOXMN	<3, 8,14, 9, 13, 0E0Ah, MousRes , 0 >	; Fast mouse reset
-		BOXMN	<2, 9,8Bh, 0,10,  32Eh, DispType, 3 >	; Screen colors
-		BOXMN	<2,0CAh,12,5,11,  82Eh, SnowMod , 3 >	; Snow mode
-		BOXMN	<3,0CBh,13,8,12, 0D2Eh, ZoomWin , 0 >	; Zooming boxes
-		BOXMN	<1, 12,14, 9,13, 0E3Ah, TmpBuf  , 5 >	; Zoom stages
-		BOXMN	<4, 13, 0,14,14, 13F6h, OkCn_D  , 0 >	; Ok / Cancel
+		BOXMN	< w_CheckBox, 14,1,0,8Ah,   30Ah,  Clock,    0 >	; Clock
+		BOXMN	< w_CheckBox, 0,2,1,8Ah,    40Ah,  Prompt,   0 >	; Path prompt
+		BOXMN	< w_CheckBox, 1,3,2,8Ah,    50Ah,  MenuVs,   0 >	; Menu visible
+		BOXMN	< w_CheckBox, 2,4,3,8Ah,    60Ah,  AltBar,   0 >	; Alt selects menu
+		BOXMN	< w_CheckBox, 3,5,4,8Bh,    70Ah,  EscBar,   0 >	; Esc toggles panels
+		BOXMN	< w_CheckBox, 4,6,5,8Bh,    80Ah,  ClrBuf,   0 >	; Clear keyboard buffer
+		BOXMN	< w_CheckBox, 5,7,6,8Bh,    90Ah,  QuitAck,  0 >	; Confirm on quit
+		BOXMN	< w_CheckBox, 6,8,7,8Bh,    0A0Ah, ErrSnd,   0 >	; Error sound
+		BOXMN	< w_CheckBox, 7,9,8,12,     0D0Ah, LftMous,  0 >	; Left handed mouse
+		BOXMN	< w_CheckBox, 8,14,9,13,    0E0Ah, MousRes,  0 >	; Fast mouse reset
+		BOXMN	< w_Radio,    9,8Bh,0,10,   32Eh,  DispType, 3 >	; Screen colors
+		BOXMN	< w_Radio,    0CAh,12,5,11, 82Eh,  SnowMod,  3 >	; Snow mode
+		BOXMN	< w_CheckBox, 0CBh,13,8,12, 0D2Eh, ZoomWin,  0 >	; Zooming boxes
+		BOXMN	< w_InpStr,   12,14,9,13,   0E3Ah, TmpBuf,   5 >	; Zoom stages
+		BOXMN	< w_Button,   13,0,14,14,   13F6h, OkCn_D,   0 >	; Ok / Cancel
 		DB	0
 InterfErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Interface00_S
@@ -2237,7 +2237,7 @@ InterfErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 InterfErr_B	BOXHD	< InterfErr_P, 0C00h, 0, Dialog_K, Def_M, Default_H, 0 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 
 		.CODE
@@ -2331,20 +2331,20 @@ Chars_P		DB	Conf_C, CnfRe_C, CnfBo_C, 0
 		DW	OkCn_S
 		DW	0
 Chars_B		BOXHD	< Chars_P, 200h, M63_20, Dialog_K, Opt_M, Chars_H, 0 >
-		BOXMN	<1, 13, 1, 0, 4, 0314h, TmpBuf   , 104h> ; Borders 1
-		BOXMN	<1,  0, 2, 1, 5, 0414h, TmpBuf+10, 104h> ; Borders 2
-		BOXMN	<1,  1, 3, 2, 6, 0514h, TmpBuf+20, 104h> ; Borders 3
-		BOXMN	<1,  2, 7, 3, 6, 0614h, TmpBuf+30, 104h> ; Borders 4
-		BOXMN	<1,  9, 5, 0, 4, 0328h, TmpBuf+40, 103h> ; Menu 1
-		BOXMN	<1,  4, 6, 1, 5, 0428h, TmpBuf+50, 103h> ; Menu 2
-		BOXMN	<1,  5,10, 2, 6, 0528h, TmpBuf+60, 103h> ; Menu 3
-		BOXMN	<1,  3, 8, 7,10, 0A0Eh, TmpBuf+70, 102h> ; Scrolls
-		BOXMN	<1,  7, 9, 8,11, 0C0Eh, TmpBuf+80, 107h> ; Pointers
-		BOXMN	<1,  8,13, 9,12, 0E0Eh, TmpBuf+90 ,101h> ; Items on
-		BOXMN	<1,  6,11, 7,10, 0A23h, TmpBuf+100,104h> ; Scroll bars
-		BOXMN	<1, 10,12, 8,11, 0C23h, TmpBuf+110,102h> ; Progress bars
-		BOXMN	<1, 11,13, 9,12, 0E23h, TmpBuf+120,103h> ; Hidden files
-		BOXMN	<4, 12, 0,13,13, 11F6h, OkCn_D   , 0   > ; Ok / Cancel
+		BOXMN	< w_InpStr, 13,1,0,4,   0314h, TmpBuf,     104h > ; Borders 1
+		BOXMN	< w_InpStr, 0,2,1,5,    0414h, TmpBuf+10,  104h > ; Borders 2
+		BOXMN	< w_InpStr, 1,3,2,6,    0514h, TmpBuf+20,  104h > ; Borders 3
+		BOXMN	< w_InpStr, 2,7,3,6,    0614h, TmpBuf+30,  104h > ; Borders 4
+		BOXMN	< w_InpStr, 9,5,0,4,    0328h, TmpBuf+40,  103h > ; Menu 1
+		BOXMN	< w_InpStr, 4,6,1,5,    0428h, TmpBuf+50,  103h > ; Menu 2
+		BOXMN	< w_InpStr, 5,10,2,6,   0528h, TmpBuf+60,  103h > ; Menu 3
+		BOXMN	< w_InpStr, 3,8,7,10,   0A0Eh, TmpBuf+70,  102h > ; Scrolls
+		BOXMN	< w_InpStr, 7,9,8,11,   0C0Eh, TmpBuf+80,  107h > ; Pointers
+		BOXMN	< w_InpStr, 8,13,9,12,  0E0Eh, TmpBuf+90,  101h > ; Items on
+		BOXMN	< w_InpStr, 6,11,7,10,  0A23h, TmpBuf+100, 104h > ; Scroll bars
+		BOXMN	< w_InpStr, 10,12,8,11, 0C23h, TmpBuf+110, 102h > ; Progress bars
+		BOXMN	< w_InpStr, 11,13,9,12, 0E23h, TmpBuf+120, 103h > ; Hidden files
+		BOXMN	< w_Button, 12,0,13,13, 11F6h, OkCn_D,     0 > ; Ok / Cancel
 		DB	0
 CharBords_T	DB	0,  2, 11, 1
 		DB	6,' ', 12, 7
@@ -2557,17 +2557,17 @@ PanelOpt_P	DB	Conf_C, CnfRe_C, CnfBo_C, 0
 		DW	OkCn_S
 		DW	0
 PanelOpt_B	BOXHD	< PanelOpt_P, 100h, M64_10, Dialog_K, Opt_M, PanelOpt_H, 0 >
-		BOXMN	<3,10, 1, 0, 0,  30Ah, InsDwn    , 0 >	; Ins moves down
-		BOXMN	<3, 0, 2, 1, 1,  40Ah, InsDirSize, 0 >	; Ins calculates size of directory
-		BOXMN	<3, 1, 3, 2, 2,  50Ah, AutoSiz	 , 0 >	; Auto directory sizes
-		BOXMN	<3, 2, 4, 3, 3,  60Ah, UnSlct    , 0 >	; Unselect during group operations
-		BOXMN	<3, 3, 5, 4, 4,  70Ah, ColorDirs , 0 >	; Highlight subdirectories
-		BOXMN	<3, 4, 6, 5, 5, 0A0Ah, HidDirs   , 0 >	; Show hidden subdirectories
-		BOXMN	<3, 5, 7, 6, 6, 0B0Ah, TreeInRoot, 0 >	; Save TREEINFO in root
-		BOXMN	<3, 6, 8, 7, 7, 0C0Ah, TreeInHome, 0 >	; Save TREEINFO in home
-		BOXMN	<3, 7, 9, 8, 8, 0D0Ah, AutoCD    , 0 >	; Auto change directory
-		BOXMN	<1, 8,10, 9, 9, 0E2Bh, TmpBuf    , 5 >	; Auto change directory delay time
-		BOXMN	<4, 9, 0,10,10, 13F6h, OkCn_D    , 0 >	; Ok / Cancel
+		BOXMN	< w_CheckBox, 10,1,0,0,  30Ah,  InsDwn,     0 >	; Ins moves down
+		BOXMN	< w_CheckBox, 0,2,1,1,   40Ah,  InsDirSize, 0 >	; Ins calculates size of directory
+		BOXMN	< w_CheckBox, 1,3,2,2,   50Ah,  AutoSiz,    0 >	; Auto directory sizes
+		BOXMN	< w_CheckBox, 2,4,3,3,   60Ah,  UnSlct,     0 >	; Unselect during group operations
+		BOXMN	< w_CheckBox, 3,5,4,4,   70Ah,  ColorDirs,  0 >	; Highlight subdirectories
+		BOXMN	< w_CheckBox, 4,6,5,5,   0A0Ah, HidDirs,    0 >	; Show hidden subdirectories
+		BOXMN	< w_CheckBox, 5,7,6,6,   0B0Ah, TreeInRoot, 0 >	; Save TREEINFO in root
+		BOXMN	< w_CheckBox, 6,8,7,7,   0C0Ah, TreeInHome, 0 >	; Save TREEINFO in home
+		BOXMN	< w_CheckBox, 7,9,8,8,   0D0Ah, AutoCD,     0 >	; Auto change directory
+		BOXMN	< w_InpStr,   8,10,9,9,  0E2Bh, TmpBuf,     5 >	; Auto change directory delay time
+		BOXMN	< w_Button,   9,0,10,10, 13F6h, OkCn_D,     0 >	; Ok / Cancel
 		DB	0
 PanelErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	PanelOpt00_S
@@ -2576,7 +2576,7 @@ PanelErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 PanelErr_B	BOXHD	< PanelErr_P, 0C00h, 0, Dialog_K, Def_M, Default_H, 0 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 
 		.CODE
@@ -2715,10 +2715,10 @@ Descript_P	DB	Conf_C, CnfRe_C, CnfBo_C, 0
 		DW	OkCn_S
 		DW	0
 Descript_B	BOXHD	< Descript_P, 300h, 0, Dialog_K, Opt_M, Descript_H, 0 >
-		BOXMN	<2, 3, 1, 0, 0,  30Ah, DescrProcess, 3 >   ; Process descriptions
-		BOXMN	<1, 0C0h,2,1,1, 0B05h,DescrFiles,LenStr>   ; Description files
-		BOXMN	<1, 1, 3, 2, 2, 0E05h,DirInfoFiles,LenStr> ; Description files
-		BOXMN	<4, 2,80h,3, 3, 10F6h, OkCn_D	   , 0 >   ; Ok / Cancel
+		BOXMN	< w_Radio,  3,1,0,0,    30Ah,  DescrProcess, 3 >	; Process descriptions
+		BOXMN	< w_InpStr, 0C0h,2,1,1, 0B05h, DescrFiles,   LenStr >	; Description files
+		BOXMN	< w_InpStr, 1,3,2,2,    0E05h, DirInfoFiles, LenStr >	; Description files
+		BOXMN	< w_Button, 2,80h,3,3,  10F6h, OkCn_D,       0 >	; Ok / Cancel
 		DB	0
 
 		.CODE
@@ -2761,13 +2761,13 @@ CopyOpt_P	DB	Conf_C, CnfRe_C, CnfBo_C, 0
 		DW	OkCn_S
 		DW	0
 CopyOpt_B	BOXHD	< CopyOpt_P, 200h, 0, Dialog_K, Opt_M, CopyOpt_H, 0 >
-		BOXMN	<3, 6, 1, 0, 0,  30Ah, DescrCreate, 0 >	; Create target description file if not exists
-		BOXMN	<3, 0, 2, 1, 1,  40Ah, DescrEmpty , 0 >	; Delete target description if source empty
-		BOXMN	<3, 1, 3, 2, 2,  50Ah, DescrDel   , 0 >	; Delete empty description file
-		BOXMN	<3, 2, 4, 3, 3,  80Ah, CopyEAs    , 0 >	; Copy OS/2 extended attributes
-		BOXMN	<3, 3, 5, 4, 4, 0B0Ah, ChkTarget  , 0 >	; Check target
-		BOXMN	<3, 4, 6, 5, 5, 0C0Ah, ClearRO	  , 0 >	; Clear R/O attribute
-		BOXMN	<4, 5, 0, 6, 6, 11F6h, OkCn_D     , 0 >	; Ok / Cancel
+		BOXMN	< w_CheckBox, 6,1,0,0,  30Ah, DescrCreate, 0 >	; Create target description file if not exists
+		BOXMN	< w_CheckBox, 0,2,1,1,  40Ah, DescrEmpty,  0 >	; Delete target description if source empty
+		BOXMN	< w_CheckBox, 1,3,2,2,  50Ah, DescrDel,    0 >	; Delete empty description file
+		BOXMN	< w_CheckBox, 2,4,3,3,  80Ah, CopyEAs,     0 >	; Copy OS/2 extended attributes
+		BOXMN	< w_CheckBox, 3,5,4,4, 0B0Ah, ChkTarget,   0 >	; Check target
+		BOXMN	< w_CheckBox, 4,6,5,5, 0C0Ah, ClearRO,     0 >	; Clear R/O attribute
+		BOXMN	< w_Button,   5,0,6,6, 11F6h, OkCn_D,      0 >	; Ok / Cancel
 		DB	0
 
 		.CODE
@@ -2797,7 +2797,7 @@ MnLoc_P	DB	Box_C, BoxCu_C, BoxCu_C, 0
 	DW	OFFSET MnLc2_S
 	DW	OFFSET MnLc3_S
 MnLoc_B	BOXHD	< MnLoc_P, 528h, 0, Dialog_K, Def_M, Default_H, 0 >
-	BOXMN	< 4, 0,0,0,0, 41Ch, TmpBuf, MnLoc_D>
+	BOXMN	< w_Button, 0,0,0,0, 41Ch, TmpBuf, MnLoc_D >
 	DB	0
 MnLoc_D	DB	6, 0
 	DB	7, 7
@@ -2901,8 +2901,8 @@ SvSt_P		DB	Box_C, BoxCu_C, BoxCu_C, 0
 		DW	SvSt2_S
 		DW	0
 SvSt_B		BOXHD	< SvSt_P, 500h, 0, Dialog_K, Opt_M, SaveSet_H, 0 >
-		BOXMN	< 1, 1,1,0,0, 305h, LineBuf1, LenStrFull+LenStr >
-		BOXMN	< 4, 0,0,1,1, 5F5h, SvSt_D, 0 >
+		BOXMN	< w_InpStr, 1,1,0,0, 305h, LineBuf1, LenStrFull+LenStr >
+		BOXMN	< w_Button, 0,0,1,1, 5F5h, SvSt_D, 0 >
 		DB	0
 SetEr_P		DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	SvSt0_S
@@ -2911,7 +2911,7 @@ SetEr_P		DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 SetEr_B		BOXHD	< SetEr_P, 900h, 0, Dialog_K, Def_M, Default_H, 2 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 SvSt_T		DW	IniFile
 SvSt_D		DB	 8,  0

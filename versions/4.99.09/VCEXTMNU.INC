@@ -34,7 +34,7 @@ ViewFile_P	DB	Box_C, BoxCu_C, 0, 0
 		DW	Empty_S
 		DW	0
 ViewFile_B	BOXHD	< ViewFile_P, 500h, 0, Dialog_K, Fls_M, Default_H, 0 >
-		BOXMN	< 1, 0,0,0,0, 305h, SourceFile, LenStrFull+LenStr >
+		BOXMN	< w_InpStr, 0,0,0,0, 305h, SourceFile, LenStrFull+LenStr >
 		DB	0
 ViewEdit_P	DB	Box_C, 0, 0, 0
 		DW	Inc0_S
@@ -48,7 +48,7 @@ RunEr1_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 RunEr1_B	BOXHD	< RunEr1_P, 900h, 0, Error_K, Def_M, None_H, 2 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 RunEr2_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Error_S
@@ -57,7 +57,7 @@ RunEr2_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 RunEr2_B	BOXHD	< RunEr2_P, 900h, 0, Error_K, Def_M, None_H, 2 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 FndEr_P		DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Inc0_S
@@ -66,7 +66,7 @@ FndEr_P		DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 FndEr_B		BOXHD	< FndEr_P, 900h, 0, Dialog_K, Def_M, Default_H, 2 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 ViewFile_T	DW	View_S, TmpBuf, Viewer_S, View0_S
 EditFile_T	DW	Edit_S, TmpBuf, Editor_S, Edit0_S
@@ -620,7 +620,7 @@ UserErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 UserErr_B	BOXHD	< UserErr_P, 500h, 0, Dialog_K, Def_M, Menu_H, 2 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 User_T		DW	User_S, TmpBuf
 

@@ -37,7 +37,7 @@ PathErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	OkCan_S
 		DW	0
 PathErr_B	BOXHD	< PathErr_P, 900h, 0, Dialog_K, Def_M, Default_H, 6 >
-		BOXMN	< 4, 0,0,0,0, 4FAh, OkCan_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FAh, OkCan_D, 0 >
 		DB	0
 
 		.CODE
@@ -343,7 +343,7 @@ FuncMaskErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 FuncMaskErr_B	BOXHD	< FuncMaskErr_P, 900h, 0, Dialog_K, Def_M, Default_H, 2 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 
 		.CODE

@@ -131,7 +131,7 @@ SavAs_P	DB	Box_C, BoxCu_C, 0, 0
 	DW	SavAs_S
 	DW	Empty_S
 SavAs_B	BOXHD	< SavAs_P, 528h, 0, Dialog_K, Def_M, Default_H, 0 >
-	BOXMN	< 1, 0,0,0,0, 305h, SourceFile, 80h+LenStr >
+	BOXMN	< w_InpStr, 0,0,0,0, 305h, SourceFile, 80h+LenStr >
 	DB	0
 SavCn_P	DB	Err_C, ErInv_C, ErInv_C, 0
 	DB	3, 0
@@ -140,7 +140,7 @@ SavCn_P	DB	Err_C, ErInv_C, ErInv_C, 0
 	DW	SvCn1_S
 	DW	SvCn2_S
 SavCn_B	BOXHD	< SavCn_P, 528h, 0, Dialog_K, Def_M, Default_H, 1 >
-	BOXMN	< 4, 0,0,0,0, 315h, TmpErr, SavCn_D >
+	BOXMN	< w_Button, 0,0,0,0, 315h, TmpErr, SavCn_D >
 	DB	0
 BigFi_P	DB	Err_C, ErInv_C, ErInv_C, 0
 	DB	4, 1
@@ -152,7 +152,7 @@ BigFi_P	DB	Err_C, ErInv_C, ErInv_C, 0
 	DW	BgFi2_S
 	DW	BgFi3_S
 BigFi_B	BOXHD	< BigFi_P, 928h, 0, Dialog_K, Def_M, Default_H, 0 >
-	BOXMN	< 4 ,0,0,0,0, 420h, TmpErr, BigFi_D >
+	BOXMN	< w_Button, 0,0,0,0, 420h, TmpErr, BigFi_D >
 	DB	0
 NewFi_P	DB	Err_C, ErInv_C, ErInv_C, 0
 	DB	4, 1
@@ -164,7 +164,7 @@ NewFi_P	DB	Err_C, ErInv_C, ErInv_C, 0
 	DW	Var_S
 	DW	NewFi_S
 NewFi_B	BOXHD	< NewFi_P, 928h, 0, Dialog_K, Def_M, Default_H, 0 >
-	BOXMN	< 4 ,0,0,0,0, 41Eh, TmpErr, NewFi_D >
+	BOXMN	< w_Button, 0,0,0,0, 41Eh, TmpErr, NewFi_D >
 	DB	0
 SavEr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 	DB	4, 1
@@ -176,7 +176,7 @@ SavEr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 	DW	Var_S
 	DW	Ok_S
 SavEr_B	BOXHD	< SavEr_P, 928h, 0, Dialog_K, Def_M, Default_H, 2 >
-	BOXMN	< 4, 0,0,0,0, 426h, TmpErr, OkMn_D >
+	BOXMN	< w_Button, 0,0,0,0, 426h, TmpErr, OkMn_D >
 	DB	0
 SavCn_D	DB	 6, 0
 	DB	12, 7

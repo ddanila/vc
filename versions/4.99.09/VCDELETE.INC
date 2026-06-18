@@ -42,7 +42,7 @@ DelFile_P	DB	Box_C, BoxCu_C, BoxCu_C, 0
 		DW	DelCancel_S
 		DW	0
 DelFile_B	BOXHD	< DelFile_P, 500h, 0, Dialog_K, Fls_M, Delete_H, 1 >
-		BOXMN	< 4, 0,0,0,0, 4F7h, DelCancel_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4F7h, DelCancel_D, 0 >
 		DB	0
 DelDir_T	DW	TheDir_S, LineBuf1
 DelDir_P	DB	Box_C, BoxCu_C, BoxCu_C, 0
@@ -52,7 +52,7 @@ DelDir_P	DB	Box_C, BoxCu_C, BoxCu_C, 0
 		DW	DelCancel_S
 		DW	0
 DelDir_B	BOXHD	< DelDir_P, 500h, 0, Dialog_K, Fls_M, Delete_H, 1 >
-		BOXMN	< 4, 0,0,0,0, 4F7h, DelCancel_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4F7h, DelCancel_D, 0 >
 		DB	0
 DelSel_P	DB	Box_C, BoxCu_C, BoxCu_C, 0
 		DW	Delete_S
@@ -61,7 +61,7 @@ DelSel_P	DB	Box_C, BoxCu_C, BoxCu_C, 0
 		DW	DelCancel_S
 		DW	0
 DelSel_B	BOXHD	< DelSel_P, 500h, F38_30, Dialog_K, Fls_M, Delete_H, 1 >
-		BOXMN	< 4, 0,0,0,0, 4F7h, DelCancel_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4F7h, DelCancel_D, 0 >
 		DB	0
 DelConfirm_P	DB	Err_C, ErInv_C, ErInv_C, ErBr_C
 		DW	Delete_S
@@ -71,7 +71,7 @@ DelConfirm_P	DB	Err_C, ErInv_C, ErInv_C, ErBr_C
 		DW	DelAll_S
 		DW	0
 DelConfirm_B	BOXHD	< DelConfirm_P, 900h, 0, Dialog_K, Def_M, Default_H, 1 >
-		BOXMN	< 4, 0,0,0,0, 5F4h, DelAll_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 5F4h, DelAll_D, 0 >
 		DB	0
 DelMask_P	DB	Box_C, BoxCu_C, 0, 0
 		DW	Delete_S
@@ -81,8 +81,8 @@ DelMask_P	DB	Box_C, BoxCu_C, 0, 0
 		DW	IncSubdirs_S
 		DW	0
 DelMask_B	BOXHD	< DelMask_P, 500h, 0, Dialog_K, Fls_M, Delete_H, 0 >
-		BOXMN	< 1, 1,1,0,0, 305h, SourceFile, LenStrFull+LenStr >
-		BOXMN	< 3, 0,0,1,1, 506h, IncDirs, 0 >
+		BOXMN	< w_InpStr, 1,1,0,0, 305h, SourceFile, LenStrFull+LenStr >
+		BOXMN	< w_CheckBox, 0,0,1,1, 506h, IncDirs, 0 >
 		DB	0
 DelWarn_P	DB	Err_C, ErInv_C, ErInv_C, ErBr_C
 		DW	Delete_S
@@ -92,7 +92,7 @@ DelWarn_P	DB	Err_C, ErInv_C, ErInv_C, ErBr_C
 		DW	DelCancel_S
 		DW	0
 DelWarn_B	BOXHD	< DelWarn_P, 500h, 0, Dialog_K, Def_M, Default_H, 1 >
-		BOXMN	< 4, 0,0,0,0, 5F7h, DelCancel_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 5F7h, DelCancel_D, 0 >
 		DB	0
 DeletingFile_T	DW	DelSpace_S, LineBuf1
 DeletingFiles_T	DW	DelFiles_S, LineBuf1
@@ -119,7 +119,7 @@ DelReadOnly_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	DelAllSkip_S
 		DW	0
 DelReadOnly_B	BOXHD	< DelReadOnly_P, 900h, 0, Dialog_K, Def_M, Default_H, 5 >
-		BOXMN	< 4, 0,0,0,0, 5EBh, DelAllSkip_D, 0FFh >
+		BOXMN	< w_Button, 0,0,0,0, 5EBh, DelAllSkip_D, 0FFh >
 		DB	0
 DelNotEmpty_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Delete_S
@@ -129,7 +129,7 @@ DelNotEmpty_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	DelAllSkip_S
 		DW	0
 DelNotEmpty_B	BOXHD	< DelNotEmpty_P, 900h, 0, Dialog_K, Def_M, Default_H, 1 >
-		BOXMN	< 4, 0,0,0,0, 5EBh, DelAllSkip_D, 0FFh >
+		BOXMN	< w_Button, 0,0,0,0, 5EBh, DelAllSkip_D, 0FFh >
 		DB	0
 DelFileErr_T	DW	Delete_S, LineBuf1
 DelFileErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
@@ -139,7 +139,7 @@ DelFileErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	OkCan_S
 		DW	0
 DelFileErr_B	BOXHD	< DelFileErr_P, 900h, 0, Dialog_K, Def_M, Default_H, 6 >
-		BOXMN	< 4, 0,0,0,0, 4FAh, OkCan_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FAh, OkCan_D, 0 >
 		DB	0
 DelDirErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Delete_S
@@ -148,7 +148,7 @@ DelDirErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	OkCan_S
 		DW	0
 DelDirErr_B	BOXHD	< DelDirErr_P, 900h, 0, Dialog_K, Def_M, Default_H, 2 >
-		BOXMN	< 4, 0,0,0,0, 4FAh, OkCan_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FAh, OkCan_D, 0 >
 		DB	0
 
 DelMask_T	DW	Delete_S, SourceFile

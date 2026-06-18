@@ -439,7 +439,7 @@ Sel_P		DB	Box_C, BoxCu_C, 0, 0
 		DW	Empty_S
 		DW	0
 Sel_B		BOXHD	< Sel_P, 500h, 0, Dialog_K, Fls_M, Select_H, 0 >
-		BOXMN	< 1 ,0,0,0,0, 305h, SelMas, LenMaskFull+80h+LenMask >
+		BOXMN	< w_InpStr ,0,0,0,0, 305h, SelMas, LenMaskFull+80h+LenMask >
 		DB	0
 ErSel_P		DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	IncSp_S
@@ -448,7 +448,7 @@ ErSel_P		DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 ErSel_B		BOXHD	< ErSel_P, 500h, 0, Dialog_K, Def_M, Default_H, 0 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 Sel_T		DW	Sel_S , Sel3_S, SelMas
 		DW	Sel_S , Sel2_S,  SelMas
@@ -1642,7 +1642,7 @@ Quit_P		DB	Box_C, BoxCu_C, BoxCu_C, 0
 		DW	YesNo_S
 		DW	0
 Quit_B		BOXHD	< Quit_P, 500h, 0, Dialog_K, Fls_M, Quit_H, 0 >
-		BOXMN	< 4, 0,0,0,0, 3FBh, YesNo_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 3FBh, YesNo_D, 0 >
 		DB	0
 Name_T		DW	Name_S
 

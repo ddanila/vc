@@ -17,7 +17,7 @@ MkDir_P		DB	Box_C, BoxCu_C, 0, 0
 		DW	Empty_S
 		DW	0
 MkDir_B		BOXHD	< MkDir_P, 500h, 0, Dialog_K, Fls_M, MkDir_H, 0 >
-		BOXMN	< 1, 0,0,0,0, 305h, LineBuf1, LenStrFull+LenStr >
+		BOXMN	< w_InpStr, 0,0,0,0, 305h, LineBuf1, LenStrFull+LenStr >
 		DB	0
 MkDirError_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	IncSp_S
@@ -26,7 +26,7 @@ MkDirError_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 MkDirError_B	BOXHD	< MkDirError_P, 900h, 0, Dialog_K, Def_M, Default_H, 6 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 
 		.CODE

@@ -94,8 +94,8 @@ CopySel_P	DB	Box_C, BoxCu_C, Box_C, 0
 		DW	CopyMenu_S
 		DW	0
 CopySel_B	BOXHD	< CopySel_P, 500h, F35_TreeSel, CopyMove_K, Fls_M, Default_H, 8 >
-		BOXMN	< 1, 1,1,0,0, 305h, CopyTarget, LenStrFull+80h+LenStr >
-		BOXMN	< 4, 0,0,1,1, 5EEh, Copy_D, 0 >
+		BOXMN	< w_InpStr, 1,1,0,0, 305h, CopyTarget, LenStrFull+80h+LenStr >
+		BOXMN	< w_Button, 0,0,1,1, 5EEh, Copy_D, 0 >
 		DB	0
 CopyMask_P	DB	Box_C, BoxCu_C, Box_C, 0
 		DW	Inc0_S
@@ -109,10 +109,10 @@ CopyMask_P	DB	Box_C, BoxCu_C, Box_C, 0
 		DW	CopyMenu_S
 		DW	0
 CopyMask_B	BOXHD	< CopyMask_P, 500h, F35_TreeMask, CopyMove_K, Fls_M, Default_H, 8 >
-		BOXMN	< 1, 3,1,0,0, 305h, SourceFile, LenStrFull+LenStr >
-		BOXMN	< 1, 0,2,1,1, 505h, CopyTarget, LenStrFull+80h+LenStr >
-		BOXMN	< 3, 1,3,2,2, 706h, IncDirs, 0 >
-		BOXMN	< 4, 2,0,3,3, 9EEh, Copy_D, 0 >
+		BOXMN	< w_InpStr,   3,1,0,0, 305h, SourceFile, LenStrFull+LenStr >
+		BOXMN	< w_InpStr,   0,2,1,1, 505h, CopyTarget, LenStrFull+80h+LenStr >
+		BOXMN	< w_CheckBox, 1,3,2,2, 706h, IncDirs, 0 >
+		BOXMN	< w_Button,   2,0,3,3, 9EEh, Copy_D, 0 >
 		DB	0
 CopyContinue_P	DB	Box_C, BoxCu_C, Box_C, 0
 		DW	Inc0_S
@@ -120,7 +120,7 @@ CopyContinue_P	DB	Box_C, BoxCu_C, Box_C, 0
 		DW	Empty_S
 		DW	0
 CopyContinue_B	BOXHD	< CopyContinue_P, 500h, 0, Dialog_K, Def_M, Default_H, 0 >
-		BOXMN	< 1, 0,0,0,0, 305h, TargetFile, LenStrFull+LenStr >
+		BOXMN	< w_InpStr, 0,0,0,0, 305h, TargetFile, LenStrFull+LenStr >
 		DB	0
 CopyMoveFile_P	DB	Box_C, 0, 0, 0
 		DW	Inc0_S
@@ -161,7 +161,7 @@ CopyOver_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	CopyOverMenu_S
 		DW	0
 CopyOver_B	BOXHD	< CopyOver_P, 900h, 0, Dialog_K, Def_M, Default_H, 5 >
-		BOXMN	< 4, 0,0,0,0, 6E5h, CopyOverMenu_D, 0FFh >
+		BOXMN	< w_Button, 0,0,0,0, 6E5h, CopyOverMenu_D, 0FFh >
 		DB	0
 CopyWarning_P	DB	Err_C, ErInv_C, ErInv_C, ErBr_C
 		DW	Inc0_S
@@ -171,7 +171,7 @@ CopyWarning_P	DB	Err_C, ErInv_C, ErInv_C, ErBr_C
 		DW	CopyWarnMenu_S
 		DW	0
 CopyWarning_B	BOXHD	< CopyWarning_P, 900h, 0, Dialog_K, Def_M, Default_H, 5 >
-		BOXMN	< 4, 0,0,0,0, 5EBh, CopyWarning_D, 0FFh >
+		BOXMN	< w_Button, 0,0,0,0, 5EBh, CopyWarning_D, 0FFh >
 		DB	0
 CopySplit_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Inc0_S
@@ -181,7 +181,7 @@ CopySplit_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	CopySplitMenu_S
 		DW	0
 CopySplit_B	BOXHD	< CopySplit_P, 900h, 0, Dialog_K, Def_M, Default_H, 5 >
-		BOXMN	< 4, 0,0,0,0, 5ECh, CopySplit_D, 0FFh >
+		BOXMN	< w_Button, 0,0,0,0, 5ECh, CopySplit_D, 0FFh >
 		DB	0
 CopySourceEr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Inc0_S
@@ -190,7 +190,7 @@ CopySourceEr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	OkCan_S
 		DW	0
 CopySourceEr_B	BOXHD	< CopySourceEr_P, 900h, 0, Dialog_K, Def_M, Default_H, 6 >
-		BOXMN	< 4, 0,0,0,0, 4FAh, OkCan_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FAh, OkCan_D, 0 >
 		DB	0
 CopyTargetEr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Inc0_S
@@ -199,7 +199,7 @@ CopyTargetEr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	OkCan_S
 		DW	0
 CopyTargetEr_B	BOXHD	< CopyTargetEr_P, 900h, 0, Dialog_K, Def_M, Default_H, 6 >
-		BOXMN	< 4, 0,0,0,0, 4FAh, OkCan_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FAh, OkCan_D, 0 >
 		DB	0
 CopyReadEr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Inc0_S
@@ -208,7 +208,7 @@ CopyReadEr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	OkCan_S
 		DW	0
 CopyReadEr_B	BOXHD	< CopyReadEr_P, 900h, 0, Dialog_K, Def_M, Default_H, 6 >
-		BOXMN	< 4, 0,0,0,0, 4FAh, OkCan_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FAh, OkCan_D, 0 >
 		DB	0
 CopyWriteEr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Inc0_S
@@ -217,7 +217,7 @@ CopyWriteEr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	OkCan_S
 		DW	0
 CopyWriteEr_B	BOXHD	< CopyWriteEr_P, 900h, 0, Dialog_K, Def_M, Default_H, 6 >
-		BOXMN	< 4, 0,0,0,0, 4FAh, OkCan_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FAh, OkCan_D, 0 >
 		DB	0
 CopyItself_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Inc0_S
@@ -226,7 +226,7 @@ CopyItself_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	OkCan_S
 		DW	0
 CopyItself_B	BOXHD	< CopyItself_P, 900h, 0, Dialog_K, Def_M, Default_H, 6 >
-		BOXMN	< 4, 0,0,0,0, 4FAh, OkCan_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FAh, OkCan_D, 0 >
 		DB	0
 RenError_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Rename_S
@@ -235,7 +235,7 @@ RenError_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	OkCan_S
 		DW	0
 RenError_B	BOXHD	< RenError_P, 900h, 0, Dialog_K, Def_M, Default_H, 6 >
-		BOXMN	< 4, 0,0,0,0, 4FAh, OkCan_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FAh, OkCan_D, 0 >
 		DB	0
 CopyDelFileEr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Inc0_S
@@ -244,7 +244,7 @@ CopyDelFileEr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	OkCan_S
 		DW	0
 CopyDelFileEr_B	BOXHD	< CopyDelFileEr_P, 900h, 0, Dialog_K, Def_M, Default_H, 6 >
-		BOXMN	< 4, 0,0,0,0, 4FAh, OkCan_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FAh, OkCan_D, 0 >
 		DB	0
 CopyReadOver_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Inc0_S
@@ -254,7 +254,7 @@ CopyReadOver_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	CopyReadMenu_S
 		DW	0
 CopyReadOver_B	BOXHD	< CopyReadOver_P, 900h, 0, Dialog_K, Def_M, Default_H, 5 >
-		BOXMN	< 4, 0,0,0,0, 5EDh, CopyReadMenu_D, 0FFh >
+		BOXMN	< w_Button, 0,0,0,0, 5EDh, CopyReadMenu_D, 0FFh >
 		DB	0
 CopyReadApp_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Inc0_S
@@ -264,7 +264,7 @@ CopyReadApp_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	CopyReadMenu_S
 		DW	0
 CopyReadApp_B	BOXHD	< CopyReadApp_P, 900h, 0, Dialog_K, Def_M, Default_H, 5 >
-		BOXMN	< 4, 0,0,0,0, 5EDh, CopyReadMenu_D, 0FFh >
+		BOXMN	< w_Button, 0,0,0,0, 5EDh, CopyReadMenu_D, 0FFh >
 		DB	0
 CopySourceRO_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Inc0_S
@@ -274,7 +274,7 @@ CopySourceRO_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	DelAllSkip_S
 		DW	0
 CopySourceRO_B	BOXHD	< CopySourceRO_P, 900h, 0, Dialog_K, Def_M, Default_H, 5 >
-		BOXMN	< 4, 0,0,0,0, 5EBh, DelAllSkip_D, 0FFh >
+		BOXMN	< w_Button, 0,0,0,0, 5EBh, DelAllSkip_D, 0FFh >
 		DB	0
 CopyDelEof_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Inc0_S
@@ -284,7 +284,7 @@ CopyDelEof_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	YesNo_S
 		DW	0
 CopyDelEof_B	BOXHD	< CopyDelEof_P, 900h, 0, Dialog_K, Def_M, Default_H, 5 >
-		BOXMN	< 4, 0,0,0,0, 5FBh, YesNo_D, 0FFh >
+		BOXMN	< w_Button, 0,0,0,0, 5FBh, YesNo_D, 0FFh >
 		DB	0
 CopyMkDirErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Inc0_S
@@ -293,7 +293,7 @@ CopyMkDirErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	OkCan_S
 		DW	0
 CopyMkDirErr_B	BOXHD	< CopyMkDirErr_P, 900h, 0, Dialog_K, Def_M, Default_H, 6 >
-		BOXMN	< 4, 0,0,0,0, 4FAh, OkCan_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FAh, OkCan_D, 0 >
 		DB	0
 MoveDelDirErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Inc0_S
@@ -302,7 +302,7 @@ MoveDelDirErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	OkCan_S
 		DW	0
 MoveDelDirErr_B	BOXHD	< MoveDelDirErr_P, 900h, 0, Dialog_K, Def_M, Default_H, 6 >
-		BOXMN	< 4, 0,0,0,0, 4FAh, OkCan_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FAh, OkCan_D, 0 >
 		DB	0
 CopyArcErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Inc0_S
@@ -311,7 +311,7 @@ CopyArcErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 CopyArcErr_B	BOXHD	< CopyArcErr_P, 900h, 0, Dialog_K, Def_M, Default_H, 6 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 
 Copy_T		DW	Copy_S, LineBuf1, LineBuf2, Copy_S, CopyFile_S, CopyDir_S, CopyOverSrc, CopyOverDest

@@ -77,7 +77,7 @@ NotImpl_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 NotImpl_B	BOXHD	< NotImpl_P, 900h, 0, Dialog_K, Def_M, Default_H, 2 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 ExecArcErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Inc0_S
@@ -86,7 +86,7 @@ ExecArcErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 ExecArcErr_B	BOXHD	< ExecArcErr_P, 900h, 0, Error_K, Def_M, None_H, 2 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 ExecArcLstEr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Inc0_S
@@ -95,7 +95,7 @@ ExecArcLstEr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 ExecArcLstEr_B	BOXHD	< ExecArcLstEr_P, 900h, 0, Error_K, Def_M, None_H, 2 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 ExecArcLong_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Inc0_S
@@ -104,7 +104,7 @@ ExecArcLong_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 ExecArcLong_B	BOXHD	< ExecArcLong_P, 900h, 0, Error_K, Def_M, None_H, 2 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 ExecArcMem_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Inc0_S
@@ -113,7 +113,7 @@ ExecArcMem_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 ExecArcMem_B	BOXHD	< ExecArcMem_P, 900h, 0, Error_K, Def_M, None_H, 2 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 ExecArcLevel_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	ExecArcLevel_S
@@ -121,14 +121,14 @@ ExecArcLevel_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 ExecArcLevel_B	BOXHD	< ExecArcLevel_P, 700h, ExecArcDialCall, Error_K, Def_M, None_H, 2 >
-		BOXMN	< 4, 0,0,0,0, 2FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 2FEh, OkMn_D, 0 >
 		DB	0
 ExecArcInLine_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	ExecArcInLine_S
 		DW	0FFFEh
 		DW	0
 ExecArcInLine_B	BOXHD	< ExecArcInLine_P, 700h, ExecArcDialCall, Error_K, Def_M, None_H, 0 >
-		BOXMN	< 1, 0,0,0,0, 105h, TmpErr+50, 0 >
+		BOXMN	< w_InpStr, 0,0,0,0, 105h, TmpErr+50, 0 >
 		DB	0
 ExecArcInChar_B	BOXHD	< ExecArcInLine_P, 700h, ExecArcInChCall, Error_K, Def_M, None_H, 0 >
 		DB	0

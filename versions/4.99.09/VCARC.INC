@@ -374,7 +374,7 @@ ExtractError_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 ExtractError_B	BOXHD	< ExtractError_P, 900h, 0, Dialog_K, Def_M, Default_H, 2 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 
 		.CODE
@@ -874,7 +874,7 @@ ArcErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 ArcErr_B	BOXHD	< ArcErr_P, 900h, 0, Error_K, Def_M, None_H, 2 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 ArcErr0_T	DW	LineBuf2, ArcErr0_S
 ArcErr1_T	DW	LineBuf2, ArcErr1_S
@@ -1060,7 +1060,7 @@ ZipLast_P	DB	Err_C, ErInv_C, ErInv_C, ErBr_C
 		DW	OkCan_S
 		DW	0
 ZipLast_B	BOXHD	< ZipLast_P, 900h, 0, Error_K, Def_M, None_H, 2 >
-		BOXMN	< 4, 0,0,0,0, 4FAh, OkCan_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FAh, OkCan_D, 0 >
 		DB	0
 ZipDisk_P	DB	Err_C, ErInv_C, ErInv_C, ErBr_C
 		DW	ZipVC_S
@@ -1069,7 +1069,7 @@ ZipDisk_P	DB	Err_C, ErInv_C, ErInv_C, ErBr_C
 		DW	OkCan_S
 		DW	0
 ZipDisk_B	BOXHD	< ZipDisk_P, 900h, 0, Error_K, Def_M, None_H, 2 >
-		BOXMN	< 4, 0,0,0,0, 4FAh, OkCan_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FAh, OkCan_D, 0 >
 		DB	0
 ZipDisk_T	DW	LineBuf2, TmpBuf+200
 

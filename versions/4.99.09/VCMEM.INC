@@ -48,7 +48,7 @@ MemInfo_P	DB	Conf_C, CnfRe_C, CnfBo_C, CnfUn_C
 		DW	MemMenu_S
 		DW	0
 MemInfo_B	BOXHD	< MemInfo_P, 8500h, MemProc, Dialog_K, Cmd_M, Memory_H, 0 >
-		BOXMN	< 4, 0,0,0,0, 0FCF4h, MemMenu_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 0FCF4h, MemMenu_D, 0 >
 		DB	0
 MemError1_T	DW	MemError0_S, LineBuf1
 MemError1_P	DB	Err_C, ErInv_C, ErInv_C, 0
@@ -58,7 +58,7 @@ MemError1_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 MemError1_B	BOXHD	< MemError1_P, 900h, 0, Dialog_K, Def_M, Default_H, 0 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 MemError2_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	MemInfo_S
@@ -67,7 +67,7 @@ MemError2_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 MemError2_B	BOXHD	< MemError2_P, 900h, 0, Dialog_K, Def_M, Default_H, 0 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 MemError3_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	MemInfo_S
@@ -77,7 +77,7 @@ MemError3_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 MemError3_B	BOXHD	< MemError3_P, 900h, 0, Dialog_K, Def_M, Default_H, 0 >
-		BOXMN	< 4, 0,0,0,0, 5FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 5FEh, OkMn_D, 0 >
 		DB	0
 MemMenu_D	DB	11,  0
 		DB	10, 14

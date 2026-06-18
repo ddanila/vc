@@ -90,17 +90,17 @@ FindFile3_P	DB	Conf_C, CnfRe_C, CnfBo_C, 0
 		DW	FindMenu3_S
 		DW	0
 FindFile1_B	BOXHD	< FindFile1_P, 8500h, FindSub1, FindFile1_K, Def_M, FileFind_H, 10h >
-		BOXMN	< 1, 4,1,0,0, 0F405h, FindStr, LenStrFull+LenStr >
-		BOXMN	< 1, 0,2,1,1, 0F605h, SrchStr, LenStrFull+LenStr >
-		BOXMN	< 3, 1,3,2,2, 0F806h, SrchCase, 0 >
-		BOXMN	< 3, 2,4,3,3, 0F906h, IncDirs, 0 >
-		BOXMN	< 4, 3,0,4,4, 0FCEFh, FindMenu1_D, 0 >
+		BOXMN	< w_InpStr,   4,1,0,0, 0F405h, FindStr, LenStrFull+LenStr >
+		BOXMN	< w_InpStr,   0,2,1,1, 0F605h, SrchStr, LenStrFull+LenStr >
+		BOXMN	< w_CheckBox, 1,3,2,2, 0F806h, SrchCase, 0 >
+		BOXMN	< w_CheckBox, 2,4,3,3, 0F906h, IncDirs, 0 >
+		BOXMN	< w_Button,   3,0,4,4, 0FCEFh, FindMenu1_D, 0 >
 		DB	0
 FindFile2_B	BOXHD	< FindFile2_P, 8500h, FindSub2, FindFile2_K, Def_M, FileFind_H, 10h >
-		BOXMN	< 4, 0,0,0,0, 0FCEBh, FindMenu2_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 0FCEBh, FindMenu2_D, 0 >
 		DB	0
 FindFile3_B	BOXHD	< FindFile3_P, 8500h, FindSub2, FindFile2_K, Def_M, FileFind_H, 10h >
-		BOXMN	< 4, 0,0,0,0, 0FCE8h, FindMenu3_D, 0FFh >
+		BOXMN	< w_Button, 0,0,0,0, 0FCE8h, FindMenu3_D, 0FFh >
 		DB	0
 FindError_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	FindFile_S
@@ -109,7 +109,7 @@ FindError_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 FindError_B	BOXHD	< FindError_P, 900h, 0, Dialog_K, Def_M, Default_H, 0 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 FindFile1_T	DW	FindName_S, FindCont_S, SearchCase_S, LineBuf4
 FindFile2_T	DW	FindScan_S
@@ -1569,7 +1569,7 @@ TblError_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 TblError_B	BOXHD	< TblError_P, 900h, 0, Dialog_K, Def_M, Default_H, 0 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 TableReadErr_T	DW	CopyReadEr_S, TblMask
 TableDataErr_T	DW	TableDataErr_S, TblMask
@@ -2098,4 +2098,3 @@ TransSBCS	ENDP
 TransNone	PROC	NEAR
 		RET
 TransNone	ENDP
-

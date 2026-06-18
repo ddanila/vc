@@ -100,7 +100,7 @@ GotoOffset_P	DB	Box_C, BoxCu_C, 0, 0
 		DW	Empty_S
 		DW	0
 GotoOffset_B	BOXHD	< GotoOffset_P, 500h, V25_30, Dialog_K, Def_M, Default_H, 0 >
-		BOXMN	< 1, 0,0,0,0, 305h, GotoOffset, 80h+8 >
+		BOXMN	< w_InpStr, 0,0,0,0, 305h, GotoOffset, 80h+8 >
 		DB	0
 GotoOffsErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Inc0_S
@@ -108,7 +108,7 @@ GotoOffsErr_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 GotoOffsErr_B	BOXHD	< GotoOffsErr_P, 900h, 0, Dialog_K, Def_M, Default_H, 0 >
-		BOXMN	< 4, 0,0,0,0, 3FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 3FEh, OkMn_D, 0 >
 		DB	0
 Search_P	DB	Box_C, BoxCu_C, Box_C, 0
 		DW	Inc0_S
@@ -120,9 +120,9 @@ Search_P	DB	Box_C, BoxCu_C, Box_C, 0
 		DW	SearchCancel_S
 		DW	0
 Search_B	BOXHD	< Search_P, 500h, V27_20, Dialog_K, Def_M, Default_H, 0 >
-		BOXMN	< 1, 2,1,0,0, 305h, SrchStr, LenStrFull+LenStr >
-		BOXMN	< 3, 0,2,1,1, 506h, SrchCase, 0 >
-		BOXMN	< 4, 1,0,2,2, 7F4h, Search_D, 0 >
+		BOXMN	< w_InpStr,   2,1,0,0, 305h, SrchStr, LenStrFull+LenStr >
+		BOXMN	< w_CheckBox, 0,2,1,1, 506h, SrchCase, 0 >
+		BOXMN	< w_Button,   1,0,2,2, 7F4h, Search_D, 0 >
 		DB	0
 SearchFor_P	DB	Box_C, 0, 0, 0
 		DW	Inc0_S
@@ -136,7 +136,7 @@ SearchError_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 SearchError_B	BOXHD	< SearchError_P, 900h, 0, Dialog_K, Def_M, Default_H, 0 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0 >
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 Status_P	DB	Menu_C
 ViewStat_T	DW	TmpBuf

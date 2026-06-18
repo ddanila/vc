@@ -2246,7 +2246,7 @@ UserInLine_P	DB	Box_C, BoxCu_C, 0, 0
 		DW	Empty_S
 		DW	0
 UserInLine_B	BOXHD	< UserInLine_P, 500h, 0, Dialog_K, Fls_M, None_H, 0 >
-		BOXMN	< 1, 0,0,0,0, 305h, LineBuf1, LenStr >
+		BOXMN	< w_InpStr, 0,0,0,0, 305h, LineBuf1, LenStr >
 		DB	0
 UserInLine_T	DW	TmpBuf
 
@@ -2852,7 +2852,7 @@ ManyData_P	DB	Err_C, ErInv_C, ErInv_C, 0
 		DW	Ok_S
 		DW	0
 ManyData_B	BOXHD	< ManyData_P, 900h, 0, Error_K, Def_M, None_H, 2 >
-		BOXMN	< 4, 0,0,0,0, 4FEh, OkMn_D, 0>
+		BOXMN	< w_Button, 0,0,0,0, 4FEh, OkMn_D, 0 >
 		DB	0
 OkMn_D		DB	4, 0
 		DB	0
