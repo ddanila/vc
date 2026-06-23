@@ -30,7 +30,12 @@ LongTreePath	PROC	FAR			; Long path under Win95
 		CMP	DS:OS2box,0
 		POP	DS
 		JZ	LongTreePath1
-ShortTreePath:	PUSH	DI
+IFDEF	__JWASM__
+ShortTreePath::
+ELSE
+ShortTreePath:
+ENDIF
+		PUSH	DI
 		PUSH	SI
 		PUSH	AX
 		CALL	strcpy
@@ -40,8 +45,8 @@ ShortTreePath:	PUSH	DI
 		RET
 LongTreePath	ENDP
 
-LongTreePath1	PROC	FAR			; Long path
-		USES	AX,BX,CX,DX,SI,DI,DS,ES
+; Long path
+LongTreePath1	PROC	FAR	USES	AX BX CX DX SI DI DS ES
 		PUSH	BP
 		LODSB
 		STOSB
@@ -114,8 +119,7 @@ LongTreePath1	ENDP
 ;		 CY=1 - error, AX - error code
 ;---------------------------------------------------------------
 		.CODE
-GetTreeInfo	PROC	NEAR
-		USES	BX,CX,DX,SI,DI
+GetTreeInfo	PROC	NEAR	USES	BX CX DX SI DI
 		PUSH	AX
 		MOV	BX,DX
 		MOV	AX,ES:[BX]
@@ -178,8 +182,7 @@ GetTreeInfo	ENDP
 ;		   NC - whole path found
 ;		   CY - path not found
 ;---------------------------------------------------------------
-FindTreeEntry	PROC	FAR
-		USES	AX,CX,DX,BP
+FindTreeEntry	PROC	FAR	USES	AX CX DX BP
 		MOV	DI,DX
 		ADD	DI,3
 		MOV	SI,DS:TreeLen
@@ -219,8 +222,7 @@ FindTreeEntry	PROC	FAR
   @@Exit:	RET
 FindTreeEntry	ENDP
 
-CompDirEntry	PROC	FAR
-		USES	DI
+CompDirEntry	PROC	FAR	USES	DI
   @@CmpEntry:	LODSB
 		CMP	AL,0
 		JE	@@EndCmp
@@ -246,8 +248,7 @@ CompDirEntry	ENDP
 ;		ES:BX - buffer for long path
 ;	Return:	   CY - error, AX - error code
 ;---------------------------------------------------------------
-PrepAddTree	PROC	NEAR
-		USES	CX,SI,DI
+PrepAddTree	PROC	NEAR	USES	CX SI DI
 		CMP	DS:OS2box,0
 		JZ	@@WinName
 		CALL	NormPath
@@ -283,12 +284,11 @@ PrepAddTree	ENDP
 ;	Return:	   NC - no changes
 ;		   CY - entry was added
 ;---------------------------------------------------------------
-AddTreeEntry	PROC	FAR
+AddTreeEntry	PROC	FAR	USES	AX BX CX DX
 		LOCAL	LongPathOffs:WORD
 		LOCAL	LenShortEntry:WORD
 		LOCAL	LenLongEntry:WORD
 		LOCAL	FullShortPath:WORD
-		USES	AX,BX,CX,DX
 		MOV	FullShortPath,DX
 		MOV	DH,0
 		CMP	BYTE PTR ES:[DI],0
@@ -454,8 +454,8 @@ AddTreeEntry	PROC	FAR
 		RET
 AddTreeEntry	ENDP
 
-AddTreeLenEnt	PROC	NEAR			; Length of dir entry
-		USES	SI
+; Length of dir entry
+AddTreeLenEnt	PROC	NEAR	USES	SI
 		MOV	SI,DI
   @@GetChar:	LODS	BYTE PTR ES:[SI]
 		CMP	AL,0
@@ -471,8 +471,7 @@ AddTreeLenEnt	ENDP
 ;	Delete entry from treeinfo
 ;		DS:SI - entry point
 ;---------------------------------------------------------------
-DelTreeEntry	PROC	FAR
-		USES	AX,CX,SI,DI,ES
+DelTreeEntry	PROC	FAR	USES	AX CX SI DI ES
 		PUSH	SI
 		MOV	SI,DS:TreeLen
 		CALL	TreeNumb2Adr1
@@ -534,8 +533,7 @@ TrSav_P		DB	Box_C, 0, 0, 0
 Tree_T		DW	TmpBuf
 
 		.CODE	Subs
-ScanTree	PROC	FAR
-		USES	AX,BX,CX,DX,SI,DI,BP
+ScanTree	PROC	FAR	USES	AX BX CX DX SI DI BP
 		XOR	BX,BX			; Delete old TreeSeg
 		XCHG	BX,ES:TreeSeg
 		MOV	SI,OFFSET GlobalSegs_L
@@ -583,7 +581,7 @@ ScanTree	PROC	FAR
 		JMP	@@Exit
   @@EmptyTree:	CALL	TreeRoot		; Default tree
 		MOV	DI,SIZE DirTree+SIZE DirEnt+2
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@Exit
 		MOV	DS:TreeLFN,0
 		MOV	AL,ES:DosPath[0]
@@ -779,7 +777,7 @@ TreeFunc	PROC	NEAR
 		POP	BP
 		POP	DS
 		JNC	@@PutBox
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@FindBranch
 
   @@PutBox:	INC	DS:TreeLen		; Put box
@@ -868,7 +866,7 @@ TreeFunc	PROC	NEAR
   @@SizeEntry:	POP	AX
 		POP	DI
 		ADD	AX,CX
-		ADD	AX,SIZE DirEnt+2
+		ADD	AX,WORD PTR SIZE DirEnt+2
 		MOV	SI,AX
 		ADD	AX,DS:TreeEnd
 		JC	@@Overflow
@@ -928,7 +926,7 @@ TreeFunc	PROC	NEAR
 		JE	@@SkipWinOld
 		MOV	AL,ES:[BX].DirShortLen
 		MOV	AH,0
-		ADD	AX,OFFSET DirName
+		ADD	AX,WORD PTR OFFSET DirName
 		ADD	AX,BX
 		CMP	ES:TreeLFN,0
 		JNZ	@@SkipWinOld
@@ -971,7 +969,7 @@ TreeFunc	PROC	NEAR
   @@Overflow:	CALL	Beep			; Buffer overflow
 		MOV	AL,2
 		JMP	@@FindBranch
-  @@Error:	CMP	AX,53h			; Find error
+  @@Error:	CMP	AX,WORD PTR 53h		; Find error
 		JE	@@FindBranch
 		MOV	AL,0
 
@@ -1055,8 +1053,7 @@ TreeFunc	ENDP
 ;	Tree root
 ;		   DS - tree segment
 ;---------------------------------------------------------------
-TreeRoot	PROC	FAR
-		USES	SI
+TreeRoot	PROC	FAR	USES	SI
 		MOV	DS:TreeLen,1
 		MOV	DS:TreeLenH,1
 		MOV	SI,OFFSET TreeList
@@ -1078,10 +1075,10 @@ TreeRoot	ENDP
 ;---------------------------------------------------------------
 		.CODE	Subs
 ReadTreeInfo	PROC	FAR
-		LOCAL	TreeNameBuf:BYTE:512
-		LOCAL	TreeLabelBuf:BYTE:14
+		LOCAL	TreeNameBuf[512]:BYTE
+		LOCAL	TreeLabelBuf[14]:BYTE
 		LOCAL	TreeSerNumBuf:DWORD
-		LOCAL	SaveDTA:BYTE:SIZE DTAs
+		LOCAL	SaveDTA[SIZE DTAs]:BYTE
 		LOCAL	SaveFindHandle:WORD
 		PUSH	DS		; Get label and serial number
 		PUSH	ES
@@ -1183,7 +1180,7 @@ ReadTreeInfo	PROC	FAR
 		CALL	OpenFil
 		POP	DS
 		JNC	@@ReadHead
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JNE	@@Next
 		JMP	@@ErrFind
   @@ReadHead:	MOV	SI,CX
@@ -1195,7 +1192,7 @@ ReadTreeInfo	PROC	FAR
 		CALL	Intr21
 		POP	DX
 		JNC	@@ChkHead
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JNE	@@Close
 		PUSH	AX
 		MOV	AH,3Eh
@@ -1216,7 +1213,7 @@ ReadTreeInfo	PROC	FAR
 		POP	ES
 		MOV	CX,11
 		MOV	SI,OFFSET TreeLabel
-		LEA	DI,OFFSET TreeLabelBuf
+		LEA	DI,TreeLabelBuf
 		REPE	CMPSB
 		POP	CX
 		POP	ES
@@ -1233,7 +1230,7 @@ ReadTreeInfo	PROC	FAR
   @@Close:	MOV	AH,3Eh
 		CALL	Intr21
 		JNC	@@Next
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@ErrFind
   @@Next:	MOV	AH,4Fh
 		JMP	@@FindFile
@@ -1252,7 +1249,7 @@ ReadTreeInfo	PROC	FAR
 		POP	CX
 		POP	DS
 		JNC	@@ReadHome
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JNE	@@ReadRoot
 		JMP	@@Error
 
@@ -1304,7 +1301,7 @@ ReadTreeInfo	PROC	FAR
 		JE	@@ExitErr
   @@Error:	MOV	BX,0FFFDh
 		JMP	@@ExitErr
-  @@OpenErr:	CMP	AX,53h
+  @@OpenErr:	CMP	AX,WORD PTR 53h
 		JE	@@Error
 		MOV	BX,0FFFEh
   @@ExitErr:	STC
@@ -1343,7 +1340,7 @@ ReadTreeFile	PROC	NEAR			; Read TREEINFO
 		JC	@@Exit
 		CMP	AX,CX			; Buffer overflow
 		JAE	@@Overflow
-		CMP	AX,SIZE DirTree+1	; Check header
+		CMP	AX,WORD PTR SIZE DirTree+1	; Check header
 		JB	@@Error
 		PUSH	ES
 		PUSH	CS
@@ -1403,7 +1400,7 @@ ReadTreeFile	ENDP
 ;		   DS - tree segment
 ;---------------------------------------------------------------
 SaveTreeInfo	PROC	FAR
-		LOCAL	TreeNameBuf:BYTE:512
+		LOCAL	TreeNameBuf[512]:BYTE
 		MOV	BX,DX
 		MOV	AX,ES:[BX]
 		CMP	AL,0
@@ -1416,12 +1413,12 @@ SaveTreeInfo	PROC	FAR
 		MOV	AH,0Eh
 		INT	21h
   @@DelTree:	MOV	AX,DS:TreeNumber
-		CMP	AX,0FFFDh
+		CMP	AX,WORD PTR 0FFFDh
 		JE	@@Exit
 		CMP	DS:TreeLen,5
 		JAE	@@SaveTree
 		LEA	DX,TreeNameBuf		; Delete TREEINFO
-		CMP	AX,0FFFEh
+		CMP	AX,WORD PTR 0FFFEh
 		JE	@@Exit
 		JA	@@DelRoot
 		PUSH	DS
@@ -1448,7 +1445,7 @@ SaveTreeInfo	PROC	FAR
 		CALL	Intr21
   @@ExDelHome:	POP	DS
 		JNC	@@DelRoot
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@Exit
   @@DelRoot:	PUSH	DS
 		PUSH	ES
@@ -1559,7 +1556,7 @@ SaveTreeInfo	PROC	FAR
 		CALL	SaveTreeFile
 		MOV	BX,0FFFFh
 		JNC	@@ExitSave
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@Error
 		OR	AX,AX
 		JE	@@Error
@@ -1601,7 +1598,7 @@ SaveTreeInfo	PROC	FAR
 		MOV	AX,3
   @@ExNewTree:	POP	DI
 		POP	DS
-		CMP	AX,2
+		CMP	AX,WORD PTR 2
 		JNE	@@Error
   @@SaveHome:	PUSH	BX
 		XOR	BX,BX
@@ -1609,7 +1606,7 @@ SaveTreeInfo	PROC	FAR
 		POP	BX
 		JNC	@@ExitSave
   @@Error:	MOV	BX,0FFFDh
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@ExitSave
 		CALL	Beep
   @@ExitSave:	POP	DS:TreeSize
@@ -1632,7 +1629,7 @@ SaveTreeFile	PROC	NEAR
 		MOV	AX,4300h
 		CALL	Intr21
 		JNC	@@OpenFile
-		CMP	AX,2
+		CMP	AX,WORD PTR 2
 		JNE	@@Error
 		MOV	CX,BX
   @@OpenFile:	OR	CL,20h
@@ -1641,7 +1638,7 @@ SaveTreeFile	PROC	NEAR
 		CALL	Intr21
 		MOV	ES:BlocEr,0
 		JNC	@@WriteFile
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JNE	@@Error
 		MOV	AX,5
 		JMP	@@Error
@@ -1705,7 +1702,13 @@ SetTreeCursor	ENDP
 FindTreeCursor	PROC	FAR
 		MOV	AL,ES:DosShortPath[0]
 		CMP	AL,DS:CrnPath[0]
+IF	__TASMIDENT__
+		JE	@F
+		JMP	NEAR PTR @@NotFound
+  @@:
+ELSE
 		JNE	@@NotFound
+ENDIF
 		MOV	DI,OFFSET TmpBuf
 		MOV	AH,':'
 		STOSW
@@ -1814,8 +1817,7 @@ SetTreeFirst	ENDP
 ;---------------------------------------------------------------
 ;	Add current directory branch to tree
 ;---------------------------------------------------------------
-UpdateBranch	PROC	FAR
-		USES	DS
+UpdateBranch	PROC	FAR	USES	DS
 		CMP	ES:DosShortPath[3],0
 		JE	@@Exit
 		MOV	DS,ES:TreeSeg
@@ -1957,8 +1959,7 @@ ChDirKeys_T	DW	4E2Bh, ChDirPlus
 		DW	0
 
 		.CODE	Subs
-ChooseDir	PROC	FAR
-		USES	AX,BX,CX,DX,SI,DI,BP,DS
+ChooseDir	PROC	FAR	USES	AX BX CX DX SI DI BP DS
 		MOV	AL,DL
 		SHR	AL,1
 		ADD	AL,BL
@@ -2047,7 +2048,12 @@ ChDirProc	PROC	NEAR
 		JE	@@Mouse
 		MOV	SI,OFFSET ChooseDir_T
 		CALL	Case
-ChDirList:	CALL	DialogList
+IFDEF	__JWASM__
+ChDirList::
+ELSE
+ChDirList:
+ENDIf
+		CALL	DialogList
 		JMP	@@Exit
   @@Mouse:	CALL	GetMous			; Mouse
 		JNZ	@@Button1
@@ -2085,24 +2091,49 @@ ChDirList:	CALL	DialogList
 		JMP	@@Mouse
   @@LeaveTime:	CALL	Yield
 		JMP	@@Mouse
-ChDirInit1:	CALL	ChDirStatInit		; Init
+IFDEF	__JWASM__
+ChDirInit1::
+ELSE
+ChDirInit1:
+ENDIF
+		CALL	ChDirStatInit		; Init
 		JMP	@@Exit
-ChDirUp:	CMP	DS:ListCursor,0		; Up
+IFDEF	__JWASM__
+ChDirUp::
+ELSE
+ChDirUp:
+ENDIF
+		CMP	DS:ListCursor,0		; Up
 		JNE	ChDirList
 		JMP	@@Clear
-ChDirDown:	MOV	CX,DS:ListCursor	; Down
+IFDEF	__JWASM__
+ChDirDown::
+ELSE
+ChDirDown:
+ENDIF
+		MOV	CX,DS:ListCursor	; Down
 		INC	CX
 		CMP	CX,DS:ListTotal
 		JB	ChDirList
 		JMP	@@Clear
-ChDirLongNames:	PUSH	DS			; ^N - long names
+IFDEF	__JWASM__
+ChDirLongNames::
+ELSE
+ChDirLongNames:
+ENDIF
+		PUSH	DS			; ^N - long names
 		MOV	DS,DS:WCBcrn
 		PUSH	BX
 		MOV	BX,OFFSET LongNames
 		CALL	InvPanelVar
 		POP	BX
 		JMP	@@RefreshWin
-ChDirHidden:	PUSH	DS			; ^H - hidden dirs
+IFDEF	__JWASM__
+ChDirHidden::
+ELSE
+ChDirHidden:
+ENDIF
+		PUSH	DS			; ^H - hidden dirs
 		MOV	DS,DS:WCBcrn
 		CALL	F86_10
 		PUSH	ES
@@ -2113,7 +2144,12 @@ ChDirHidden:	PUSH	DS			; ^H - hidden dirs
 		POP	DX
 		POP	ES
 		JMP	@@SetParms
-ChDirRescan:	CALL	HidCur			; ^R, F2 - rescan
+IFDEF	__JWASM__
+ChDirRescan::
+ELSE
+ChDirRescan:
+ENDIF
+		CALL	HidCur			; ^R, F2 - rescan
 		PUSH	ES
 		PUSH	DX
 		PUSH	BX
@@ -2135,7 +2171,12 @@ ChDirRescan:	CALL	HidCur			; ^R, F2 - rescan
 		POP	BX
 		POP	DX
 		MOV	DS:RescanTree,1
-ChDirInit2:	MOV	DS:SearchCur0,0		; Read tree
+IFDEF	__JWASM__
+ChDirInit2::
+ELSe
+ChDirInit2:
+ENDIF
+		MOV	DS:SearchCur0,0		; Read tree
 		MOV	DS:SearchBuf0,0
 		PUSH	DS
 		MOV	DS,DS:WCBcrn
@@ -2164,8 +2205,8 @@ ChDirInit2:	MOV	DS:SearchCur0,0		; Read tree
   @@Exit:	RET
 ChDirProc	ENDP
 
-ChDirStatInit	PROC	NEAR			; Init status lines
-		USES	BX,DS
+; Init status lines
+ChDirStatInit	PROC	NEAR	USES	BX DS
 		PUSH	CS
 		POP	DS
 		MOV	BP,OFFSET ChooseDir_P
@@ -2201,8 +2242,8 @@ ChDirClearWin	PROC	NEAR			; Clear window
 		RET
 ChDirClearWin	ENDP
 
-ChDirSearch	PROC	NEAR			; Output search line
-		USES	AX,BX,CX,DX,SI,BP
+; Output search line
+ChDirSearch	PROC	NEAR	USES	AX BX CX DX SI BP
 		ADD	BH,DH
 		SUB	BH,4
 		ADD	BL,19
@@ -2219,8 +2260,8 @@ ChDirSearch	PROC	NEAR			; Output search line
 		RET
 ChDirSearch	ENDP
 
-ChDirLine	PROC	NEAR			; Output tree line
-		USES	CX,DS
+; Output tree line
+ChDirLine	PROC	NEAR	USES	CX DS
 		MOV	AX,DS:ListCursor
 		MOV	CX,DS:ListFirst
 		MOV	DS,DS:WCBcrn
@@ -2316,20 +2357,40 @@ ChDirHotKey	PROC	NEAR			; Hot keys
   @@Found:	CALL	TreeAdr2NumbH
 		MOV	DS:ChDirFlag,1
 		JMP	@@SetCur
-ChDirPlus:	PUSH	DX			; Grey +
+IFDEF	__JWASM__
+ChDirPlus::
+ELSE
+ChDirPlus:
+ENDIF
+		PUSH	DX			; Grey +
 		MOV	DX,DS:ListTotal
 		MOV	SI,DS:ListCursor
 		CALL	F10_30
 		POP	DX
 		JMP	@@SetCur
-ChDirMinus:	MOV	AL,0			; Grey -
+IFDEF	__JWASM__
+ChDirMinus::
+ELSE
+ChDirMinus:
+ENDIF
+		MOV	AL,0			; Grey -
 		JMP	@@MoveLevel
-ChDirCtrlPgUp:	MOV	AL,0FFh			; ^PgUp
+IFDEF	__JWASM__
+ChDirCtrlPgUp::
+ELSE
+ChDirCtrlPgUp:
+ENDIF
+		MOV	AL,0FFh			; ^PgUp
   @@MoveLevel:	MOV	SI,DS:ListCursor
 		CALL	F10_35
   @@SetCur:	CLC
 		JMP	@@Exit
-ChDirCtrlPgDn:	MOV	AX,1C0Dh		; ^PgDn
+IFDEF	__JWASM__
+ChDirCtrlPgDn::
+ELSE
+ChDirCtrlPgDn:
+ENDIF
+		MOV	AX,1C0Dh		; ^PgDn
   @@NotFound:	STC
   @@Exit:	RET
 ChDirHotKey	ENDP

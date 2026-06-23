@@ -14,11 +14,10 @@
 ;		   BP - limit
 ;---------------------------------------------------------------
 		.CODE	Subs
-GetDescription	PROC	FAR
-		USES	BX,CX,DI
+GetDescription	PROC	FAR	USES	BX CX DI
 		MOV	BP,DS:DscrSegSize
 		MOV	AX,DS
-		CMP	AX,1
+		CMP	AX,WORD PTR 1
 		JA	@@Exit
 		STC
 		JE	@@Exit
@@ -60,9 +59,8 @@ GetDescription	ENDP
 ;		   CX - attributes
 ;		   DI - end of description in buffer
 ;---------------------------------------------------------------
-ReadDescription	PROC	FAR
-		USES	BX,DX,SI
-		LOCAL	DescrFileName:BYTE:512
+ReadDescription	PROC	FAR	USES	BX DX SI
+		LOCAL	DescrFileName[512]:BYTE
 		MOV	SI,OFFSET DescrFiles
   @@DescrName:	LODS	BYTE PTR ES:[SI]
 		CMP	AL,' '
@@ -114,7 +112,7 @@ ReadDescription	PROC	FAR
 		POP	ES
 		POP	DS
 		JNC	@@RdDescr
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JNE	@@DescrName
   @@Error:	STC
 		JMP	@@Exit
@@ -163,8 +161,7 @@ ReadDescription	ENDP
 ;		DS:SI - entry point
 ;		   CX - length
 ;---------------------------------------------------------------
-FindDescription	PROC	FAR
-		USES	DX,DI
+FindDescription	PROC	FAR	USES	DX DI
 		PUSH	AX
 		CALL	FindDescr1
 		POP	DX
@@ -175,8 +172,7 @@ FindDescription	PROC	FAR
   @@Exit:	RET
 FindDescription	ENDP
 
-FindDescr1	PROC	NEAR
-		USES	DI,BP
+FindDescr1	PROC	NEAR	USES	DI BP
 		MOV	CX,AX
 		INC	CX
 		PUSH	DS
@@ -292,8 +288,7 @@ FindDescr1	ENDP
 ;		DS:SI - entry point
 ;		   CX - length
 ;---------------------------------------------------------------
-DelDescription	PROC	FAR
-		USES	CX,SI,DI,ES
+DelDescription	PROC	FAR	USES	CX SI DI ES
 		PUSH	DS
 		POP	ES
 		MOV	DI,SI
@@ -311,10 +306,9 @@ DelDescription	ENDP
 ;		   DS - segment
 ;	Return:	   CY - error, AX - error code
 ;---------------------------------------------------------------
-SaveDescription	PROC	FAR
-		USES	BX,CX,DX,SI,DI
-		LOCAL	DescrFileName1:BYTE:512
-		LOCAL	DescrFileName2:BYTE:512
+SaveDescription	PROC	FAR	USES	BX CX DX SI DI
+		LOCAL	DescrFileName1[512]:BYTE
+		LOCAL	DescrFileName2[512]:BYTE
 		PUSH	DS			; Set name
 		PUSH	ES
 		PUSH	DS:DscrName
@@ -361,7 +355,7 @@ SaveDescription	PROC	FAR
 		POP	ES
 		POP	DS
 		JNC	@@ChkInBuf0
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@Error
 		JMP	@@Exist
   @@ChkInBuf0:	PUSH	DS			; Check file in buffer
@@ -382,7 +376,7 @@ SaveDescription	PROC	FAR
 		CALL	Intr21
 		POP	DS
 		JNC	@@ChkDescr
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@Error
 		JMP	@@Exit
   @@ChkDescr:	MOV	SI,OFFSET DscrBegin	; Empty description
@@ -407,7 +401,7 @@ SaveDescription	PROC	FAR
 		CALL	Intr21
 		POP	DS
 		JNC	@@Exit
-  @@Error1:	CMP	AX,53h
+  @@Error1:	CMP	AX,WORD PTR 53h
 		JE	@@Error
   @@Beep:	CALL	Beep
   @@Error:	STC
@@ -450,8 +444,7 @@ SaveDescription	ENDP
 ;	Save both descriptions and deallocate memory
 ;	Return:	   CY - if error
 ;---------------------------------------------------------------
-SaveDescrs	PROC	FAR
-		USES	AX,BX,CX,DX,SI,DI,DS
+SaveDescrs	PROC	FAR	USES	AX BX CX DX SI DI DS
 		MOV	AX,ES:GroupDescr1
 		SUB	AX,ES:GroupDescr2
 		JNE	@@SaveDescr1
@@ -466,7 +459,7 @@ SaveDescrs	PROC	FAR
 		MOV	DX,OFFSET LineBuf1
 		CALL	SaveDescription
 		JNC	@@SaveDescr2
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@Exit
   @@SaveDescr2:	MOV	AL,0
 		XCHG	AL,ES:GroupDescrChg2
@@ -476,7 +469,7 @@ SaveDescrs	PROC	FAR
 		MOV	DX,OFFSET LineBuf2
 		CALL	SaveDescription
 		JNC	@@FreeMem
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@Exit
   @@FreeMem:	MOV	SI,OFFSET AllSegs_L
 		XOR	BX,BX
@@ -489,4 +482,3 @@ SaveDescrs	PROC	FAR
   @@Exit:	CMC
 		RET
 SaveDescrs	ENDP
-

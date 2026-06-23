@@ -408,8 +408,7 @@ F38_30		ENDP
 ;	Deleting file of directory
 ;---------------------------------------------------------------
 		.CODE
-F38_40		PROC	NEAR
-		USES	BX,CX,DX,SI,DI,BP,DS
+F38_40		PROC	NEAR	USES	BX CX DX SI DI BP DS
 		PUSH	ES
 		POP	DS
 		MOV	DS:GroupAttr,AL
@@ -428,12 +427,12 @@ F38_40		PROC	NEAR
 		MOV	AH,41h
 		CALL	Intr21
 		JNC	F38_54
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	F38_50
 		MOV	AX,4300h
 		CALL	Intr21
 		JNC	F38_41
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JNE	F38_43
 		JMP	F38_50
 F38_41:		MOV	AL,0
@@ -465,7 +464,7 @@ F38_42:		AND	CL,0FEh
 		MOV	AH,41h
 		CALL	Intr21
 		JNC	F38_54
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	F38_50
 		OR	CL,1
 		MOV	AX,4301h
@@ -474,7 +473,7 @@ F38_42:		AND	CL,0FEh
 		MOV	AL,0
 F38_43:		MOV	DX,OFFSET DelFileErr_T
 		MOV	BP,OFFSET DelFileErr_B
-F38_44:		CMP	AX,53h
+F38_44:		CMP	AX,WORD PTR 53h
 		JE	F38_50
 		CALL	Dialog
 		JNZ	F38_50
@@ -492,7 +491,7 @@ F38_46:		CMP	DS:GroupMask,0		; Deleting subdirectory
 		JC	F38_50
 		CALL	F38_65			; Try to delete subdirectory
 		JNC	F38_51
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	F38_50
 		MOV	DS:FncAddr,OFFSET F38_Empty ; Empty ?
 		MOV	CL,1
@@ -540,7 +539,7 @@ F38_48:		CALL	DirFunc			; Delete files in subdirectory
 		MOV	DX,OFFSET LineBuf1
 		CALL	F38_65
 		JNC	F38_51
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	F38_50
 F38_49:		MOV	DX,OFFSET LineBufs_T
 		MOV	BP,OFFSET DelDirErr_B
@@ -566,13 +565,13 @@ F38_52:		CALL	FindTreeEntry
 		MOV	ES:GroupTreeChg1,1
 		CALL	DelTreeEntry
 		JMP	F38_54
-F38_53:		CMP	AX,53h
+F38_53:		CMP	AX,WORD PTR 53h
 		JE	F38_50
 F38_54:		MOV	ES:GroupChg,1
 		CMP	ES:DescrUpdate,0	; Update description
 		JE	F38_58
 F38_55:		MOV	AX,ES:GroupDescr1
-		CMP	AX,1
+		CMP	AX,WORD PTR 1
 		JE	F38_58
 		MOV	DX,OFFSET LineBuf1
 		MOV	DS,AX
@@ -590,7 +589,7 @@ F38_56:		MOV	AX,ES:GroupFileNumb
 		MOV	ES:GroupDescrChg1,1
 		CALL	DelDescription
 		JMP	F38_59
-F38_57:		CMP	AX,53h
+F38_57:		CMP	AX,WORD PTR 53h
 		JE	F38_50
 F38_58:		TEST	ES:GroupAttr,10h
 		JNZ	F38_59
@@ -631,7 +630,7 @@ F38_66:		AND	CL,0EFh
 		CALL	Intr21
 		POP	CX
 		JNC	F38_67
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		STC
 		JE	F38_76
 F38_67:		PUSH	CX
@@ -656,7 +655,7 @@ F38_69:		MOV	AH,3Ah
 		JNC	F38_76
 		PUSHF
 		PUSH	AX
-		CMP	AX,10h
+		CMP	AX,WORD PTR 10h
 		JNE	F38_72
 		MOV	AX,WORD PTR DS:LineBuf1
 		CMP	AH,':'
@@ -694,14 +693,14 @@ F38_70:		PUSH	DX
 		POP	DX
 		JNC	F38_72
 		JMP	F38_73
-F38_71:		CMP	AX,53h
+F38_71:		CMP	AX,WORD PTR 53h
 		JE	F38_74
 F38_72:		TEST	CL,1
 		JZ	F38_75
 		MOV	AX,4301h
 		CALL	Intr21
 		JNC	F38_75
-F38_73:		CMP	AX,53h
+F38_73:		CMP	AX,WORD PTR 53h
 		JNE	F38_75
 F38_74:		POP	DI
 		PUSH	AX
@@ -713,8 +712,7 @@ F38_65		ENDP
 ;---------------------------------------------------------------
 ;	Deleting files by mask *.*
 ;---------------------------------------------------------------
-F38_80		PROC	NEAR
-		USES	BX,CX,DX,SI,DI,BP,DS
+F38_80		PROC	NEAR	USES	BX CX DX SI DI BP DS
 		PUSH	ES
 		POP	DS
 		MOV	SI,OFFSET LineBuf1	; Put box
@@ -783,7 +781,7 @@ F38_82:		MOV	AL,'\'
 		MOV	AH,3Bh			; Set current dir
 		CALL	Intr21
 		JNC	F38_85
-F38_83:		CMP	AX,53h
+F38_83:		CMP	AX,WORD PTR 53h
 		JE	F38_84
 		XOR	AX,AX
 		JMP	F38_87
@@ -795,7 +793,7 @@ F38_85:		MOV	DS:GroupChg,1		; Delete files
 		CALL	Intr21
 		MOV	BX,1
 		JNC	F38_86
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	F38_84
 		MOV	BL,0
 F38_86:		MOV	AX,BX

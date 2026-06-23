@@ -139,8 +139,7 @@ ExecArcInt16	DD	0
 ExecArcInt21	DD	0
 
 		.CODE	Subs
-ExecArcCmd	PROC	FAR
-		USES	BX,CX,DX,SI,DI,BP,DS
+ExecArcCmd	PROC	FAR	USES	BX CX DX SI DI BP DS
 		MOV	ES:ExecArcCommand,AL
 		MOV	ES:ExecArcFlags,AH
 		MOV	ES:ExecArcPoint,OFFSET ExecArcScrBuf
@@ -202,7 +201,7 @@ ExecArcCmd	PROC	FAR
 		CALL	ShortName
 
 		JNC	@@ExitPrgNam
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		STC
 		JE	@@ExitPrgNam
 		CLC
@@ -528,7 +527,7 @@ ExecArcCmd	PROC	FAR
 		MOV	AH,3Eh
 		CALL	Intr21
 		JNC	@@FileList10
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@FileList12
   @@FileList10:	PUSH	ES
 		POP	DS
@@ -536,7 +535,7 @@ ExecArcCmd	PROC	FAR
 		MOV	AH,41h
 		CALL	Intr21
 		JNC	@@FileList11
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@FileList12
   @@FileList11:	MOV	AX,CX
   @@FileList12:	PUSH	ES
@@ -546,7 +545,7 @@ ExecArcCmd	PROC	FAR
 		POP	SI
 		OR	AX,AX
 		JE	@@ChgDir0
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@ExecError4
 		PUSH	AX
 		MOV	BP,OFFSET ExecArcLstEr_B
@@ -598,7 +597,7 @@ ExecArcCmd	PROC	FAR
 
 		PUSH	SI
   @@ExecError1:	POP	SI			; Error
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@ExecError3
 		PUSH	AX
 		MOV	BP,OFFSET ExecArcErr_B
@@ -673,7 +672,13 @@ ExecArcCmd	PROC	FAR
 		PUSH	SI
 		PUSH	AX
 		OR	SI,SI
+IF	__TASMIDENT__
+		JE	@F
+		JMP	NEAR PTR @@CmdLine16
+  @@:
+ELSE
 		JNE	@@CmdLine16
+ENDIF
 		MOV	SI,DS:DiskBuf
   @@CmdLine09:	CMP	SI,DS:EndBuf
 		JAE	@@CmdLine04
@@ -892,9 +897,9 @@ ExecArcCmd	PROC	FAR
 		PUSH	ES
 		POP	DS
 		MOV	BP,OFFSET ExecArcMem_B
-		CMP	AX,7
+		CMP	AX,WORD PTR 7
 		JE	@@ExecError
-		CMP	AX,8
+		CMP	AX,WORD PTR 8
 		JE	@@ExecError
 		MOV	BP,OFFSET ExecArcErr_B
   @@ExecError:	PUSH	AX
@@ -982,7 +987,7 @@ ExecArcCmd	PROC	FAR
 		CALL	Intr21
 		CALL	GetPath
 		POP	AX
-		CMP	AX,1
+		CMP	AX,WORD PTR 1
 		CMC
 		JC	@@Exit
 		MOV	AL,DS:ExecArcErrLevel
@@ -990,8 +995,8 @@ ExecArcCmd	PROC	FAR
   @@Exit:	RET
 ExecArcCmd	ENDP
 
-ExecArcChkName1	PROC	NEAR			; Check spaces in name
-		USES	SI
+; Check spaces in name
+ExecArcChkName1	PROC	NEAR	USES	SI
 		MOV	SI,DI
   @@GetChar:	LODS	BYTE PTR ES:[SI]
 		CMP	AL,' '
@@ -1185,7 +1190,8 @@ ExecArcHook21	PROC	FAR
 		JE	@@Func40a
 		CMP	BX,2
 		JNE	@@OldInt
-  @@Func40a:	JCXZ	@@OldInt
+  @@Func40a:
+		JLONG	JCXZ,	@@OldInt
 		MOV	SI,DX
   @@Func40b:	LODSB
 		CALL	ExecArcChar
@@ -1311,8 +1317,7 @@ ExecArcHook21	PROC	FAR
 		RET	2
 ExecArcHook21	ENDP
 
-ExecArcRedir	PROC	NEAR
-		USES	BX,CX,SI,DI,ES
+ExecArcRedir	PROC	NEAR	USES	BX CX SI DI ES
 		MOV	ES,CS:DataSegment
 		PUSH	ES
 		PUSH	AX
@@ -1429,8 +1434,7 @@ ExecArcRedir	PROC	NEAR
   @@Exit:	RET
 ExecArcRedir	ENDP
 
-ExecArcInChar	PROC	NEAR
-		USES	BX,CX,DX,SI,DI,BP,DS
+ExecArcInChar	PROC	NEAR	USES	BX CX DX SI DI BP DS
 		PUSH	ES
 		POP	DS
 		MOV	DS:ExecArcKbdBusy,0
@@ -1438,7 +1442,7 @@ ExecArcInChar	PROC	NEAR
 		CALL	ExecArcChar
 		MOV	AL,0
 		CALL	ExecArcDialog
-		CMP	AX,65-1
+		CMP	AX,WORD PTR 65-1
 		JBE	@@InChar2
 		MOV	AL,0Ah
 		CALL	ExecArcChar
@@ -1472,8 +1476,7 @@ ExecArcInChar	PROC	NEAR
 		RET
 ExecArcInChar	ENDP
 
-ExecArcInLine	PROC	NEAR
-		USES	BX,DI,BP,DS
+ExecArcInLine	PROC	NEAR	USES	BX DI BP DS
 		PUSH	DS
 		PUSH	DX
 		PUSH	ES
@@ -1554,8 +1557,7 @@ ExecArcInLine	ENDP
 
 MaxDialLines	EQU	5
 
-ExecArcDialog	PROC	NEAR
-		USES	CX,SI,DI,DS,ES
+ExecArcDialog	PROC	NEAR	USES	CX SI DI DS ES
 		PUSH	ES
 		POP	DS
 		MOV	BL,AL
@@ -1631,7 +1633,7 @@ ExecArcDialog	PROC	NEAR
 ExecArcDialog	ENDP
 
 ExecArcDialCall	PROC	NEAR
-		CMP	AX,0FFFEh
+		CMP	AX,WORD PTR 0FFFEh
 		JNE	@@Exit
 		ADD	BX,205h
 		MOV	SI,OFFSET TmpErr+2
@@ -1672,7 +1674,7 @@ ExecArcInChCall	PROC	NEAR
 		ADD	BX,105h
 		ADD	BH,DS:ListWindow.Y
 		ADD	BL,DS:TmpErr[50]
-		CMP	AX,0FFFEh
+		CMP	AX,WORD PTR 0FFFEh
 		JA	@@SetCursor
 		JB	@@CheckKey
 		MOV	AH,CS:[BP+1]
@@ -1693,8 +1695,7 @@ ExecArcInChCall	PROC	NEAR
   @@Exit:	RET
 ExecArcInChCall	ENDP
 
-ExecArcChar	PROC	NEAR
-		USES	AX,BX,CX,DX,SI,DI,BP,DS
+ExecArcChar	PROC	NEAR	USES	AX BX CX DX SI DI BP DS
 		PUSH	ES
 		POP	DS
 		CMP	AL,7
@@ -2094,7 +2095,7 @@ ExecArcChar	PROC	NEAR
 		MOV	CH,AL
 		MOV	AX,SI
 		SUB	AX,BP
-		CMP	AX,2
+		CMP	AX,WORD PTR 2
 		JA	@@NextCheck
 		LODSB
 		CALL	UpCase
@@ -2108,7 +2109,7 @@ ExecArcChar	PROC	NEAR
 		MOV	CL,AL
 		MOV	AX,SI
 		SUB	AX,BP
-		CMP	AX,2
+		CMP	AX,WORD PTR 2
 		JA	@@NextCheck
 		LODSB
 		CALL	UpCase
@@ -2122,7 +2123,7 @@ ExecArcChar	PROC	NEAR
 		MOV	DI,AX
 		MOV	AX,SI
 		SUB	AX,BP
-		CMP	AX,2
+		CMP	AX,WORD PTR 2
 		JA	@@NextCheck
 		LODSB
   @@CheckTim03:	CALL	UpCase
@@ -2441,7 +2442,7 @@ ExecArcSaveEnt	PROC	NEAR
   @@SaveEntry:	MOV	DI,DS:ExecArcDirBuf	; Save file entry
 		INC	CX
 		MOV	AX,CX
-		ADD	AX,SIZE FilEnt
+		ADD	AX,WORD PTR SIZE FilEnt
 		ADD	AX,DI
 		JC	@@Overflow
 		CMP	AX,DS:ExecArcDirEnd
@@ -2598,7 +2599,7 @@ ExecArcDay	PROC	NEAR
 		NEG	CX
 		CMP	CX,2
 		JA	@@Error
-		CMP	AX,32
+		CMP	AX,WORD PTR 32
 		JAE	@@Error
 		CLC
 		JMP	@@Exit
@@ -2621,8 +2622,7 @@ Monthes_S	DB	'JAN'
 		DB	'DEC'
 
 		.CODE	Subs
-ExecArcMonth	PROC	NEAR
-		USES	DI
+ExecArcMonth	PROC	NEAR	USES	DI
 		MOV	CX,SI
 		CALL	TxtNum
 		JC	@@Month1
@@ -2630,7 +2630,7 @@ ExecArcMonth	PROC	NEAR
 		NEG	CX
 		CMP	CX,2
 		JA	@@Error
-		CMP	AX,16
+		CMP	AX,WORD PTR 16
 		JAE	@@Error
 		XOR	DI,DI
 		JMP	@@Month4
@@ -2667,18 +2667,17 @@ ExecArcMonth	PROC	NEAR
   @@Exit:	RET
 ExecArcMonth	ENDP
 
-ExecArcYear	PROC	NEAR
-		USES	BP
+ExecArcYear	PROC	NEAR	USES	BP
 		MOV	BP,SI
 		CALL	TxtNum
 		JC	@@Error
-		CMP	AX,80
+		CMP	AX,WORD PTR 80
 		JAE	@@Year1
-		ADD	AX,20
+		ADD	AX,WORD PTR 20
 		JMP	@@Year3
-  @@Year1:	CMP	AX,100
+  @@Year1:	CMP	AX,WORD PTR 100
 		JAE	@@Year2
-		SUB	AX,80
+		SUB	AX,WORD PTR 80
 		JMP	@@Year3
   @@Year2:	SUB	AX,1980
 		JB	@@Error

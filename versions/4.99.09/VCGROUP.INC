@@ -141,7 +141,7 @@ DirFunc		PROC	FAR			; Find files in directory
 		JC	@@FuncExit
 		CALL	Intr21
 		JNC	@@ChkName
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JNE	@@SaveDescr3
   @@FuncExit:	MOV	BX,100h
   @@SaveDescr3:	CALL	CloseFindFile
@@ -178,7 +178,7 @@ DirFunc		PROC	FAR			; Find files in directory
 		MOV	AH,4Eh
   @@UpDirFind:	CALL	Intr21
 		JNC	@@UpDirComp
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JNE	@@UpDirAdd
   @@GlobalExit:	CALL	CloseFindFile
   @@Error:	MOV	BX,100h
@@ -420,7 +420,7 @@ FuncMsk09:	MOV	BX,DX
 		MOV	DX,BX
 		JNC	FuncMsk10
 		POP	CX
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JNE	FuncMsk11
 		JMP	FuncExit
 FuncMsk10:	TEST	CL,10h
@@ -597,7 +597,7 @@ FuncExit01:	CMP	ES:GroupTreeChg1,0
 		MOV	DX,OFFSET LineBuf1
 		CALL	SaveTreeInfo
 		JNC	FuncExit02
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	FuncExit03
 FuncExit02:	CMP	ES:GroupTreeChg2,0
 		JZ	FuncExit03
@@ -630,8 +630,7 @@ FuncExit2:	MOV	DS,ES:WCBcrn
 ;	Prepare long and short names
 ;	Return:	   CY - error
 ;---------------------------------------------------------------
-FuncTwoNames	PROC	NEAR
-		USES	AX,SI,DI,DS
+FuncTwoNames	PROC	NEAR	USES	AX SI DI DS
 		PUSH	ES
 		POP	DS
 		MOV	SI,OFFSET LineBuf1
@@ -648,7 +647,7 @@ FuncTwoNames	PROC	NEAR
 		POP	DI
 		CALL	ShortName
 		JNC	@@ShortName
-  @@Error:	CMP	AX,53h
+  @@Error:	CMP	AX,WORD PTR 53h
 		JE	@@Exit
 		MOV	DS:DTA.FilName[0],0
 		JMP	@@ExitOk
@@ -672,8 +671,7 @@ FileListHandle	EQU	WORD PTR TmpBuf[2]
 FileListOffset	EQU	WORD PTR TmpBuf[4]
 FileListLong	EQU	BYTE PTR TmpBuf[6]
 
-FileList	PROC	FAR
-		USES	AX,BX,CX,DX,SI,DI,DS
+FileList	PROC	FAR	USES	AX BX CX DX SI DI DS
 		CMP	DS:WinTyp,p_File
 		JNE	@@List10
 		CMP	DS:Visible,0
@@ -761,8 +759,7 @@ FileList	PROC	FAR
 		RET
 FileList	ENDP
 
-FncList		PROC	NEAR
-		USES	BX,CX,DX,SI,DI,BP,DS
+FncList		PROC	NEAR	USES	BX CX DX SI DI BP DS
 		PUSH	ES
 		POP	DS
 		TEST	AL,10h
@@ -796,7 +793,7 @@ FncList		PROC	NEAR
 		JNE	@@FncLst3
 		MOV	AX,1
 		JMP	@@FncLst5
-  @@FncLst2:	CMP	AX,53h
+  @@FncLst2:	CMP	AX,WORD PTR 53h
 		JE	@@FncLst4
   @@FncLst3:	XOR	AX,AX
 		JMP	@@FncLst5

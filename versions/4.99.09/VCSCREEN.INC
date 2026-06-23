@@ -141,8 +141,7 @@ PrintStr	ENDP
 ;	Set cursor position
 ;		   AL - column, AH - line
 ;---------------------------------------------------------------
-gotoxy		PROC	FAR
-		USES	AX,BX,DX
+gotoxy		PROC	FAR	USES	AX BX DX
 		MOV	DX,AX
 		MOV	AH,0Fh
 		INT	10h			; GetVideoMode(&mode, &vpage, &cols)
@@ -154,8 +153,7 @@ gotoxy		ENDP
 ;---------------------------------------------------------------
 ;	Set cursor on command prompt
 ;---------------------------------------------------------------
-Cursor1		PROC	FAR
-		USES	AX
+Cursor1		PROC	FAR	USES	AX
 		MOV	AL,ES:DosCol
 		SUB	AL,ES:OutCol
 		ADD	AL,ES:BegCol
@@ -182,8 +180,7 @@ Cursor1		ENDP
 ;
 ; SetCurSize(&cursor)
 ;
-AdjustCursorSize	PROC	FAR
-		USES	BX,DX,BP
+AdjustCursorSize	PROC	FAR	USES	BX DX BP
 		MOV	BH,0
 		MOV	AH,3
 		INT	10h			; GetCurPos()
@@ -208,8 +205,7 @@ AdjustCursorSize	ENDP
 ;---------------------------------------------------------------
 ;	Hide cursor - move cursor to row outside screen
 ;---------------------------------------------------------------
-HidCur		PROC	FAR
-		USES	AX
+HidCur		PROC	FAR	USES	AX
 		MOV	AX,7F00h
 		IFDEF	OFFICIAL
 		CALL	gotoxy
@@ -220,8 +216,7 @@ HidCur		ENDP
 ;---------------------------------------------------------------
 ;	Beep sound
 ;---------------------------------------------------------------
-Beep		PROC	FAR
-		USES	AX,BP,DS
+Beep		PROC	FAR	USES	AX BP DS
 		MOV	DS,CS:DataSegment
 		CMP	DS:ErrSnd,0
 		JE	@@Exit
@@ -233,8 +228,7 @@ Beep		ENDP
 ;---------------------------------------------------------------
 ;	INT 10h with mouse
 ;---------------------------------------------------------------
-Int10m		PROC	FAR
-		USES	BP
+Int10m		PROC	FAR	USES	BP
 		PUSH	AX
 		MOV	AL,0
 		CALL	ShowMouse
@@ -255,8 +249,7 @@ Int10m		ENDP
 ;
 ; return MK_FP(ScreenBuf, (y * Columns + x) * 2)
 ;
-BasAdr		PROC	FAR
-		USES	AX,BX
+BasAdr		PROC	FAR	USES	AX BX
 		MOV	ES,CS:DataSegment
 		MOV	AL,ES:Columns
 		MUL	BH
@@ -273,8 +266,7 @@ BasAdr		ENDP
 ;		   BH - line number
 ;	Return:	   BH - corrected line number
 ;---------------------------------------------------------------
-SftEGA		PROC	FAR
-		USES	AX
+SftEGA		PROC	FAR	USES	AX
 		MOV	AL,ES:Lines
 		SUB	AL,25
 		JBE	@@Exit
@@ -288,8 +280,7 @@ SftEGA		ENDP
 ;		BH,BL - begin
 ;		DH,DL - size
 ;---------------------------------------------------------------
-SavWin		PROC	FAR
-		USES	AX,CX,DX,SI,DI,ES,DS
+SavWin		PROC	FAR	USES	AX CX DX SI DI ES DS
 		CLD
 		MOV	DS,CS:DataSegment
 		MOV	DS:Quote,0
@@ -334,8 +325,7 @@ SavWin		ENDP
 ;	Return:	BH,BL - begin
 ;		DH,DL - size
 ;---------------------------------------------------------------
-ResWin		PROC	FAR
-		USES	AX,CX,SI,DI,DS,ES
+ResWin		PROC	FAR	USES	AX CX SI DI DS ES
 		CLD
 		MOV	ES,CS:DataSegment
 		MOV	DS,ES:WindowsPoint
@@ -377,8 +367,7 @@ ResWin		ENDP
 ;		BH,BL - begin
 ;		DH,DL - size
 ;---------------------------------------------------------------
-ResUser		PROC	FAR
-		USES	AX,CX,DX,SI,DI,DS,ES
+ResUser		PROC	FAR	USES	AX CX DX SI DI DS ES
 		MOV	AL,ES:Columns
 		MOV	AH,0
 		ADD	AX,AX
@@ -432,8 +421,7 @@ ResUser		ENDP
 ; if (TopView) TopView_ShadowBuf2Scr(to, w * h)
 ; ShowMouse(true)
 ;
-Window		PROC	FAR
-		USES	AX,BX,CX,DX,SI,DI,DS,ES
+Window		PROC	FAR	USES	AX BX CX DX SI DI DS ES
 		MOV	ES,CS:DataSegment
 		PUSH	ES
 		MOV	AL,0
@@ -512,8 +500,7 @@ Window		ENDP
 ;
 ; MovScr(ScreenBuf, Screen, Columns/*w*/, Lines/*h*/, SkipCGASnowFix)
 ;
-SavScr		PROC	FAR
-		USES	AX,BX,CX,DX,SI,DI,DS,ES
+SavScr		PROC	FAR	USES	AX BX CX DX SI DI DS ES
 		MOV	DS,ES:Screen.Segm
 		MOV	SI,ES:Screen.Offs
 		MOV	DH,ES:Lines
@@ -605,8 +592,7 @@ MovScr		ENDP
 ;		   AH - ui element
 ;	Return:	   AH - color
 ;---------------------------------------------------------------
-Color		PROC	FAR
-		USES	DI,ES
+Color		PROC	FAR	USES	DI ES
 		MOV	ES,CS:DataSegment
 		CALL	GetColorAddr
 		MOV	AH,ES:[DI]
@@ -624,8 +610,7 @@ Color		ENDP
 ; // palettes: 0 - Mono(16gray), 1 == 3 - MonoMode, 2 - Color, 4 == 5 - LCD
 ; return &ColTab[colorname][pal * 2 + MonoMode]
 ;
-GetColorAddr	PROC	FAR
-		USES	AX
+GetColorAddr	PROC	FAR	USES	AX
 		MOV	AL,6
 		MUL	AH			; colorname *= 6
 		MOV	DI,AX
@@ -651,8 +636,7 @@ GetColorAddr	ENDP
 ;	Shadow
 ;		ES:DI - address of screen buffer
 ;---------------------------------------------------------------
-Shadow		PROC	FAR
-		USES	AX
+Shadow		PROC	FAR	USES	AX
 		INC	DI
 		MOV	AH,ShadFl
 		CALL	Color
@@ -704,8 +688,7 @@ WriteCoLine	ENDP
 ;	Clear screen line
 ;		   BH - line
 ;---------------------------------------------------------------
-ClsLine		PROC	FAR
-		USES	CX,DI,ES
+ClsLine		PROC	FAR	USES	CX DI ES
 		MOV	BL,0
 		CALL	BasAdr
 		MOV	CL,DS:Columns
@@ -719,8 +702,7 @@ ClsLine		ENDP
 ;---------------------------------------------------------------
 ;	Blank screen
 ;---------------------------------------------------------------
-Blank		PROC	NEAR
-		USES	AX,BX,CX,DX,SI,DI,BP
+Blank		PROC	NEAR	USES	AX BX CX DX SI DI BP
 		MOV	AL,0
 		CALL	ShowMouse
 		MOV	AH,0Fh
@@ -906,8 +888,7 @@ Blank		ENDP
 ; Rand1 = oldRand2
 ; return Rand2
 ;
-Rnd		PROC	NEAR
-		USES	BX,CX,DX
+Rnd		PROC	NEAR	USES	BX CX DX
 		MOV	BX,3
 		MOV	AX,ES:Rand1
 		MUL	BX

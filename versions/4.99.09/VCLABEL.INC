@@ -65,7 +65,7 @@ F54_00:		CALL	HidCur			; Change label
 		MOV	SI,OFFSET Volume	; Get label
 		CALL	GetVol
 		JNC	F54_01
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	Func04
 		MOV	BL,1
 F54_01:		MOV	DS:LabelSerNum.Lo,BX
@@ -151,7 +151,7 @@ F54_05:		MOV	SI,OFFSET LineBuf1
 		JNC	F54_10
 F54_06:		MOV	DX,OFFSET LabelSetErr_T
 F54_07:		MOV	BP,OFFSET LabelErr_B
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	F54_18
 		CALL	Dialog
 		JMP	F54_18
@@ -217,7 +217,7 @@ F54_12:		LODSB
 		MOV	AL,12h
 		CALL	OpenFil
 		JNC	F54_13
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JNE	F54_15
 		JMP	F54_17
 F54_13:		MOV	DX,OFFSET LabelTreeBuf
@@ -254,11 +254,11 @@ F54_13:		MOV	DX,OFFSET LabelTreeBuf
 F54_14:		MOV	AH,3Eh
 		CALL	Intr21
 		JNC	F54_15
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	F54_17
 F54_15:		MOV	AH,4Fh
 		JMP	F54_11
-F54_16:		CMP	AX,53h
+F54_16:		CMP	AX,WORD PTR 53h
 		JNE	F54_14
 		PUSH	AX
 		MOV	AH,3Eh
@@ -275,9 +275,8 @@ F54_18:		JMP	FuncExit2
 ;		   CY - error, AX - error code
 ;---------------------------------------------------------------
 		.CODE	Subs
-GetVol		PROC	FAR
-		LOCAL	LabelBuf:BYTE:256
-		USES	DX,SI,DI,DS,ES
+GetVol		PROC	FAR	USES	DX SI DI DS ES
+		LOCAL	LabelBuf[256]:BYTE
 		MOV	AH,19h
 		INT	21h
 		MOV	BL,AL
@@ -301,7 +300,7 @@ GetVol		PROC	FAR
 		JNC	@@SaveSerNum
 		XOR	BX,BX
 		XOR	CX,CX
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		STC
 		JE	@@Exit
   @@SaveSerNum:	PUSH	CX
@@ -358,7 +357,7 @@ GetVol		PROC	FAR
 		POP	DS
 		POP	ES
 		JNC	@@Found
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JNE	@@NoError
 		STC
 		JMP	@@EndLine

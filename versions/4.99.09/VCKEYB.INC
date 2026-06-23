@@ -20,14 +20,13 @@ ScanCodes	DB	03h,1Eh,30h,2Eh,    20h,12h,21h,22h
 		DB	2Dh,15h,2Ch,01h,    2Bh,1Bh,07h,0Ch
 
 		.CODE	Subs
-GetKey		PROC	FAR
-		USES	BX,DX
+GetKey		PROC	FAR	USES	BX DX
 		CMP	ES:WinClose,0 ; skip Close command (Win9x) check
 		JE	@@ChkKey
 		MOV	DX,100h
 		MOV	AX,168Fh
 		INT	2Fh ; Win9x - query Close (window)
-		CMP	AX,1
+		CMP	AX,WORD PTR 1
 		MOV	AX,4400h ; F10
 		JB	@@Exit ; Close selected / Close confirmed
   @@ChkKey:	XOR	AX,AX
@@ -88,8 +87,7 @@ GetKey		ENDP
 ;	Keyboard status
 ;	Return:	   AX - status
 ;---------------------------------------------------------------
-KeybStat	PROC	FAR
-		USES	DS
+KeybStat	PROC	FAR	USES	DS
 		MOV	DS,CS:DataSegment
 		MOV	AL,0
 		CMP	AL,DS:StdIn
@@ -102,8 +100,7 @@ KeybStat	ENDP
 ;---------------------------------------------------------------
 ;	Clear keyboard buffer
 ;---------------------------------------------------------------
-ClrKbd		PROC	FAR
-		USES	AX
+ClrKbd		PROC	FAR	USES	AX
 		CMP	ES:StdIn,0
 		JNZ	@@Exit ; using DOS_GetKey
 		CMP	ES:ClrBuf,0
@@ -117,8 +114,7 @@ ClrKbd		ENDP
 ;	Break test
 ;	Return:	CY=1 - break
 ;---------------------------------------------------------------
-TstBrk		PROC	FAR
-		USES	AX,BX
+TstBrk		PROC	FAR	USES	AX BX
 		MOV	BL,1 ; return no break by default
 		CMP	ES:TaskStack,0
 		JNE	@@Exit ; background sub-task (Find File) running
@@ -170,15 +166,33 @@ Input		PROC	FAR
 		RET
 Input		ENDP
 
-Input0		PROC	FAR
-		USES	DS,SI,DI,DX,CX,BX
+Input0		PROC	FAR	USES	DS SI DI DX CX BX
+; XXX TASM aligns stack variables at word boundary, JWASM doesn't
+IF	__TASMIDENT__
+		LOCAL	Pad1	:BYTE
+ENDIF
 		LOCAL	IKeyBar	:BYTE
+IF	__TASMIDENT__
+		LOCAL	Pad2	:BYTE
+ENDIF
 		LOCAL	BlMouse	:BYTE
+IF	__TASMIDENT__
+		LOCAL	Pad3	:BYTE
+ENDIF
 		LOCAL	KbdFlgs	:BYTE
+IF	__TASMIDENT__
+		LOCAL	Pad4	:BYTE
+ENDIF
 		LOCAL	AltLock	:BYTE
+IF	__TASMIDENT__
+		LOCAL	Pad5	:BYTE
+ENDIF
 		LOCAL	ClkFlag	:BYTE
+IF	__TASMIDENT__
+		LOCAL	Pad6	:BYTE
+ENDIF
 		LOCAL	MouseCu	:BYTE
-		LOCAL	ClkBuf	:WORD:6
+		LOCAL	ClkBuf[6]:WORD
 		LOCAL	BlTime	:DWORD
 		LOCAL	AltTime	:DWORD
 		PUSH	ES

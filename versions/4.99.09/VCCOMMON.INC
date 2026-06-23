@@ -9,8 +9,7 @@
 ;	Return:	CX DX - clock
 ;---------------------------------------------------------------
 		.CODE	Subs
-Timer		PROC	FAR
-		USES	DS
+Timer		PROC	FAR	USES	DS
 		XOR	CX,CX
 		MOV	DS,CX
 		CLI
@@ -66,7 +65,7 @@ ChkUpDir	ENDP
 ;---------------------------------------------------------------
 ;	Add backslash to ES:DI if there is not
 ;---------------------------------------------------------------
-AddPathSep		PROC	FAR
+AddPathSep	PROC	FAR
 		MOV	AL,ES:[DI-1]
 		CMP	AL,'\'
 		JE	@@Exit
@@ -86,8 +85,7 @@ AddPathSep		ENDP
 ;	Return:    CY - not short
 ;		   NC - short
 ;---------------------------------------------------------------
-ChkShortNam	PROC	FAR
-		USES	AX,BX,CX,SI,DI
+ChkShortNam	PROC	FAR	USES	AX BX CX SI DI
 		MOV	DI,OFFSET FileSymb2_S
 		CALL	ChkForSymb
 		JC	@@Exit
@@ -148,8 +146,7 @@ FileSymb1_S	DB	'*?/\<>|:"',0
 FileSymb2_S	DB	'[]=+,; ',0
 
 		.CODE	Subs
-ChkForSymb	PROC	FAR
-		USES	AX,CX,SI,ES
+ChkForSymb	PROC	FAR	USES	AX CX SI ES
 		PUSH	CS
 		POP	ES
 		CALL	StrLen
@@ -185,8 +182,7 @@ MvzHist		ENDP
 ;---------------------------------------------------------------
 ;	Clear rest of line DS:SI, length CX
 ;---------------------------------------------------------------
-FilZero		PROC	FAR
-		USES	DI,ES
+FilZero		PROC	FAR	USES	DI ES
 		PUSH	DS
 		POP	ES
 		MOV	DI,SI
@@ -200,8 +196,7 @@ FilZero		ENDP
 ;---------------------------------------------------------------
 ;	Clear rest of history DS:SI, length CX
 ;---------------------------------------------------------------
-FilHist		PROC	FAR
-		USES	SI,DI,ES
+FilHist		PROC	FAR	USES	SI DI ES
 		PUSH	DS
 		POP	ES
 		MOV	DI,SI
@@ -223,8 +218,7 @@ FilHist		ENDP
 ;		ES:DI - string
 ;	Return:	   CX - length
 ;---------------------------------------------------------------
-StrLen		PROC	FAR
-		USES	DI
+StrLen		PROC	FAR	USES	DI
 		MOV	CX,0FFFFh
 		MOV	AL,0
 		REPNE	SCASB
@@ -240,8 +234,7 @@ StrLen		ENDP
 ;	Return:	   ZR - equal
 ;		   NZ - not equal
 ;---------------------------------------------------------------
-CompNormSubStr	PROC	FAR
-		USES	AX
+CompNormSubStr	PROC	FAR	USES	AX
   @@Next:	LODSB
 		CALL	UpCase
 		MOV	AH,AL
@@ -260,8 +253,7 @@ CompNormSubStr	ENDP
 ;	Return:	   ZR - equal
 ;		   NZ - not equal
 ;---------------------------------------------------------------
-CompNormLines	PROC	FAR
-		USES	AX,SI,DI
+CompNormLines	PROC	FAR	USES	AX SI DI
   @@Next:	LODSB
 		CALL	UpCase
 		MOV	AH,AL
@@ -341,8 +333,7 @@ FndLet		ENDP
 ;	Return:  CY=1 - long name
 ;		   ZF - last char = ZERO, else '\'
 ;---------------------------------------------------------------
-ChkLongName	PROC	NEAR
-		USES	AX,CX
+ChkLongName	PROC	NEAR	USES	AX CX
 		MOV	CX,9
   @@CheckName:	LODSB
 		CMP	AL,0
@@ -372,8 +363,7 @@ ChkLongName	ENDP
 ;		DS:SI - pathname
 ;	Return:	DS:SI - end of path
 ;---------------------------------------------------------------
-CutPath		PROC	FAR
-		USES	AX,BX
+CutPath		PROC	FAR	USES	AX BX
   @@Point:	MOV	BX,SI
   @@Next:	LODSB
 		CMP	AL,':'
@@ -393,8 +383,7 @@ CutPath		ENDP
 ;		DS:SI - file
 ;	Return:	DS:SI - extension
 ;---------------------------------------------------------------
-FindFileExt	PROC	FAR
-		USES	AX,BX,DI
+FindFileExt	PROC	FAR	USES	AX BX DI
 		CMP	BYTE PTR DS:[SI],0
 		JE	@@Exit
 		INC	SI
@@ -418,8 +407,7 @@ FindFileExt	ENDP
 ;		ES:DI - buffer for true name
 ;	Return:	   CY - error, AX - error code
 ;---------------------------------------------------------------
-TrueName	PROC	FAR
-		USES	CX
+TrueName	PROC	FAR	USES	CX
 		MOV	CX,2
 		MOV	AX,7160h
 		CALL	Intr21
@@ -442,8 +430,7 @@ TrueName	ENDP
 ;		ES:DI - buffer for short name
 ;	Return:	   CY - error, AX - error code
 ;---------------------------------------------------------------
-ShortName	PROC	FAR
-		USES	CX,DX,SI,DI,DS
+ShortName	PROC	FAR	USES	CX DX SI DI DS
 		PUSH	ES
 		MOV	ES,CS:DataSegment
 		MOV	AX,DS:[SI]
@@ -490,8 +477,7 @@ ShortName	ENDP
 ;	Return:	DS:SI - end of name
 ;		ES:DI - end of converted name
 ;---------------------------------------------------------------
-NormName	PROC	FAR
-		USES	AX,BX,CX
+NormName	PROC	FAR	USES	AX BX CX
 		CMP	CX,0
 		JNZ	@@LongName1
 		PUSH	DI
@@ -533,8 +519,7 @@ NormName	ENDP
 ;		ES:DI - buffer
 ;	Return:	   CY - error, AX - error code
 ;---------------------------------------------------------------
-NormPath	PROC	FAR
-		USES	BX,CX,DX,SI,DI
+NormPath	PROC	FAR	USES	BX CX DX SI DI
 		LEA	BX,[DI+2]
 		CALL	FndLet
 		LODSW
@@ -666,8 +651,7 @@ NormPath	ENDP
 ;	Cut spaces
 ;		ES:SI - address of string
 ;---------------------------------------------------------------
-NormStr		PROC	FAR
-		USES	AX,BX,SI,DI
+NormStr		PROC	FAR	USES	AX BX SI DI
 		MOV	DI,SI
   @@FndChar:	LODS	BYTE PTR ES:[SI]
 		CMP	AL,' '
@@ -688,8 +672,7 @@ NormStr		ENDP
 ;	Uppercase whole string
 ;		ES:SI - address of string
 ;---------------------------------------------------------------
-PathLin		PROC	FAR
-		USES	AX,DI
+PathLin		PROC	FAR	USES	AX DI
 		MOV	DI,SI
   @@Next:	MOV	AL,ES:[DI]
 		CALL	UpCase
@@ -703,8 +686,7 @@ PathLin		ENDP
 ;	Uppercase path & lowercase filename
 ;		ES:SI - address of string
 ;---------------------------------------------------------------
-LetLin		PROC	FAR
-		USES	AX,SI,DI,DS
+LetLin		PROC	FAR	USES	AX SI DI DS
 		CALL	PathLin
 		PUSH	ES
 		POP	DS
@@ -723,8 +705,7 @@ LetLin		ENDP
 ;		ES:SI - address of string
 ;		   AX - limit
 ;---------------------------------------------------------------
-ShrtLin		PROC	FAR
-		USES	AX,BX,CX,SI,DI,DS
+ShrtLin		PROC	FAR	USES	AX BX CX SI DI DS
 		PUSH	AX
 		MOV	DI,SI
 		CALL	StrLen
@@ -761,7 +742,7 @@ ShrtLin		PROC	FAR
 		SUB	AX,BX
 		ADD	AX,CX
 		JNC	@@Short
-		CMP	AX,3
+		CMP	AX,WORD PTR 3
 		JB	@@Short
 		MOV	CX,AX
 		MOV	SI,BX
@@ -785,8 +766,7 @@ ShrtLin		ENDP
 ;	Main file
 ;		VcSet + CS:SI -> ES:DI
 ;---------------------------------------------------------------
-MainFil		PROC	FAR
-		USES	DS
+MainFil		PROC	FAR	USES	DS
 		PUSH	SI
 		PUSH	ES
 		POP	DS
@@ -805,8 +785,7 @@ MainFil		ENDP
 ;			BX CX - number
 ;			   AL - mode: b0-coma, b1-spaces
 ;---------------------------------------------------------------
-Number		PROC	FAR
-		USES	AX,BX,CX,DX,SI,BP,DS
+Number		PROC	FAR	USES	AX BX CX DX SI BP DS
 		MOV	DS,CS:DataSegment
 		MOV	DH,AL
 		CMP	DS:Country.Sep1000,0
@@ -874,7 +853,12 @@ Numb2		PROC	NEAR
 		TEST	DH,1
 		JZ	@@Exit
 		MOV	AL,DS:Country.Sep1000
-  ChkSpace:	OR	DL,DL
+IFDEF	__JWASM__
+ChkSpace::
+ELSE
+ChkSpace:
+ENDIF
+		OR	DL,DL
 		JNZ	@@Write
 		TEST	DH,2
 		JZ	@@Exit
@@ -892,8 +876,7 @@ Numb2		ENDP
 Letters_S	DB	0,'KMGT'
 
 		.CODE	Subs
-ReduceNumb	PROC	FAR
-		USES	CX,SI,DS
+ReduceNumb	PROC	FAR	USES	CX SI DS
 		PUSH	ES
 		POP	DS
 		MOV	SI,OFFSET Letters_S
@@ -925,8 +908,7 @@ ReduceNumb	ENDP
 ;		   AL - code
 ;	Return:	AL,AH - high and low digits
 ;---------------------------------------------------------------
-HexByt		PROC	FAR
-		USES	CX
+HexByt		PROC	FAR	USES	CX
 		PUSH	AX
 		CALL	HexCod
 		MOV	CH,AL
@@ -977,8 +959,7 @@ TstHex		ENDP
 ;	Return:	   AX - number
 ;		 CY=1 - error
 ;---------------------------------------------------------------
-TxtNum		PROC	FAR
-		USES	BX,DX
+TxtNum		PROC	FAR	USES	BX DX
 		PUSH	SI
 		XOR	BX,BX
   @@NextChar:	LODSB
@@ -1012,8 +993,7 @@ TxtNum		ENDP
 ;		ES:DI - convert buffer
 ;	Return:	DS:SI - end of file
 ;---------------------------------------------------------------
-Convert		PROC	FAR
-		USES	AX,CX,DI
+Convert		PROC	FAR	USES	AX CX DI
 		MOV	CX,8
 		MOV	AH,'.'
 		CALL	Conv1
@@ -1062,8 +1042,7 @@ Conv1		ENDP
 ;		DS:SI - convert buffer
 ;		ES:DI - address of file
 ;---------------------------------------------------------------
-UnConv		PROC	FAR
-		USES	AX,BX,CX
+UnConv		PROC	FAR	USES	AX BX CX
 		MOV	BX,DI
 		MOV	CX,8
 		CALL	UnCnv1
@@ -1093,8 +1072,7 @@ UnCnv1		ENDP
 ;	Return:	   ZR - yes
 ;		   NZ - no
 ;---------------------------------------------------------------
-TestMask	PROC	FAR
-		USES	AX,BX,DX,SI,DI,DS,ES
+TestMask	PROC	FAR	USES	AX BX DX SI DI DS ES
 		PUSH	SI
   @@FindPoint:	LODSB				; Add . to file without ext
 		CMP	AL,'.'
@@ -1169,8 +1147,7 @@ TestMask	PROC	FAR
   @@Exit:	RET
 TestMask	ENDP
 
-CompMask	PROC	NEAR
-		USES	SI,DI
+CompMask	PROC	NEAR	USES	SI DI
   @@CompChar:	CMP	SI,BX
 		JAE	@@EndComp
 		LODSB
@@ -1227,8 +1204,7 @@ Substed		EQU	4
 Network		EQU	5
 CDROM		EQU	6
 
-TstDrv		PROC	FAR
-		USES	BX,CX,DX
+TstDrv		PROC	FAR	USES	BX CX DX
 		SUB	AL,'A'
 		MOV	CL,AL			; Check drive
 		MOV	AH,19h
@@ -1291,8 +1267,7 @@ TstDrv		ENDP
 ;	Return:	   NC - Ok, AX - length of names, 0 - short names
 ;		   CY - error, AX - error code
 ;---------------------------------------------------------------
-GetFS		PROC	FAR
-		USES	BX,CX,DX,SI,DI,DS
+GetFS		PROC	FAR	USES	BX CX DX SI DI DS
 		PUSH	ES
 		POP	DS
 		MOV	DX,OFFSET TmpErr
@@ -1306,14 +1281,14 @@ GetFS		PROC	FAR
 		MOV	AX,71A0h
 		INT	21h
 		JNC	@@ChkLen
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JNE	@@Zero
 		STC
 		JMP	@@Exit
   @@ChkLen:	MOV	AX,CX
 		TEST	BH,40h
 		JNZ	@@Exit
-		CMP	AX,12
+		CMP	AX,WORD PTR 12
 		JA	@@Exit
   @@Zero:	XOR	AX,AX
   @@Exit:	RET
@@ -1340,7 +1315,7 @@ Intr21		PROC	FAR
 		CMC
 		JMP	@@CheckErr
   @@Func36:	INT	21h
-		CMP	AX,0FFFFh
+		CMP	AX,WORD PTR 0FFFFh
 		CMC
 		JMP	@@CheckErr
   @@NewFunc:	PUSH	ES			; DOS 7.0 style functions
@@ -1406,7 +1381,13 @@ Intr21		PROC	FAR
 		STC
 		INT	21h
 		PUSHF
+IF	__TASMIDENT__
+		JC	@F
+		JMP	NEAR PTR @@NewFuncOk
+  @@:
+ELSE
 		JNC	@@NewFuncOk
+ENDIF
 		CMP	AX,7100h
 		JNE	@@NewFuncOk
 		POPF	
@@ -1590,8 +1571,7 @@ Intr21		ENDP
 ;---------------------------------------------------------------
 ;	Close Find File Handle
 ;---------------------------------------------------------------
-CloseFindFile	PROC	FAR
-		USES	AX,BX,DS
+CloseFindFile	PROC	FAR	USES	AX BX DS
 		PUSHF
 		MOV	DS,CS:DataSegment
 		MOV	BX,DS:FindHandle
@@ -1618,9 +1598,8 @@ LongName_S	DD	15
 		DB	'.LONGNAME',0
 
 		.CODE	Subs
-GetLongNameEA	PROC	FAR
-		LOCAL	EAInfoBuffer:BYTE:12
-		USES	BX,CX,DX,SI,DI,DS,ES
+GetLongNameEA	PROC	FAR	USES	BX CX DX SI DI DS ES
+		LOCAL	EAInfoBuffer[12]:BYTE
 		MOV	DX,DS
 		MOV	DS,CS:DataSegment
 		CMP	DS:OS2Box,0
@@ -1632,8 +1611,14 @@ GetLongNameEA	PROC	FAR
 		MOV	AX,[BP]
 		SUB	AX,DI
 		JBE	@@Error
-		CMP	AX,4
+		CMP	AX,WORD PTR 4
+IF	__TASMIDENT__
+		JA	@F
+		JMP	NEAR PTR @@Error
+  @@:
+ELSE
 		JBE	@@Error
+ENDIF
 		MOV	ES:[DI].Lo,AX
 		MOV	ES:[DI].Hi,0
 		MOV	DS:BlocEr,1
@@ -1662,7 +1647,7 @@ GetLongNameEA	PROC	FAR
 		MOV	SI,DI
 		MOV	AL,ES:[DI+5]
 		MOV	AH,0
-		ADD	AX,13
+		ADD	AX,WORD PTR 13
 		ADD	SI,AX
 		PUSH	DI
 		DEC	CX
@@ -1701,9 +1686,8 @@ GetLongNameEA	ENDP
 ;		DS:SI - source name
 ;		ES:DI - target name
 ;---------------------------------------------------------------
-LongNameOS2	PROC	FAR
-		LOCAL	NameOS2:BYTE:300
-		USES	BX,CX,DX,SI,DI
+LongNameOS2	PROC	FAR	USES	BX CX DX SI DI
+		LOCAL	NameOS2[300]:BYTE
 		MOV	BX,SI
 		LEA	CX,[DI+LenPath-1]
 		LODSW
@@ -1803,9 +1787,8 @@ LongNameOS2	ENDP
 ;		   AL - set current dir
 ;	Return:	   CY - error, AX - error code
 ;---------------------------------------------------------------
-RealPath	PROC	FAR
-		LOCAL	PathBuf:BYTE:LenPath
-		USES	CX,DX,SI,DI,DS,ES
+RealPath	PROC	FAR	USES	CX DX SI DI DS ES
+		LOCAL	PathBuf[LenPath]:BYTE
 		MOV	DL,AL
 		PUSH	SS
 		POP	ES
@@ -1814,7 +1797,7 @@ RealPath	PROC	FAR
 		MOV	AX,7160h
 		CALL	Intr21
 		JNC	@@ChDir
-		XOR	AX,53h
+		XOR	AX,WORD PTR 53h
 		JNE	@@Exit
 		STC
 		JMP	@@Exit
@@ -1841,14 +1824,13 @@ RealPath	ENDP
 ;	Return:    AX - handle, if CY=0
 ;		   AX - error,  if CY=1
 ;---------------------------------------------------------------
-OpenFil		PROC	FAR
-		USES	BX,CX
+OpenFil		PROC	FAR	USES	BX CX
 		XOR	CX,CX
 		MOV	AH,3Dh
 		MOV	BX,AX
 		CALL	Intr21
 		JNC	@@Exit
-		CMP	AX,20h
+		CMP	AX,WORD PTR 20h
 		STC
 		JNE	@@Exit
 		MOV	AX,BX
@@ -1866,8 +1848,7 @@ OpenFil		ENDP
 ;		   NC - Ok,	AX - number of file
 ;		   CY - error,	AX - error code
 ;---------------------------------------------------------------
-OpenTempFile	PROC	FAR
-		USES	CX,SI,DS
+OpenTempFile	PROC	FAR	USES	CX SI DS
 		XOR	AX,AX
 		CALL	MakeFileName
 		PUSH	ES
@@ -1880,7 +1861,7 @@ OpenTempFile	PROC	FAR
 		MOV	AH,5Bh
 		CALL	Intr21
 		JNC	@@Exit
-		CMP	AX,3
+		CMP	AX,WORD PTR 3
 		JBE	@@Error
 		MOV	SI,DI
 		MOV	CX,3
@@ -1904,8 +1885,7 @@ OpenTempFile	ENDP
 ;		ES:DI - target buffer
 ;	Return:	ES:DI - end of buffer
 ;---------------------------------------------------------------
-MoveTempPath	PROC	FAR
-		USES	AX,SI,DS
+MoveTempPath	PROC	FAR	USES	AX SI DS
 		MOV	DS,CS:DataSegment
 		MOV	SI,OFFSET TempDir
 		CALL	strcpy
@@ -1916,8 +1896,7 @@ MakePathName	PROC	FAR
 		CALL	MoveTempPath
 MakePathName	ENDP
 
-MakeFileName	PROC	FAR
-		USES	AX,CX,DX,SI,DS
+MakeFileName	PROC	FAR	USES	AX CX DX SI DS
 		MOV	CX,AX
 		PUSH	CS
 		POP	DS
@@ -1949,8 +1928,7 @@ MakeFileName	ENDP
 ;	Return:    CX - time
 ;		   DI - date
 ;---------------------------------------------------------------
-GetFileTime	PROC	FAR
-		USES	BX,DX,SI,DS
+GetFileTime	PROC	FAR	USES	BX DX SI DS
 		PUSH	ES
 		POP	DS
 		CMP	DS:OS2box,0
@@ -1976,8 +1954,7 @@ GetFileTime	ENDP
 ;		   CX - time
 ;		   DI - date
 ;---------------------------------------------------------------
-SetFileTime	PROC	FAR
-		USES	BX,CX,DX,SI,DI,DS
+SetFileTime	PROC	FAR	USES	BX CX DX SI DI DS
 		PUSH	ES
 		POP	DS
 		MOV	AX,4303h
@@ -2000,8 +1977,7 @@ SetFileTime	ENDP
 ;	Invert global variable
 ;		ES:BX - address of variable
 ;---------------------------------------------------------------
-InvVar		PROC	FAR
-		USES	DS
+InvVar		PROC	FAR	USES	DS
 		PUSH	ES
 		POP	DS
 		CALL	InvPanelVar
@@ -2026,8 +2002,7 @@ InvPanelVar	ENDP
 ;		   CX - length
 ;	Return:	   AX - check sum
 ;---------------------------------------------------------------
-ChkSum		PROC	FAR
-		USES	BX,CX,SI
+ChkSum		PROC	FAR	USES	BX CX SI
 		XOR	BX,BX
 		MOV	AH,0
   @@GetChar:	LODSB
@@ -2044,8 +2019,7 @@ ChkSum		ENDP
 ;		   SI - Number
 ;	Return:	DS:SI - Address
 ;---------------------------------------------------------------
-Numb2Addr	PROC	FAR
-		USES	AX,CX
+Numb2Addr	PROC	FAR	USES	AX CX
 		MOV	CX,SI
 		MOV	SI,DS:DiskBuf
 		JCXZ	@@Exit
@@ -2059,8 +2033,7 @@ Numb2Addr	ENDP
 ;		DS:SI - Address
 ;	Return:	   SI - Number
 ;---------------------------------------------------------------
-Addr2Numb	PROC	FAR
-		USES	AX,BX
+Addr2Numb	PROC	FAR	USES	AX BX
 		MOV	AX,SI
 		MOV	SI,DS:DiskBuf
 		XOR	BX,BX
@@ -2078,15 +2051,13 @@ Addr2Numb	ENDP
 ;		   SI - Number
 ;	Return:	   SI - Address
 ;---------------------------------------------------------------
-TreeNumb2Adr	PROC	FAR
-		USES	DS
+TreeNumb2Adr	PROC	FAR	USES	DS
 		MOV	DS,ES:TreeSeg
 		CALL	TreeNumb2Adr1
 		RET
 TreeNumb2Adr	ENDP
 
-TreeNumb2Adr1	PROC	FAR
-		USES	AX,CX
+TreeNumb2Adr1	PROC	FAR	USES	AX CX
 		MOV	CX,SI
 		MOV	SI,OFFSET TreeList
 		JCXZ	@@Exit
@@ -2095,15 +2066,13 @@ TreeNumb2Adr1	PROC	FAR
   @@Exit:	RET
 TreeNumb2Adr1	ENDP
 
-TreeNumb2AdrH	PROC	FAR
-		USES	DS
+TreeNumb2AdrH	PROC	FAR	USES	DS
 		MOV	DS,ES:TreeSeg
 		CALL	TreeNumb2AdrH1
 		RET
 TreeNumb2AdrH	ENDP
 
-TreeNumb2AdrH1	PROC	FAR
-		USES	AX,CX
+TreeNumb2AdrH1	PROC	FAR	USES	AX CX
 		MOV	CX,SI
 		MOV	SI,OFFSET TreeList
 		JCXZ	@@Exit
@@ -2117,22 +2086,19 @@ TreeNumb2AdrH1	ENDP
 ;		   SI - Address
 ;	Return:	   SI - Number
 ;---------------------------------------------------------------
-TreeAdr2Numb	PROC	FAR
-		USES	CX
+TreeAdr2Numb	PROC	FAR	USES	CX
 		MOV	CX,OFFSET NextDirEnt
 		CALL	TreeAdr2Numb0
 		RET
 TreeAdr2Numb	ENDP
 
-TreeAdr2NumbH	PROC	FAR
-		USES	CX
+TreeAdr2NumbH	PROC	FAR	USES	CX
 		MOV	CX,OFFSET NextDirEntH
 		CALL	TreeAdr2Numb0
 		RET
 TreeAdr2NumbH	ENDP
 
-TreeAdr2Numb0	PROC	NEAR
-		USES	AX,BX,DS
+TreeAdr2Numb0	PROC	NEAR	USES	AX BX DS
 		MOV	DS,ES:TreeSeg
 		MOV	AX,SI
 		MOV	SI,OFFSET TreeList
@@ -2152,8 +2118,7 @@ TreeAdr2Numb0	ENDP
 ;		DS - segment of block
 ;		BP - size of block
 ;---------------------------------------------------------------
-AllocateBlock	PROC	FAR
-		USES	AX,CX
+AllocateBlock	PROC	FAR	USES	AX CX
 		MOV	CL,4
 		MOV	AX,BP
 		DEC	AX
@@ -2178,8 +2143,7 @@ GlobalSegs_L	DW	WCB1seg, WCB2seg, TreeSeg, DirinfoSeg, ViewSeg
 		DW	WCBcrn, WCBsec, UserScreen, WindowsPoint, 0
 
 		.CODE	Subs
-FindNextSeg	PROC	FAR
-		USES	AX,SI,DI
+FindNextSeg	PROC	FAR	USES	AX SI DI
 		MOV	DX,0FFFFh
   @@Compare:	MOV	DI,CS:[SI]
 		OR	DI,DI
@@ -2201,8 +2165,7 @@ FindNextSeg	ENDP
 ;		   BX - segment address
 ;		CS:SI - table of segments
 ;---------------------------------------------------------------
-CompressBlock	PROC	FAR
-		USES	AX,CX,DX,SI,DI
+CompressBlock	PROC	FAR	USES	AX CX DX SI DI
 		CMP	BX,1
 		JBE	@@Exit
 		CALL	FindNextSeg
@@ -2266,8 +2229,7 @@ CompressBlock	ENDP
 ;		CS:SI - table of segments
 ;	Return:	   AX - new segment size
 ;---------------------------------------------------------------
-ExpandBlock	PROC	FAR
-		USES	BX,CX,DX,SI,DI
+ExpandBlock	PROC	FAR	USES	BX CX DX SI DI
 		MOV	BX,DS
 		INC	BX
 		CALL	FindNextSeg
@@ -2355,8 +2317,7 @@ ExpandBlock	ENDP
 ;		DS:BX - DWORD 2
 ;		ES:DI - 8 bytes buffer
 ;---------------------------------------------------------------
-LongMul		PROC	FAR
-		USES	AX,CX,DX
+LongMul		PROC	FAR	USES	AX CX DX
 		XOR	CX,CX
 		MOV	AX,DS:[SI].Lo
 		MUL	DS:[BX].Lo
@@ -2385,8 +2346,7 @@ LongMul		ENDP
 ;		DX AX - real size
 ;	Return:	DI DX AX - cluster size
 ;---------------------------------------------------------------
-FileClustSize	PROC	FAR
-		USES	BX,CX,SI,BP
+FileClustSize	PROC	FAR	USES	BX CX SI BP
 		XOR	SI,SI
 		XOR	DI,DI
 		MOV	CX,32
@@ -2427,8 +2387,7 @@ FileClustSize	ENDP
 ;		DS:SI - current file entry
 ;	Return:	DS:SI - next file entry
 ;---------------------------------------------------------------
-NextFilEnt	PROC	FAR
-		USES	AX
+NextFilEnt	PROC	FAR	USES	AX
 		MOV	AX,SIZE FilEnt
 		ADD	AX,DS:[SI].LenShortNamF
 		ADD	AX,DS:[SI].LenLongNamF
@@ -2441,19 +2400,17 @@ NextFilEnt	ENDP
 ;		DS:SI - current directory entry
 ;	Return:	DS:SI - next directory entry
 ;---------------------------------------------------------------
-NextDirEnt	PROC	FAR
-		USES	AX
+NextDirEnt	PROC	FAR	USES	AX
 		MOV	AL,DS:[SI].DirShortLen
 		MOV	AH,0
-		ADD	AX,SIZE DirEnt
+		ADD	AX,WORD PTR SIZE DirEnt
 		ADD	AX,DS:[SI].DirWinLen
 		ADD	AX,DS:[SI].DirOS2Len
 		ADD	SI,AX
 		RET
 NextDirEnt	ENDP
 
-NextDirEntH	PROC	FAR
-		USES	AX
+NextDirEntH	PROC	FAR	USES	AX
 		CALL	NextDirEnt
 		PUSH	DS
 		MOV	DS,CS:DataSegment
@@ -2505,7 +2462,12 @@ LongNameOffset1	PROC	FAR			; Long name
 		CMP	DS:[SI].LenLongNamF,0
 		JE	NameOffsExit
 		ADD	SI,DS:[SI].LenShortNamF
-NameOffsExit:	ADD	SI,OFFSET NameF
+IFDEF	__JWASM__
+NameOffsExit::
+ELSE
+NameOffsExit:
+ENDIF
+		ADD	SI,OFFSET NameF
 		RET
 LongNameOffset1	ENDP
 
@@ -2526,7 +2488,12 @@ WinPath1	PROC	FAR			; Short/Long path
 		MOV	SI,OFFSET WinLongPath
 		CMP	DS:LongNames,0
 		JNZ	@@Exit
-WinPathShort:	MOV	SI,OFFSET WinShortPath
+IFDEF	__JWASM__
+WinPathShort::
+ELSE
+WinPathShort:
+ENDIF
+		MOV	SI,OFFSET WinShortPath
   @@Exit:	RET
 WinPath1	ENDP
 
@@ -2590,7 +2557,12 @@ LongDirOffset1	PROC	FAR			; Long name
 		ADD	AX,DS:[SI].DirWinLen
   @@Offset:	ADD	SI,AX
 		POP	AX
-DirOffsetExit:	ADD	SI,OFFSET DirName
+IFDEF	__JWASM__
+DirOffsetExit::
+ELSE
+DirOffsetExit:
+ENDIF
+		ADD	SI,OFFSET DirName
 		RET
 LongDirOffset1	ENDP
 
@@ -2634,7 +2606,12 @@ LongDirLen1	PROC	FAR			; Long length
 		MOV	AX,DS:[SI].DirOS2Len
   @@ChkOffs:	OR	AX,AX
 		JNE	@@Exit
-ShortDirLen:	MOV	AL,DS:[SI].DirShortLen
+IFDEF	__JWASM__
+ShortDirLen::
+ELSE
+ShortDirLen:
+ENDIF
+		MOV	AL,DS:[SI].DirShortLen
 		MOV	AH,0
   @@Exit:	RET
 LongDirLen1	ENDP

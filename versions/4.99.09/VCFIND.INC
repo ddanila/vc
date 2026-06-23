@@ -23,10 +23,10 @@ FndTblTitle	EQU	BYTE PTR TmpBuf[39]	; Title of table
 FndDtSz		EQU	39+256
 
 FindDt		STRUC
-  FnTbl		TblData	?               ; Translation table
-  FnSearch	SrData	?		; Search data
-  FnStore	DB	FndDtSz DUP(?)	; Buffer for data
-  FnBegin	LABEL	BYTE		; Begin of entries
+  FnTbl		TblData	<>			; Translation table
+  FnSearch	SrData	<>			; Search data
+  FnStore	DB	FndDtSz DUP(?)		; Buffer for data
+  FnBegin	EQU	BYTE PTR $		; Begin of entries
 FindDt		ENDS
 
 FindEnt		STRUC
@@ -38,7 +38,7 @@ FindEnt		STRUC
   FndTxtHex	DB	?
   FndLenShort	DW	?
   FndLenLong	DW	?
-  FndName	LABEL	BYTE
+  FndName	EQU	BYTE PTR $
 FindEnt		ENDS
 
 		.CONST
@@ -444,7 +444,7 @@ F67_31:		MOV	SI,OFFSET LineBuf2	; Canonize path
 		CALL	NormPath
 		MOV	DS:[BX],CL
 		JNC	F67_32
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JNE	F67_30
 		JMP	F67_35
 F67_32:		MOV	SI,DI
@@ -476,8 +476,7 @@ F67_20		ENDP
 ;---------------------------------------------------------------
 ;	Find file
 ;---------------------------------------------------------------
-FindProc	PROC	NEAR
-		USES	BX,CX,DX,SI,DI,BP
+FindProc	PROC	NEAR	USES	BX CX DX SI DI BP
 		TEST	AL,10h
 		JNZ	@@FindDir
 		XOR	AX,AX
@@ -528,7 +527,7 @@ FindProc	PROC	NEAR
 		CALL	FindSearching
 		CALL	FindString
 		JNC	@@StoreEntry
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@CloseFF
 		JMP	@@Next
 
@@ -659,7 +658,7 @@ FindProc	PROC	NEAR
   @@CloseFF:	CALL	CloseFindFile		; Exit
 		POP	SI
 		MOV	BYTE PTR DS:[SI],0
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JNE	@@Recurse
   @@StopFF:	MOV	AX,100h
 		JMP	@@Exit
@@ -865,7 +864,7 @@ FindChkOver	ENDP
 ;---------------------------------------------------------------
 FindNextPoint	PROC	NEAR
 		MOV	AX,DI
-		AND	AX,0Fh
+		AND	AX,WORD PTR 0Fh
 		MOV	DS:FndPoint.Offs,AX
 		MOV	CL,4
 		SHR	DI,CL
@@ -971,7 +970,12 @@ FindSub2	PROC	NEAR
 		CALL	Case
 		OR	AX,AX
 		JNE	@@DialList
-  FindSubStop:	POP	SI
+IFDEF	__JWASM__
+  FindSubStop::
+ELSE
+  FindSubStop:
+ENDIF
+		POP	SI
 		PUSH	SI
 		CMP	SI,OFFSET FindFile2_B
 		JNE	@@DialList
@@ -986,16 +990,31 @@ FindSub2	PROC	NEAR
 		INC	AX
   @@MinMnuDef:	MOV	ES:MinMnuDefault,AL
 		JMP	@@Enter
-  FindSubGoto:	MOV	BP,DI
+IFDEF	__JWASM__
+  FindSubGoto::
+ELSE
+  FindSubGoto:
+ENDIF
+		MOV	BP,DI
 		POP	DI
 		ADD	DI,SIZE BoxHd
 		CALL	DialogBuf
 		MOV	BYTE PTR SS:[SI],1
   @@Enter:	MOV	AX,1C0Dh
 		JMP	@@Exit
-  FindSubEnter:	CMP	CL,2
+IFDEF	__JWASM__
+  FindSubEnter::
+ELSE
+  FindSubEnter:
+ENDIF
+		CMP	CL,2
 		JNE	@@DialList
-  FindSubView:	POP	SI
+IFDEF	__JWASM__
+  FindSubView::
+ELSE
+  FindSubView:
+ENDIF
+		POP	SI
 		CMP	ES:ListTotal,0		; View file
 		JE	@@ViewExit
 		CALL	FindEntry
@@ -1075,7 +1094,12 @@ FindSub2	PROC	NEAR
 		REP	MOVSB
   @@ViewExit:	XOR	AX,AX
 		JMP	@@Exit
-  FindSubInit:	MOV	ES:MinMnuFlag,1
+IFDEF	__JWASM__
+  FindSubInit::
+ELSE
+  FindSubInit:
+ENDIF
+		MOV	ES:MinMnuFlag,1
 		MOV	ES:ListLoop,1
 		POP	SI
 		PUSH	SI
@@ -1097,8 +1121,7 @@ FindSub2	ENDP
 ;---------------------------------------------------------------
 FndNameWidth	EQU	18
 
-FindLine	PROC	NEAR
-		USES	AX,CX,SI,DI,ES
+FindLine	PROC	NEAR	USES	AX CX SI DI ES
 		MOV	AX,SI
 		SUB	AX,DI
 		ADD	BX,DS:ListBase
@@ -1204,8 +1227,7 @@ FindLine	ENDP
 ;		   SI - line number
 ;	Return:	DS:SI - entry address
 ;---------------------------------------------------------------
-FindNum2Adr	PROC	NEAR
-		USES	AX,BX,CX,DX
+FindNum2Adr	PROC	NEAR	USES	AX BX CX DX
 		MOV	BX,SI
 		LDS	SI,ES:FndPoint2
 		MOV	AX,BX
@@ -1221,7 +1243,7 @@ FindNum2Adr	PROC	NEAR
 		MOV	DX,DS
   @@Next:	MOV	AX,DS:[SI].FndLenShort
 		ADD	AX,DS:[SI].FndLenLong
-		ADD	AX,SIZE FindEnt
+		ADD	AX,WORD PTR SIZE FindEnt
 		ADD	AX,SI
 		MOV	SI,AX
 		AND	SI,0Fh
@@ -1240,8 +1262,7 @@ FindNum2Adr	ENDP
 ;	Return:	DS:SI - file entry
 ;		BP:DI - directory entry
 ;---------------------------------------------------------------
-FindEntry	PROC	FAR
-		USES	AX,BX,CX,DX
+FindEntry	PROC	FAR	USES	AX BX CX DX
 		MOV	BX,ES:ListCursor
 		MOV	DS,ES:WorkBuffer
 		MOV	SI,OFFSET FnBegin
@@ -1253,7 +1274,7 @@ FindEntry	PROC	FAR
 		MOV	DX,DS
   @@Loop:	MOV	AX,DS:[SI].FndLenShort
 		ADD	AX,DS:[SI].FndLenLong
-		ADD	AX,SIZE FindEnt
+		ADD	AX,WORD PTR SIZE FindEnt
 		ADD	AX,SI
 		MOV	SI,AX
 		AND	SI,0Fh
@@ -1277,8 +1298,7 @@ FindEntry	ENDP
 Search		EQU	BYTE PTR HelpBuf	; Search data
 
 		.CODE
-PrepareSearch	PROC	NEAR
-		USES	AX,BX,CX,SI,DI,DS
+PrepareSearch	PROC	NEAR	USES	AX BX CX SI DI DS
 		MOV	ES:Search.SrTblDecode.Offs,SI
 		MOV	ES:Search.SrTblDecode.Segm,DS
 		MOV	BX,DS:[SI].Translate
@@ -1349,8 +1369,7 @@ SrchChar2	PROC	NEAR
 		INC	SI
 SrchChar2	ENDP
 
-SrchChar1	PROC	NEAR
-		USES	DS
+SrchChar1	PROC	NEAR	USES	DS
 		MOV	DS,ES:Search.SrTblDecode.Segm
 		CALL	DS:[BX].Translate
 		RET
@@ -1364,8 +1383,7 @@ SrchChar1	ENDP
 ;		   AL - text / hex substring
 ;		   CY - not found
 ;---------------------------------------------------------------
-SearchNext	PROC	NEAR
-		USES	BX,CX,DX,DI,BP
+SearchNext	PROC	NEAR	USES	BX CX DX DI BP
 		PUSH	SI
 		PUSH	SI
 		CALL	Search1
@@ -1442,8 +1460,7 @@ SearchNext	ENDP
 ;		   AL - text / hex substring
 ;		   CY - not found
 ;---------------------------------------------------------------
-SearchPrev	PROC	NEAR
-		USES	BX,CX,DX,DI,BP
+SearchPrev	PROC	NEAR	USES	BX CX DX DI BP
 		CALL	Search1
 		PUSH	CX
 		PUSH	SI
@@ -1829,7 +1846,7 @@ TableSelect	PROC	FAR
 		POP	SI
 		CLC
 		JMP	@@SetParam
-  @@ChkErr:	CMP	AX,53h
+  @@ChkErr:	CMP	AX,WORD PTR 53h
 		JE	@@ExitErr
   @@Error:	MOV	DX,BP
 		MOV	BP,OFFSET TblError_B
@@ -1850,8 +1867,8 @@ TableSelect	PROC	FAR
   @@Exit:	RET
 TableSelect	ENDP
 
-TableRead	PROC	NEAR			; Read tables
-		USES	CX
+; Read tables
+TableRead	PROC	NEAR	USES	CX
 		MOV	DS:TblPath,AL
 		PUSH	DI
 		MOV	DX,OFFSET TblMask
@@ -1978,13 +1995,13 @@ TableRead	PROC	NEAR			; Read tables
   @@Next:	INC	BX
 		INC	BX
 		JMP	@@FindNext
-  @@ChkErr:	CMP	AX,53h
+  @@ChkErr:	CMP	AX,WORD PTR 53h
 		JE	@@Error
   @@Skip:	MOV	DI,DS:[BX]
   @@FindNext:	MOV	AH,4Fh
   @@FindFile:	CALL	Intr21
 		JNC	@@ChkSize
-		XOR	AX,53h
+		XOR	AX,WORD PTR 53h
 		JNE	@@Exit
   @@Error:	STC
   @@Exit:	CALL	CloseFindFile
@@ -2002,18 +2019,17 @@ TableFill	PROC	NEAR			; Fill symbols 0-127
 TableFill	ENDP
 
 		.CODE	Subs
-TableLine	PROC	NEAR
-		USES	AX,CX,SI,DI,ES
+TableLine	PROC	NEAR	USES	AX CX SI DI ES
 		MOV	AX,SI
 		SUB	AX,DI
 		ADD	BX,DS:ListBase
 		ADD	BH,AL
 		MOV	AX,SI
-		ADD	AX,'1'
-		CMP	AX,'9'
+		ADD	AX,WORD PTR '1'
+		CMP	AX,WORD PTR '9'
 		JBE	@@HotKey
-		ADD	AX,'A'-'9'-1
-		CMP	AX,'Z'
+		ADD	AX,WORD PTR 'A'-'9'-1
+		CMP	AX,WORD PTR 'Z'
 		JBE	@@HotKey
 		MOV	AL,' '
   @@HotKey:	PUSH	AX

@@ -25,8 +25,8 @@ Vw100pc		DB	?		; 100% displayed
 VwSrTextHex	DB	?		; String was found in Text/Hex mode
 VwSrLen		DW	?		; Length of the found string
 VwSearch	DD	?		; Search offset
-VwTbl		TblData	?		; Translation table
-VwBuffer	LABEL	BYTE		; View data
+VwTbl		TblData	<>		; Translation table
+VwBuffer	EQU	BYTE PTR $	; View data
 ViewData	ENDS
 
 		.CONST
@@ -320,7 +320,12 @@ V00_15:		CALL	ViewMain
 V00_16:		CALL	MouseCtrlO
 		JNC	V00_10
 
-V01_00:		XOR	BX,BX			; ^O - user screen
+IFDEF	__JWASM__
+V01_00::
+ELSE
+V01_00:
+ENDIF
+		XOR	BX,BX			; ^O - user screen
 		MOV	DL,ES:Columns
 		MOV	DH,1
 		CALL	SavWin
@@ -354,7 +359,12 @@ V01_03:		MOV	ES:KeyBar,1
 		CALL	Window
 		JMP	V00_07
 
-V02_00:		MOV	BX,DS:VwHandle		; Exit
+IFDEF	__JWASM__
+V02_00::
+ELSE
+V02_00:
+ENDIF
+		MOV	BX,DS:VwHandle		; Exit
 		CMP	BX,0FFFEh
 		JAE	V02_01
 		MOV	AH,3Eh
@@ -460,10 +470,20 @@ V10_09:		CALL	Case
 		CMP	AL,' '
 		JB	V10_22
 		JMP	V27_10
-V10_10:		CALL	ViewStatus		; Output screen
+IFDEF	__JWASM__
+V10_10::
+ELSE
+V10_10:
+ENDIF
+		CALL	ViewStatus		; Output screen
 		CALL	ViewScreen
 		JNC	V10_20
-V10_11:		CALL	ViewChk100
+IFDEF	__JWASM__
+V10_11::
+ELSE
+V10_11:
+ENDIF
+		CALL	ViewChk100
 		JNC	V10_20
 		CALL	ViewReadMore
 		JNC	V10_12
@@ -483,9 +503,19 @@ V10_12:		MOV	AX,DS:VwSpace
 		CALL	ViewScreen
 		JNC	V10_20
 		CALL	ViewChk100
-V10_20:		CMP	ES:MouseWin,0
+IFDEF	__JWASM__
+V10_20::
+ELSE
+V10_20:
+ENDIF
+		CMP	ES:MouseWin,0
 		JNZ	V10_00
-V10_21:		XOR	AX,AX
+IFDEF	__JWASM__
+V10_21::
+ELSE
+V10_21:
+ENDIF
+		XOR	AX,AX
 V10_22:		MOV	ES:MouseWin,0
 		MOV	ES:MouseCmd,0
 		RET
@@ -835,7 +865,7 @@ V25_01:		MOV	AX,CX
 		MOV	BX,DX
 		OR	CX,DX
 		JE	V25_02
-		SUB	AX,1
+		SUB	AX,WORD PTR 1
 		SBB	BX,0
 V25_02:		CALL	V25_10
 		JMP	V10_10
@@ -981,8 +1011,7 @@ V26_00:		MOV	ES:Quote,1		; ^Q - quote
 		CALL	V26_10
 		JMP	V10_20
 
-V26_10		PROC	NEAR
-		USES	BX,DX,ES
+V26_10		PROC	NEAR	USES	BX DX ES
 		CMP	DS:VwStatus,OFFSET ViewStat0
 		JNE	@@Exit
 		MOV	BH,0
@@ -1014,7 +1043,7 @@ V27_10:		MOV	ES:VwSrchSymb,AL
 
 		.CODE	Subs
 V27_20		PROC	NEAR
-		CMP	AX,0FFFFh
+		CMP	AX,WORD PTR 0FFFFh
 		JNE	@@Exit
 		MOV	AL,ES:VwSrchSymb
 		CMP	AL,0
@@ -1129,8 +1158,7 @@ V28_23:		MOV	SI,DS:VwOffset.Lo
 		RET
 V28_20		ENDP
 
-V28_30		PROC	NEAR
-		USES	DS
+V28_30		PROC	NEAR	USES	DS
 		CALL	TstBrk
 		JC	V28_33
 		MOV	AL,ES:Lines
@@ -1154,8 +1182,8 @@ V28_31:		MOV	SI,DS:VwSearch.Lo
 		MOV	DS,ES:UserScreen
 		CALL	ViewFileRead
 		JNC	V28_32
-		XOR	AX,53h
-		CMP	AX,1
+		XOR	AX,WORD PTR 53h
+		CMP	AX,WORD PTR 1
 V28_32:		MOV	SI,BP
 		MOV	AX,DS
 V28_33:		RET
@@ -1334,7 +1362,7 @@ ViewInit	PROC	FAR
 		MOV	AL,40h
 		CALL	OpenFil
 		JNC	@@Break
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@Error
 		OR	CL,CL
 		JNE	@@Error
@@ -1398,8 +1426,7 @@ ViewInit	ENDP
 ;---------------------------------------------------------------
 ;	Output status line
 ;---------------------------------------------------------------
-ViewStatus	PROC	FAR
-		USES	AX,BX
+ViewStatus	PROC	FAR	USES	AX BX
 		MOV	DS:Vw100pc,0
 		MOV	BX,DS:VwStatus
 		OR	BX,BX
@@ -1409,8 +1436,8 @@ ViewStatus	PROC	FAR
   @@Exit:	RET
 ViewStatus	ENDP
 
-ViewStat0	PROC	NEAR			; Full screen view
-		USES	AX,BX,CX,DX,SI,DI
+; Full screen view
+ViewStat0	PROC	NEAR	USES	AX BX CX DX SI DI
 		MOV	CX,100
 		CMP	AL,0
 		JNZ	@@PutPerCent
@@ -1452,21 +1479,19 @@ ViewStat0	PROC	NEAR			; Full screen view
 		RET
 ViewStat0	ENDP
 
-ViewStat1a	PROC	NEAR			; Quick view
-		USES	BX,DX
+; Quick view
+ViewStat1a	PROC	NEAR	USES	BX DX
 		CALL	ViewStat1
 		RET
 ViewStat1a	ENDP
 
-ViewStat1b	PROC	NEAR
-		USES	BX,DX
+ViewStat1b	PROC	NEAR	USES	BX DX
 		CALL	ViewStat1
 		CALL	Window
 		RET
 ViewStat1b	ENDP
 
-ViewStat1	PROC	NEAR
-		USES	AX,CX,SI,DI
+ViewStat1	PROC	NEAR	USES	AX CX SI DI
 		MOV	CX,100
 		CMP	AL,0
 		JNZ	@@PutPerCent
@@ -1509,8 +1534,7 @@ ViewCalcPerCent	PROC	NEAR
   @@Exit:	RET
 ViewCalcPerCent	ENDP
 
-ViewPutPerCent	PROC	NEAR
-		USES	DS,ES
+ViewPutPerCent	PROC	NEAR	USES	DS ES
 		PUSH	BX
 		XOR	BX,BX
 		MOV	DI,OFFSET TmpBuf[0]
@@ -1532,8 +1556,7 @@ ViewPutPerCent	ENDP
 ;---------------------------------------------------------------
 ;	Output screen if size changed
 ;---------------------------------------------------------------
-ViewReload	PROC	NEAR
-		USES	AX,BX,CX,DX,SI,BP
+ViewReload	PROC	NEAR	USES	AX BX CX DX SI BP
 		MOV	BX,DS:VwHandle
 		CMP	BX,0FFFEh
 		JAE	@@Exit
@@ -1621,8 +1644,7 @@ ViewEndLine	ENDP
 ;	Output screen
 ;	Return:	   CY - end found
 ;---------------------------------------------------------------
-ViewScreen	PROC	NEAR
-		USES	BX,DX
+ViewScreen	PROC	NEAR	USES	BX DX
 		CALL	ViewScreen0
 		PUSHF
 		MOV	BX,DS:VwBase
@@ -1632,8 +1654,7 @@ ViewScreen	PROC	NEAR
 		RET
 ViewScreen	ENDP
 
-ViewScreen0	PROC	FAR
-		USES	AX,BX,CX,DI,BP
+ViewScreen0	PROC	FAR	USES	AX BX CX DI BP
 		MOV	BX,DS:VwBase		; Clear window
 		MOV	CL,DS:VwSize.Y
 		MOV	CH,0
@@ -1664,8 +1685,7 @@ ViewScreen0	ENDP
 ;	Clear line
 ;		BH BL - base
 ;---------------------------------------------------------------
-ViewClrLine	PROC	NEAR
-		USES	AX,CX,DI,ES
+ViewClrLine	PROC	NEAR	USES	AX CX DI ES
 		MOV	CL,DS:VwSize.X
 		MOV	CH,0
 		MOV	AH,Back_C
@@ -1680,8 +1700,7 @@ ViewClrLine	ENDP
 ;	Check end of file is loaded
 ;	Return:	   CY - not loaded
 ;---------------------------------------------------------------
-ViewChkEnd	PROC	NEAR
-		USES	AX,BX
+ViewChkEnd	PROC	NEAR	USES	AX BX
 		MOV	AX,DS:VwOffset.Lo
 		MOV	BX,DS:VwOffset.Hi
 		ADD	AX,DS:VwLoaded
@@ -1696,8 +1715,7 @@ ViewChkEnd	ENDP
 ;	Check end of file is loaded, output 100%
 ;	Return:	   CY - not loaded
 ;---------------------------------------------------------------
-ViewChk100	PROC	NEAR
-		USES	AX,BX
+ViewChk100	PROC	NEAR	USES	AX BX
 		CALL	ViewChkEnd
 		JC	@@Exit
 		MOV	DS:Vw100pc,1
@@ -1716,8 +1734,7 @@ ViewChk100	ENDP
 ;	Return:    SI - offset of the beginning of line
 ;		   CY - not found
 ;---------------------------------------------------------------
-ViewBegLine	PROC	NEAR
-		USES	AX,BX,CX,DX,DI,BP
+ViewBegLine	PROC	NEAR	USES	AX BX CX DX DI BP
 		CMP	DS:VwTextHex,0
 		JNZ	@@Hex
 		MOV	DH,DS:VwWrap
@@ -1725,7 +1742,7 @@ ViewBegLine	PROC	NEAR
 		MOV	CX,SI
 		ADD	SI,OFFSET VwBuffer-1
 		STD
-		JCXZ	@@Found
+		JLONG	JCXZ,	@@Found
 		MOV	BP,OFFSET ViewGetChar1
 		CMP	DS:VwTbl.Translate,OFFSET TransDBCS
 		JNE	@@Char
@@ -1829,7 +1846,7 @@ ViewBegLine	PROC	NEAR
 		MOV	BX,DS:VwOffset.Lo
 		MOV	AX,DS:VwOffset.Hi
 		ADD	BX,SI
-		ADC	AX,0
+		ADC	AX,WORD PTR 0
 		XOR	DX,DX
 		DIV	DS:VwHexSize
 		MOV	AX,BX
@@ -1866,8 +1883,7 @@ ViewGetChar2	ENDP
 ;	Return:	   SI - offset of next line
 ;		   CY - not found
 ;---------------------------------------------------------------
-ViewNextLine	PROC	NEAR
-		USES	AX,BX,CX,DX,DI,BP
+ViewNextLine	PROC	NEAR	USES	AX BX CX DX DI BP
 		MOV	DI,SI
 		CMP	DS:VwTextHex,0
 		JNZ	@@Hex
@@ -1980,8 +1996,7 @@ ViewPrevLine	ENDP
 ;	Return:	   SI - offset of previous line
 ;		   CY - not found
 ;---------------------------------------------------------------
-ViewPrevLines	PROC	NEAR
-		USES	AX,DI
+ViewPrevLines	PROC	NEAR	USES	AX DI
 		MOV	WORD PTR ES:TmpBuf[0],0
   @@Line:	MOV	DI,WORD PTR ES:TmpBuf[0]
 		CMP	DI,OFFSET TmpBuf+2
@@ -2008,11 +2023,10 @@ ViewPrevLines	ENDP
 ;		   AL - line number
 ;		   SI - line offset
 ;---------------------------------------------------------------
-ViewPutLine	PROC	NEAR
+ViewPutLine	PROC	NEAR	USES	AX BX CX DX SI DI
 		LOCAL	PatStart:WORD
 		LOCAL	PatEnd  :WORD
 		LOCAL	Limit	:WORD
-		USES	AX,BX,CX,DX,SI,DI
 		MOV	BX,DS:VwBase
 		ADD	BH,AL
 		PUSH	ES
@@ -2145,7 +2159,13 @@ ViewPutLine	PROC	NEAR
 		MOV	AH,Cursr_C
 		CALL	Color
   @@GetByte:	CMP	SI,Limit
+IF	__TASMIDENT__
+		JB	@F
+		JMP	NEAR PTR @@ExitHex
+  @@:
+ELSE
 		JAE	@@ExitHex
+ENDIF
 		LODSB
 		CALL	ViewHexByte
 		INC	BX
@@ -2238,8 +2258,7 @@ ViewPutLine	ENDP
 ;		   BX - offset
 ;	Return:	   BX - offset
 ;---------------------------------------------------------------
-ViewHexByte	PROC	NEAR
-		USES	AX
+ViewHexByte	PROC	NEAR	USES	AX
 		CALL	HexByt
 		CALL	ViewOutChar
 		MOV	AL,AH
@@ -2254,8 +2273,7 @@ ViewHexByte	ENDP
 ;		   BX - offset
 ;	Return:	   BX - offset
 ;---------------------------------------------------------------
-ViewOutChar	PROC	NEAR
-		USES	DS
+ViewOutChar	PROC	NEAR	USES	DS
 		PUSH	BX
 		SUB	BX,DS:VwColHex
 		JBE	@@Exit
@@ -2277,8 +2295,7 @@ ViewOutChar	ENDP
 ;		   AH - color
 ;		   BX - offset
 ;---------------------------------------------------------------
-ViewOutColor	PROC	NEAR
-		USES	DS
+ViewOutColor	PROC	NEAR	USES	DS
 		PUSH	BX
 		SUB	BX,DS:VwColHex
 		JBE	@@Exit
@@ -2301,8 +2318,7 @@ ViewOutColor	ENDP
 ;		DI SI - offset in file
 ;	Return:	   CY - error, AX - error code
 ;---------------------------------------------------------------
-ViewFileRead	PROC	NEAR
-		USES	BX,DX,BP
+ViewFileRead	PROC	NEAR	USES	BX DX BP
 		PUSH	ES
 		PUSH	DI
 		PUSH	CX
@@ -2326,7 +2342,7 @@ ViewFileRead	PROC	NEAR
 		POP	DS
 		MOV	DX,OFFSET DirInfoFile
 		MOV	AX,DS:DirInfoNumb
-		CMP	AX,0FFFFh
+		CMP	AX,WORD PTR 0FFFFh
 		JE	@@Open
 		PUSH	DI
 		PUSH	SI
@@ -2382,8 +2398,7 @@ ViewFileRead	ENDP
 ;	Read more data in buffer
 ;	Return:	   NC - no data loaded
 ;---------------------------------------------------------------
-ViewReadMore	PROC	NEAR
-		USES	AX,BX,CX,DX,SI,DI
+ViewReadMore	PROC	NEAR	USES	AX BX CX DX SI DI
 		MOV	DX,DS:VwSpace
 		MOV	AX,DS:VwLen.Lo
 		MOV	BX,DS:VwLen.Hi
@@ -2411,16 +2426,14 @@ ViewReadMore	ENDP
 ;---------------------------------------------------------------
 ;	Read next part
 ;---------------------------------------------------------------
-ViewReadNext	PROC	NEAR
-		USES	AX
+ViewReadNext	PROC	NEAR	USES	AX
 		MOV	AX,DS:VwSpace
 		SHR	AX,1
 		CALL	ViewReadNext1
 		RET
 ViewReadNext	ENDP
 
-ViewReadNext1	PROC	NEAR
-		USES	CX,SI,DI
+ViewReadNext1	PROC	NEAR	USES	CX SI DI
 		MOV	SI,DS:VwLen.Lo
 		MOV	DI,DS:VwLen.Hi
 		SUB	SI,DS:VwOffset.Lo
@@ -2456,16 +2469,14 @@ ViewReadNext1	ENDP
 ;---------------------------------------------------------------
 ;	Read previous part
 ;---------------------------------------------------------------
-ViewReadPrev	PROC	NEAR
-		USES	AX
+ViewReadPrev	PROC	NEAR	USES	AX
 		MOV	AX,DS:VwSpace
 		SHR	AX,1
 		CALL	ViewReadPrev1
 		RET
 ViewReadPrev	ENDP
 
-ViewReadPrev1	PROC	NEAR
-		USES	BX,CX,DX,SI,DI
+ViewReadPrev1	PROC	NEAR	USES	BX CX DX SI DI
 		MOV	DX,AX
 		CMP	DS:VwOffset.Hi,0
 		JNE	@@SetOffset
@@ -2509,8 +2520,7 @@ ViewReadPrev1	ENDP
 ;	Scroll screen up / down
 ;		   AH - 6-down, 7-up
 ;---------------------------------------------------------------
-ViewScroll	PROC	NEAR
-		USES	AX,BX,CX,DX,SI,DI
+ViewScroll	PROC	NEAR	USES	AX BX CX DX SI DI
 		MOV	CL,DS:VwSize.Y
 		MOV	CH,0
 		DEC	CX

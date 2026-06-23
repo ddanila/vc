@@ -154,7 +154,11 @@ F37_00		ENDP
 F47_00		PROC	NEAR			; Shift F7 - make directory (raw path)
 		MOV	CL,0                    ; f_mkdir_path = RAW
 
+IFDEF	__JWASM__
+MkDir_dialog_impl::
+ELSE
 MkDir_dialog_impl:
+ENDIF
 		PUSH	ES
 		POP	DS
 		MOV	SI,OFFSET LineBuf1
@@ -213,7 +217,7 @@ MkDir_dialog_impl:
   @@MkDir1:	MOV	AH,39h
 		CALL	Intr21			; mkdir()
 		JNC	@@MkDir2
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	Func04			; Critical Error(int 24h)
 		MOV	SI,DX
 		CALL	CutPath
@@ -242,7 +246,7 @@ MkDir_dialog_impl:
 		JNC	@@MkDir2
 		MOV	BYTE PTR [DI-1],0	; make valid path for @@UpdateTreePanelPath
 
-  @@Error:	CMP	AX,53h
+  @@Error:	CMP	AX,WORD PTR 53h
 		JE	Func04                  ; Critical Error(int 24h)
 
   @@DispErrorDialog:
@@ -278,7 +282,7 @@ MkDir_dialog_impl:
 		MOV	AX,CX
 		REPE	CMPSB
 		JNE	@@UpdateTreeInfo
-		CMP	AX,3
+		CMP	AX,WORD PTR 3
 		JE	@@GetActivePanelBuf_Size ; rootdir
 		LODSB
 		CMP	AL,'\'
@@ -311,7 +315,7 @@ MkDir_dialog_impl:
 		POP	ES			; WCBcrn - Active panel pointer
 		SUB	DX,ES:EndBuf
 		MOV	AX,CX
-		ADD	AX,SIZE FilEnt
+		ADD	AX,WORD PTR SIZE FilEnt
 		CMP	AX,DX
 		JA	@@UpdateTreeInfo	; skip - too many files in the panel
 		MOV	SI,ES:EndBuf

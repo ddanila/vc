@@ -11,8 +11,7 @@
 ;		   AH - color
 ;---------------------------------------------------------------
 		.CODE	Subs
-MinBox		PROC	FAR
-		USES	AX,CX,DI
+MinBox		PROC	FAR	USES	AX CX DI
 		MOV	ES,CS:DataSegment
 		MOV	AL,0
 		MOV	ES:Quote,AL
@@ -62,8 +61,8 @@ MinBox		PROC	FAR
 		RET
 MinBox		ENDP
 
-MinBxTick	PROC	NEAR			; Wait for tick
-		USES	CX,DX
+; Wait for tick
+MinBxTick	PROC	NEAR	USES	CX DX
   @@WaitTick:	CALL	Timer
 		CMP	DX,DI
 		JE	@@WaitTick
@@ -93,8 +92,7 @@ MinBxCorr	ENDP
 ;		DH,DL - size
 ;		   AH - color
 ;---------------------------------------------------------------
-ShadBox		PROC	FAR
-		USES	AX,BX,CX,DX,SI,DI,ES
+ShadBox		PROC	FAR	USES	AX BX CX DX SI DI ES
 		MOV	CL,DH
 		MOV	CH,0
 		MOV	DI,CX
@@ -141,8 +139,7 @@ ShadBox		ENDP
 ;		 └┬┘ └───────────────┘ └┬┘
 ;		  CX         DX         CX
 ;---------------------------------------------------------------
-BoxDubl		PROC	FAR
-		USES	AX,CX,SI,DI
+BoxDubl		PROC	FAR	USES	AX CX SI DI
 		MOV	SI,CX
 		MOV	CX,WORD PTR ES:Borders[0]
 		MOV	AL,ES:Borders[2]
@@ -166,8 +163,7 @@ BoxDubl		ENDP
 ;		 └┬┘|└──────────┬──────────┘|└┬┘
 ;		 SI CL         DX(AL)      CH SI
 ;---------------------------------------------------------------
-ShadLin		PROC	FAR
-		USES	DI,ES
+ShadLin		PROC	FAR	USES	DI ES
 		CALL	BasAdr
 		CALL	BoxLn0
 		CALL	Shadow
@@ -176,16 +172,14 @@ ShadLin		PROC	FAR
 		RET
 ShadLin		ENDP
 
-BoxLine		PROC	FAR
-		USES	DI,ES
+BoxLine		PROC	FAR	USES	DI ES
 		CALL	BasAdr
 		CALL	BoxLn0
 		INC	BH
 		RET
 BoxLine		ENDP
 
-BoxLn0		PROC	FAR
-		USES	AX,CX
+BoxLn0		PROC	FAR	USES	AX CX
 		PUSH	AX
 		PUSH	CX
 		MOV	CX,SI
@@ -225,8 +219,7 @@ BoxLn0		ENDP
 ;		DH,DL - size
 ;---------------------------------------------------------------
 		.CODE	Subs
-OncZoom		PROC	FAR
-		USES	AX
+OncZoom		PROC	FAR	USES	AX
 		MOV	AL,ES:ZoomWin
 		CMP	ES:ZoomOne,0
 		JZ	@@DialBox
@@ -258,8 +251,7 @@ OncZoom		ENDP
 ;	Return:	BH,BL - begin
 ;		DH,DL - size
 ;---------------------------------------------------------------
-DialBox		PROC	FAR
-		USES	AX,CX,SI,DI,DS
+DialBox		PROC	FAR	USES	AX CX SI DI DS
 		CALL	HidCur
 		PUSH	DX
 		CMP	BL,1
@@ -403,9 +395,20 @@ DialBox		ENDP
 ;			^nnnQs1/s2/	- insert string s1 if 1, or s2 if not
 ;	Return:	   AX - length of string (if AL was 0)
 ;---------------------------------------------------------------
+IFDEF	__TASMIDENT__
 NgLine		PROC	FAR
-		LOCAL	StringBuf:BYTE:128
-		USES	BX,CX,DI,ES
+ELSE
+NgLine		PROC	FAR	USES	BX CX DI ES
+ENDIF
+		LOCAL	StringBuf[128]:BYTE
+; XXX JWASM uses add sp,byte -0x80 instead of sub sp, 0x80
+IFDEF	__TASMIDENT__
+		NOP
+		PUSH	BX
+		PUSH	CX
+		PUSH	DI
+		PUSH	ES
+ENDIF
 		PUSH	AX
 		CALL	BasAdr
 		CMP	AL,0
@@ -650,7 +653,14 @@ NgLine		PROC	FAR
 		CMP	BL,0FFh
 		JNE	@@NoReturn
 		MOV	AX,DI
-  @@NoReturn:	RET
+  @@NoReturn:
+IFDEF	__TASMIDENT__
+		POP	ES
+		POP	DI
+		POP	CX
+		POP	BX
+ENDIF
+		RET
 NgLine		ENDP
 
 NgLnSaveChar	PROC	NEAR			; Save Char
@@ -677,8 +687,7 @@ NgLnHexByte	PROC	NEAR			; Write hex byte
 		RET
 NgLnHexByte	ENDP
 
-NgLnFillChar	PROC	NEAR
-		USES	CX
+NgLnFillChar	PROC	NEAR	USES	CX
 		AND	CX,7Fh
 		JE	@@Exit
   @@NextDup:	CALL	NgLnSaveChar
@@ -693,8 +702,7 @@ NgLnFillChar	ENDP
 ;		CS:DX - address of points table
 ;		CS:BP - address of color table
 ;---------------------------------------------------------------
-CntLine		PROC	FAR
-		USES	AX,BX
+CntLine		PROC	FAR	USES	AX BX
 		PUSH	SI
 		MOV	AL,0
 		CALL	NgLine
@@ -748,8 +756,7 @@ Dial3_T		DW	0005h, DialogHistUp
 		DW	0
 
 		.CODE	Subs
-Dialog		PROC	FAR
-		USES	BX,CX,DX,SI,DI
+Dialog		PROC	FAR	USES	BX CX DX SI DI
 		MOV	AL,0
 		MOV	ES:Quote,AL
 		XCHG	ES:MinMnuFlag,AL
@@ -951,7 +958,12 @@ Dialog		PROC	FAR
 		CALL	Case
 		POP	SI
 		JMP	@@DialEnd
-DialogHistUp:	POP	SI			; History Up
+IFDEF	__JWASM__
+DialogHistUp::
+ELSE
+DialogHistUp:
+ENDIF
+		POP	SI			; History Up
 		POP	DS
 		POP	BP
 		MOV	AL,2
@@ -960,7 +972,12 @@ DialogHistUp:	POP	SI			; History Up
 		JNE	@@DialHist1
 		DEC	AH
 		JMP	@@DialHist1
-DialogHistDn:	POP	SI			; History Down
+IFDEF	__JWASM__
+DialogHistDn::
+ELSE
+DialogHistDn:
+ENDIF
+		POP	SI			; History Down
 		POP	DS
 		POP	BP
 		MOV	AL,0
@@ -1085,16 +1102,30 @@ DialogHistDn:	POP	SI			; History Down
 		MOV	SI,OFFSET Dial2_T
 		CALL	Case
 		JMP	@@DialNext
+IFDEF	__JWASM__
+DialogHelp::
+ELSE
 DialogHelp:
+ENDIF
 ;		CALL	Help			; Help
 		JMP	@@DialNext
-DialogTab:	ADD	DI,SIZE BoxMn		; Tab
+IFDEF	__JWASM__
+DialogTab::
+ELSE
+DialogTab:
+ENDIF
+		ADD	DI,SIZE BoxMn		; Tab
 		CMP	CS:[DI].mType,0
 		JNE	@@DialNext
 		MOV	DI,[BP]
 		ADD	DI,SIZE BoxHd
 		JMP	@@DialNext
-DialogShTab:	SUB	DI,SIZE BoxMn		; Shift-Tab
+IFDEF	__JWASM__
+DialogShTab::
+ELSE
+DialogShTab:
+ENDIF
+		SUB	DI,SIZE BoxMn		; Shift-Tab
 		MOV	SI,[BP]
 		ADD	SI,SIZE BoxHd
 		CMP	DI,SI
@@ -1235,21 +1266,46 @@ DialogShTab:	SUB	DI,SIZE BoxMn		; Shift-Tab
 		JMP	@@DialNext
   @@GoToCas1:	JMP	@@GoToCase
 
-DialogUp:	MOV	AL,CS:[DI].mUp		; Up
+IFDEF	__JWASM__
+DialogUp::
+ELSE
+DialogUp:
+ENDIF
+		MOV	AL,CS:[DI].mUp		; Up
 		JMP	@@SetNext
-DialogDown:	MOV	AL,CS:[DI].mDown	; Down
+IFDEF	__JWASM__
+DialogDown::
+ELSE
+DialogDown:
+ENDIF
+		MOV	AL,CS:[DI].mDown	; Down
 		JMP	@@SetNext
-DialogLeft:	MOV	AL,CS:[DI].mLeft	; Left
+IFDEF	__JWASM__
+DialogLeft::
+ELSE
+DialogLeft:
+ENDIF
+		MOV	AL,CS:[DI].mLeft	; Left
 		JMP	@@SetNext
-DialogRight:	MOV	AL,CS:[DI].mRight	; Right
+IFDEF	__JWASM__
+DialogRight::
+ELSE
+DialogRight:
+ENDIF
+		MOV	AL,CS:[DI].mRight	; Right
 		JMP	@@SetNext
-DialogHome:	MOV	AL,80h			; Home, PgUp
+IFDEF	__JWASM__
+DialogHome::
+ELSE
+DialogHome:
+ENDIF
+		MOV	AL,80h			; Home, PgUp
   @@SetNext:	PUSH	AX
 		AND	AL,3Fh
 		MOV	AH,SIZE BoxMn
 		MUL	AH
 		ADD	AX,[BP]
-		ADD	AX,SIZE BoxHd
+		ADD	AX,WORD PTR SIZE BoxHd
 		MOV	DI,AX
 		POP	AX
 		CMP	CS:[DI].mType,w_Radio
@@ -1264,15 +1320,30 @@ DialogHome:	MOV	AL,80h			; Home, PgUp
   @@SetVar:	CALL	DialogBuf
 		MOV	SS:[SI+1],AL
 		JMP	@@DialNext
-DialogEnd:	CALL	DialogLast		; End
+IFDEF	__JWASM__
+DialogEnd::
+ELSE
+DialogEnd:
+ENDIF
+		CALL	DialogLast		; End
 		CMP	CS:[DI].mType,w_Button
 		JNE	DialogPgDn
 		CALL	DialogBuf
 		MOV	BYTE PTR SS:[SI],0
-DialogPgDn:	CALL	DialogLast		; PgDn
+IFDEF	__JWASM__
+DialogPgDn::
+ELSE
+DialogPgDn:
+ENDIF
+		CALL	DialogLast		; PgDn
 		JMP	@@DialNext
 
-DialogEnter:	XOR	AX,AX			; Enter
+IFDEF	__JWASM__
+DialogEnter::
+ELSE
+DialogEnter:
+ENDIF
+		XOR	AX,AX			; Enter
 		CMP	CS:[DI].mType,w_Button
 		JNE	@@SaveVars
 		CALL	DialogBuf
@@ -1345,7 +1416,12 @@ DialogEnter:	XOR	AX,AX			; Enter
   @@SaveNext:	POP	DI
 		ADD	DI,SIZE BoxMn
 		JMP	@@SaveVar
-DialogEsc:	MOV	AL,0FFh			; Esc
+IFDEF	__JWASM__
+DialogEsc::
+ELSE
+DialogEsc:
+ENDIF
+		MOV	AL,0FFh			; Esc
   @@Exit:	MOV	SP,BP
 		POP	BP
 		CALL	HidCur
@@ -1374,8 +1450,8 @@ DialogBase	PROC	NEAR			; Set base coordinates
   @@Exit:	RET
 DialogBase	ENDP
 
-DialogBuf	PROC	NEAR			; Find buffer
-		USES	AX,CX
+; Find buffer
+DialogBuf	PROC	NEAR	USES	AX CX
 		MOV	AX,BP
 		MOV	SI,[BP]
 		ADD	SI,SIZE BoxHd
@@ -1399,7 +1475,7 @@ DialogBuf	PROC	NEAR			; Find buffer
 		JBE	@@InLen2
 		XCHG	CL,CH
   @@InLen2:	SUB	AX,CX
-		SUB	AX,5
+		SUB	AX,WORD PTR 5
   @@CmpBuf:	CMP	SI,DI
 		JAE	@@DialInit
 		ADD	SI,SIZE BoxMn
@@ -1416,8 +1492,7 @@ DialogLast	PROC	NEAR
 		RET
 DialogLast	ENDP
 
-DialogSubFunc	PROC	NEAR
-		USES	BX,CX,DX,SI,DI,BP,DS,ES
+DialogSubFunc	PROC	NEAR	USES	BX CX DX SI DI BP DS ES
 		CMP	CS:[SI].SubFunc,0
 		JE	@@Exit
 		MOV	DI,BP
@@ -1702,23 +1777,49 @@ DialogList	PROC	NEAR
 		MOV	AH,0
 		ADD	SI,AX
 		CMP	SI,DS:ListTotal
+IF	__TASMIDENT__
+		JB	@F
+		JMP	NEAR PTR ListEnd
+  @@:
+ELSE
 		JAE	ListEnd
+ENDIF
   @@MouseCor:	JMP	@@CorParam
-ListInit1:	MOV	DS:ListShift,0		; Init
+IFDEF	__JWASM__
+ListInit1::
+ELSE
+ListInit1:
+ENDIF
+		MOV	DS:ListShift,0		; Init
 		MOV	DS:ListLoop,0
 		MOV	DS:ListScrollBar,0
 		MOV	DS:ListMoveFlag,0
 		MOV	DS:ListCurFlag,0
 		MOV	DS:ListSelect,0
 		JMP	@@Clear
-ListInit2:	MOV	DI,8000h
+IFDEF	__JWASM__
+ListInit2::
+ELSE
+ListInit2:
+ENDIF
+		MOV	DI,8000h
 		XCHG	DI,DS:ListFirst
 		MOV	SI,DS:ListCursor
 		JMP	@@CorParam
-ListScroll:	MOV	SI,DS:ListTotal		; Scroll
+IFDEF	__JWASM__
+ListScroll::
+ELSE
+ListScroll:
+ENDIF
+		MOV	SI,DS:ListTotal		; Scroll
 		DEC	SI
 		JMP	@@CorParam
-ListUp:		MOV	SI,DS:ListCursor	; Up
+IFDEF	__JWASM__
+ListUp::
+ELSE
+ListUp:
+ENDIF
+		MOV	SI,DS:ListCursor	; Up
 		OR	SI,SI
 		JNE	@@Up1
 		CMP	DS:ListLoop,0
@@ -1728,7 +1829,12 @@ ListUp:		MOV	SI,DS:ListCursor	; Up
 		JMP	@@SetMove
   @@Up1:	DEC	SI
 		JMP	@@SetMove
-ListDown:	MOV	SI,DS:ListCursor	; Down
+IFDEF	__JWASM__
+ListDown::
+ELSE
+ListDown:
+ENDIF
+		MOV	SI,DS:ListCursor	; Down
 		INC	SI
 		CMP	SI,DS:ListTotal
 		JB	@@SetMove
@@ -1736,16 +1842,36 @@ ListDown:	MOV	SI,DS:ListCursor	; Down
 		JNE	@@Up1
 		CMP	DS:ListScrollBar,0
 		JNE	@@Up1
-ListHome:	XOR	SI,SI			; Home
+IFDEF	__JWASM__
+ListHome::
+ELSE
+ListHome:
+ENDIF
+		XOR	SI,SI			; Home
 		JMP	@@SetMove
-ListEnd:	MOV	SI,DS:ListTotal		; End
+IFDEF	__JWASM__
+ListEnd::
+ELSE
+ListEnd:
+ENDIF
+		MOV	SI,DS:ListTotal		; End
 		JMP	@@Up1
-ListPgUp:	MOV	SI,DS:ListCursor	; PgUp
+IFDEF	__JWASM__
+ListPgUp::
+ELSE
+ListPgUp:
+ENDIF
+		MOV	SI,DS:ListCursor	; PgUp
 		MOV	AL,DS:ListWindow.Y
 		MOV	AH,0
 		CALL	PageUp
 		JMP	@@SetMove
-ListPgDn:	PUSH	BP			; PgDn
+IFDEF	__JWASM__
+ListPgDn::
+ELSE
+ListPgDn:
+ENDIF
+		PUSH	BP			; PgDn
 		MOV	BP,DS:ListTotal
 		MOV	SI,DS:ListCursor
 		MOV	AL,DS:ListWindow.Y
@@ -1753,7 +1879,12 @@ ListPgDn:	PUSH	BP			; PgDn
 		CALL	PageDown
 		POP	BP
 		JMP	@@SetMove
-ListIns:	CMP	DS:ListSelect,0		; Ins
+IFDEF	__JWASM__
+ListIns::
+ELSE
+ListIns:
+ENDIF
+		CMP	DS:ListSelect,0		; Ins
 		JE	@@Exit
 		MOV	SI,DS:ListCursor
 		CMP	SI,DS:ListTotal
@@ -1785,9 +1916,19 @@ ListIns:	CMP	DS:ListSelect,0		; Ins
 		AND	BYTE PTR DS:[418h],7Fh
 		POP	DS
 		JMP	@@SetMove
-ListGreyPlus:	MOV	AL,1			; Grey +
+IFDEF	__JWASM__
+ListGreyPlus::
+ELSE
+ListGreyPlus:
+ENDIF
+		MOV	AL,1			; Grey +
 		JMP	@@SelAll
-ListGreyMinus:	MOV	AL,0			; Grey -
+IFDEF	__JWASM__
+ListGreyMinus::
+ELSE
+ListGreyMinus:
+ENDIF
+		MOV	AL,0			; Grey -
   @@SelAll:	CMP	DS:ListSelect,0
 		JE	@@Exit
 		XOR	SI,SI
@@ -1918,8 +2059,13 @@ ListGreyMinus:	MOV	AL,0			; Grey -
 		CALL	Window
   @@NoOut2:	POP	BX
 		POP	DX
-		JCXZ	@@ChkRet
-ListScrlBar:	MOV	AL,DS:ListWindow.Y	; Scroll bar
+		JLONG	JCXZ,	@@ChkRet
+IFDEF	__JWASM__
+ListScrlBar::
+ELSE
+ListScrlBar:
+ENDIF
+		MOV	AL,DS:ListWindow.Y	; Scroll bar
 		MOV	AH,0
 		CMP	AX,DS:ListTotal
 		JAE	@@ChkRet
@@ -2026,15 +2172,19 @@ ListScrlBar:	MOV	AL,DS:ListWindow.Y	; Scroll bar
 		JMP	@@LeaveTime
   @@Clear:	XOR	AX,AX
 		JMP	@@Exit
-ListEnter:	MOV	DS:ListKey,AX
+IFDEF	__JWASM__
+ListEnter::
+ELSE
+ListEnter:
+ENDIF
+		MOV	DS:ListKey,AX
   @@Exit:	MOV	DS:MouseWin,0
 		MOV	DS:MouseEnter,0
 		CALL	ResMouseCmd
 		RET
 DialogList	ENDP
 
-ListScrBar	PROC	NEAR
-		USES	DI,ES
+ListScrBar	PROC	NEAR	USES	DI ES
 		JCXZ	@@Exit
 		MOV	DX,101h
   @@Write:	CALL	BasAdr
@@ -2082,8 +2232,7 @@ InSt_T		DW	0009h, InpStrExit
 		DW	0
 
 		.CODE	Subs
-InpStr		PROC	NEAR
-		USES	DX,SI,BP
+InpStr		PROC	NEAR	USES	DX SI BP
 		MOV	DX,AX
   @@ResetMouse:	MOV	ES:MouseCmd,0
   @@PutStr:	MOV	AH,DH
@@ -2118,7 +2267,12 @@ InpStr		PROC	NEAR
 		CMP	AL,7Fh
 		JE	InpStrEdit
   @@ClrStr:	MOV	BYTE PTR DS:[BP],0
-InpStrEdit:	PUSH	CX
+IFDEF	__JWASM__
+InpStrEdit::
+ELSE
+InpStrEdit:
+ENDIF
+		PUSH	CX
 		OR	CH,CH
 		JE	@@InLen2
 		CMP	CL,InpModePoint
@@ -2158,7 +2312,12 @@ InpStrEdit:	PUSH	CX
 		INC	AX
 		MOV	DS:[SI-3],AX
 		JMP	@@PutStr
-InpStrFile:	PUSH	DS			; Insert file
+IFDEF	__JWASM__
+InpStrFile::
+ELSE
+InpStrFile:
+ENDIF
+		PUSH	DS			; Insert file
 		MOV	DS,ES:WCBcrn
 		CMP	DS:Visible,0
 		JZ	@@File2
@@ -2181,9 +2340,19 @@ InpStrFile:	PUSH	DS			; Insert file
   @@File2:	POP	DS
 		MOV	SI,BP
 		JMP	@@PutStr
-InpStrPath1:	MOV	AX,ES:WCB1seg		; Insert path
+IFDEF	__JWASM__
+InpStrPath1::
+ELSE
+InpStrPath1:
+ENDIF
+		MOV	AX,ES:WCB1seg		; Insert path
 		JMP	@@Path1
-InpStrPath2:	MOV	AX,ES:WCB2seg
+IFDEF	__JWASM__
+InpStrPath2::
+ELSE
+InpStrPath2:
+ENDIF
+		MOV	AX,ES:WCB2seg
   @@Path1:	PUSH	DS
 		MOV	DS,AX
 		CMP	DS:WinTyp,p_Tree
@@ -2355,16 +2524,30 @@ InpStrPath2:	MOV	AX,ES:WCB2seg
 		JMP	@@PutStr
   @@LeaveTime:	CALL	Yield
 		JMP	@@Mouse
-InpStrLeft:	OR	DI,DI
+IFDEF	__JWASM__
+InpStrLeft::
+ELSE
+InpStrLeft:
+ENDIF
+		OR	DI,DI
 		JNE	@@ChkClr
 		JMP	InpStrExit
-InpStrRight:	CMP	BYTE PTR DS:[BP+DI],0
+IFDEF	__JWASM__
+InpStrRight::
+ELSE
+InpStrRight:
+ENDIF
+		CMP	BYTE PTR DS:[BP+DI],0
 		JNE	@@ChkClr
-InpStrExit:	RET
+IFDEF	__JWASM__
+InpStrExit::
+ELSE
+InpStrExit:
+ENDIF
+		RET
 InpStr		ENDP
 
-InpStrOut	PROC	FAR
-		USES	CX,DX,SI,DI,ES
+InpStrOut	PROC	FAR	USES	CX DX SI DI ES
 		MOV	DX,WORD PTR ES:Scrolls
 		MOV	CH,0
 		CALL	BasAdr
@@ -2422,8 +2605,7 @@ Slct_T		DW	0020h, SelectSpace
 		DW	0
 
 		.CODE	Subs
-Select		PROC	NEAR
-		USES	DX,SI,DI
+Select		PROC	NEAR	USES	DX SI DI
 		MOV	DX,AX
 		MOV	AL,0
   @@SetCur:	PUSH	AX			; Cursor
@@ -2451,7 +2633,13 @@ Select		PROC	NEAR
 		XCHG	DI,CX
 		JZ	@@Input
 		CMP	AL,1
+IF	__TASMIDENT__
+		JE	@F
+		JMP	NEAR PTR SelectExit
+  @@:
+ELSE
 		JNE	SelectExit
+ENDIF
 		PUSH	DX
 		DEC	BX
 		CALL	LenItem
@@ -2469,10 +2657,20 @@ Select		PROC	NEAR
 		JMP	@@ChgPos
   @@LeaveTime:	CALL	Yield
 		JMP	@@Mouse
-SelectEnter:	CMP	CH,CL			; Enter
+IFDEF	__JWASM__
+SelectEnter::
+ELSE
+SelectEnter:
+ENDIF
+		CMP	CH,CL			; Enter
 		JNE	@@ChgPos
 		JMP	SelectExit
-SelectSpace:	CMP	CH,CL			; Space
+IFDEF	__JWASM__
+SelectSpace::
+ELSE
+SelectSpace:
+ENDIF
+		CMP	CH,CL			; Space
 		JNE	@@ChgPos
 		INC	CH
 		CMP	CH,DH
@@ -2497,22 +2695,46 @@ SelectSpace:	CMP	CH,CL			; Space
 		POP	ES
 		MOV	CL,CH
 		JMP	@@SetCur
-SelectUp:	OR	CH,CH			; Up
+IFDEF	__JWASM__
+SelectUp::
+ELSE
+SelectUp:
+ENDIF
+		OR	CH,CH			; Up
 		JE	SelectExit
 		DEC	CH
 		JMP	@@SetCur
-SelectDown:	INC	CH			; Down
+IFDEF	__JWASM__
+SelectDown::
+ELSE
+SelectDown:
+ENDIF
+		INC	CH			; Down
 		CMP	CH,DH
 		JB	@@SetCur
-SelectPgDn:	MOV	CH,DH			; End, PgDn
+IFDEF	__JWASM__
+SelectPgDn::
+ELSE
+SelectPgDn:
+ENDIF
+		MOV	CH,DH			; End, PgDn
 		DEC	CH
 		JMP	SelectExit
-SelectPgUp:	MOV	CH,0			; Home, PgUp
-SelectExit:	RET
+IFDEF	__JWASM__
+SelectPgUp::
+ELSE
+SelectPgUp:
+ENDIF
+		MOV	CH,0			; Home, PgUp
+IFDEF	__JWASM__
+SelectExit::
+ELSE
+SelectExit:
+ENDIF
+		RET
 Select		ENDP
 
-LenItem		PROC	NEAR
-		USES	DI,ES
+LenItem		PROC	NEAR	USES	DI ES
 		MOV	DL,0
 		CALL	BasAdr
   @@Check:	CMP	BYTE PTR ES:[DI],' '
@@ -2534,8 +2756,7 @@ LenItem		ENDP
 ;	Return:	   CL - parameter
 ;		   AX - key code
 ;---------------------------------------------------------------
-FlipFl		PROC	NEAR
-		USES	DX,DI
+FlipFl		PROC	NEAR	USES	DX DI
 		MOV	CH,AL
 		MOV	AX,BX
 		CALL	gotoxy
@@ -2603,8 +2824,7 @@ MnMn2_T		DW	4B00h, MnMnLeft
 		DW	0
 
 		.CODE	Subs
-MinMnu		PROC	NEAR
-		USES	SI,DI
+MinMnu		PROC	NEAR	USES	SI DI
 		CALL	HidCur
 		MOV	DI,SI
 		MOV	CH,AL
@@ -2736,7 +2956,12 @@ MnMn10		PROC	NEAR
   @@SetEnter:	MOV	AX,1C0Dh
   @@ExitNC:	CLC
 		RET
-MnMnLeft:	OR	CL,CL			; Left
+IFDEF	__JWASM__
+MnMnLeft::
+ELSE
+MnMnLeft:
+ENDIF
+		OR	CL,CL			; Left
 		JE	@@LastItem
 		DEC	CX
   @@ExitC:	STC
@@ -2745,18 +2970,33 @@ MnMnLeft:	OR	CL,CL			; Left
 		JE	@@ExitC
 		INC	CX
 		JMP	@@LastItem
-MnMnRight:	CALL	MnMn50			; Right
+IFDEF	__JWASM__
+MnMnRight::
+ELSE
+MnMnRight:
+ENDIF
+		CALL	MnMn50			; Right
 		JE	@@FirstItem
 		INC	CX
 		JMP	@@ExitC
   @@FirstItem:	MOV	CL,0
 		JMP	@@ExitC
-MnMnHome:	TEST	CH,80h			; Home
+IFDEF	__JWASM__
+MnMnHome::
+ELSE
+MnMnHome:
+ENDIF
+		TEST	CH,80h			; Home
 		JZ	@@ExitNC
 		MOV	AX,4900h
 		MOV	CL,0
 		JMP	@@ExitNC
-MnMnEnd:	TEST	CH,80h			; End
+IFDEF	__JWASM__
+MnMnEnd::
+ELSE
+MnMnEnd:
+ENDIF
+		TEST	CH,80h			; End
 		JZ	@@ExitNC
 		MOV	AX,5100h
   @@ExitLast:	CALL	MnMn50
@@ -2765,8 +3005,8 @@ MnMnEnd:	TEST	CH,80h			; End
 		JMP	@@ExitLast
 MnMn10		ENDP
 
-MnMn40		PROC	NEAR			; Show menus
-		USES	ES
+; Show menus
+MnMn40		PROC	NEAR	USES	ES
 		PUSH	CX
 		MOV	SI,DI
 		CALL	BasAdr
@@ -2802,8 +3042,8 @@ MnMn41		PROC	NEAR			; Show current menu
 		RET
 MnMn41		ENDP
 
-MnMn50		PROC	NEAR			; Check last menu
-		USES	CX,DI
+; Check last menu
+MnMn50		PROC	NEAR	USES	CX DI
 		MOV	CH,0
 		ADD	CX,CX
 		ADD	DI,CX
@@ -2811,8 +3051,8 @@ MnMn50		PROC	NEAR			; Check last menu
 		RET
 MnMn50		ENDP
 
-MnMn60		PROC	NEAR			; Size of window
-		USES	SI
+; Size of window
+MnMn60		PROC	NEAR	USES	SI
   @@Next:	MOV	DX,CS:[SI]
 		INC	SI
 		INC	SI
@@ -2829,8 +3069,7 @@ MnMn60		ENDP
 ;		ES:DI - history buffer
 ;		   CX - length of history buffer
 ;---------------------------------------------------------------
-SaveHistory	PROC	FAR
-		USES	AX,BX,CX,DX,SI,DI
+SaveHistory	PROC	FAR	USES	AX BX CX DX SI DI
 		MOV	BX,DI
 		MOV	DX,CX
 		PUSH	ES

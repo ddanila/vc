@@ -161,7 +161,7 @@ F65_10:		MOV	DS:ListTotal,0		; Program analysis
 		MOV	AX,BX
 F65_11:		MOV	CL,4
 		SHL	AX,CL
-		SUB	AX,SIZE MemEnt
+		SUB	AX,WORD PTR SIZE MemEnt
 		MOV	DS:MemLimit,AX
 		MOV	DX,SI
 		XOR	DI,DI
@@ -302,7 +302,7 @@ F65_25:		MOVSB
 F65_26:		POP	SI
 		MOV	AX,BX			; System area
 		XCHG	AX,ES:[SI-2]
-		CMP	AX,8
+		CMP	AX,WORD PTR 8
 		JA	F65_27
 		MOV	SI,OFFSET MemSystem_S
 		JMP	F65_34
@@ -511,7 +511,7 @@ F65_53:		POP	CX
 ;---------------------------------------------------------------
 		.CODE	Subs
 MemProc		PROC	NEAR
-		CMP	AX,0FFFFh
+		CMP	AX,WORD PTR 0FFFFh
 		JE	@@Init
 		CMP	AH,0FCh
 		JAE	@@DialList
@@ -533,7 +533,7 @@ MemProc		PROC	NEAR
 		JNE	@@Exit
   @@CheckAll:	MOV	CX,DS:ListTotal		; Check programs
 		MOV	DS,DS:WorkBuffer
-		JCXZ	@@Done
+		JLONG	JCXZ,	@@Done
 		MOV	BX,0FFFFh
 		XOR	SI,SI
   @@ChkSel:	TEST	DS:[SI].MemFlags,2
@@ -613,7 +613,7 @@ MemProc		PROC	NEAR
   @@MarkVect:	MOV	AL,DS:[SI]
 		MOV	AH,0
 		MOV	BP,AX
-		MOV	ES:MemVectors[BP],1
+		MOV	BYTE PTR ES:MemVectors[BP],1
 		ADD	SI,5
 		LOOP	@@MarkVect
   @@Next:	POP	CX
@@ -629,8 +629,7 @@ MemProc		ENDP
 ;	Output line
 ;---------------------------------------------------------------
 		.CODE	Subs
-MemItem		PROC	NEAR
-		USES	AX,CX,SI,DI,BP,ES
+MemItem		PROC	NEAR	USES	AX CX SI DI BP ES
 		MOV	AX,SI
 		SUB	AX,DI
 		ADD	BX,DS:ListBase
@@ -731,8 +730,7 @@ MemItem		ENDP
 ;	Select memory info item
 ;---------------------------------------------------------------
 		.CODE	Subs
-MemSelect	PROC	NEAR
-		USES	SI,DS
+MemSelect	PROC	NEAR	USES	SI DS
 		CALL	MemAddr
 		MOV	DS,DS:WorkBuffer
 		TEST	DS:[SI].MemFlags,1
@@ -763,8 +761,7 @@ MemSelect	ENDP
 ;	Return:	   SI - address of entry
 ;---------------------------------------------------------------
 		.CODE	Subs2
-MemAddr		PROC	FAR
-		USES	AX,DX
+MemAddr		PROC	FAR	USES	AX DX
 		MOV	AX,SIZE MemEnt
 		MUL	SI
 		MOV	SI,AX
@@ -776,8 +773,7 @@ MemAddr		ENDP
 ;		DS:SI - memory entry
 ;---------------------------------------------------------------
 		.CODE	Subs2
-MemSetName	PROC	FAR
-		USES	AX,BX,CX,SI,DI
+MemSetName	PROC	FAR	USES	AX BX CX SI DI
 		ADD	SI,OFFSET MemName
 		MOV	DI,OFFSET LineBuf1
 		MOV	CX,12
@@ -791,3 +787,6 @@ MemSetName	PROC	FAR
 		MOV	BYTE PTR ES:[BX],0
 		RET
 MemSetName	ENDP
+IFDEF	__JWASM__
+		DB	10 DUP(0)		; XXX align 16 for Subs SEG (VCOVL.ASM:24)
+ENDIF

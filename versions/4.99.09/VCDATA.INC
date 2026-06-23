@@ -86,6 +86,32 @@ BrCyan		EQU	11
 BrYellow	EQU	14
 BrWhite		EQU	15
 
+; Optional, for TASM binary equivalence
+IFDEF TASMIDENT
+; no complex if statements in preprocessor
+	IFDEF	__JWASM__
+		__TASMIDENT__	EQU	1
+	ELSE
+		__TASMIDENT__	EQU	0
+	ENDIF
+ELSE
+	__TASMIDENT__	EQU	0
+ENDIF
+
+; JWASM long jumps helper macro
+JLONG	MACRO	l_op, l_label
+	LOCAL	@@2
+IFDEF	__JWASM__
+		l_op	@F
+		JMP	SHORT @@2
+  @@:
+		JMP	l_label
+  @@2:
+ELSE
+		l_op	l_label
+ENDIF
+ENDM
+
 ;---------------------- Global structures ----------------------
 ; Far address structure definition.
 FARAD		STRUC

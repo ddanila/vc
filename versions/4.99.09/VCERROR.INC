@@ -122,9 +122,9 @@ CriticalError	PROC	FAR
 		POP	BP
 		MOV	CH,0
 		MOV	DX,AX
-		SUB	AX,13h
+		SUB	AX,WORD PTR 13h
 		JB	@@FindMsg
-		CMP	AX,15h
+		CMP	AX,WORD PTR 15h
 		JAE	@@FindMsg
 		MOV	CX,AX
   @@FindMsg:	MOV	ES,CS:SubsSeg
@@ -238,8 +238,7 @@ ErrDrv_B	BOXHD	< ErrDrv_P, 500h, ErrDrvSub, Error_K, Def_M, None_H, 7>
 		DB	0
 
 		.CODE
-ErrorDrive	PROC	NEAR
-		USES	BX,DX,BP
+ErrorDrive	PROC	NEAR	USES	BX DX BP
 		PUSH	AX
 		CBW
 		MOV	WORD PTR ES:TmpErr,AX
@@ -261,7 +260,7 @@ ErrorDrive	ENDP
 
 		.CODE	Subs
 ErrDrvSub	PROC	NEAR
-		CMP	AX,0FFFFh
+		CMP	AX,WORD PTR 0FFFFh
 		JNE	@@Drive
 		LEA	AX,[BX+42Ch]
 		CALL	gotoxy
@@ -313,8 +312,7 @@ OkCan_D		DB	4, 0
 		DB	0
 
 		.CODE	Subs
-Phantom		PROC	FAR
-		USES	AX,BX,DX,BP
+Phantom		PROC	FAR	USES	AX BX DX BP
 		CALL	UpCase
 		SUB	AL,'A'-1
 		MOV	BL,AL
@@ -359,8 +357,7 @@ Phantom		ENDP
 ;	Return:    CY - can not change
 ;		   NC - Ok
 ;---------------------------------------------------------------
-ChgDisk		PROC	FAR
-		USES	AX,BX
+ChgDisk		PROC	FAR	USES	AX BX
 		MOV	BX,DX
 		MOV	AX,ES:[BX]
 		CMP	AH,':'

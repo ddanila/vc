@@ -628,7 +628,7 @@ F39_57:		MOV	CX,BP
 		INC	BP
 		INC	BH
 		POP	CX
-		LOOP	F39_52
+		JLONG	LOOP,	F39_52
 		XOR	SI,SI
 		MOV	CX,WORD PTR ES:MenuBords[3]
 		MOV	AL,ES:MenuBords[5]
@@ -939,8 +939,7 @@ F39_95:		PUSH	DS
 		JMP	BX
 F39_96:		JMP	Func04
 
-F40_10		PROC	NEAR
-		USES	BX,CX,DX,ES
+F40_10		PROC	NEAR	USES	BX CX DX ES
 		CMP	CH,0FFh
 		JE	F40_12
 		PUSH	AX
@@ -978,8 +977,7 @@ F40_11:		MOV	AL,ES:[DI]
 F40_12:		RET
 F40_10		ENDP
 
-F40_20		PROC	NEAR
-		USES	DI,ES
+F40_20		PROC	NEAR	USES	DI ES
 		CMP	AL,0
 		JE	F40_21
 		MOV	AL,ES:ItemOn[0]
@@ -989,8 +987,8 @@ F40_21:		INC	BH
 		RET
 F40_20		ENDP
 
-F40_30		PROC	NEAR			; Dark line
-		USES	AX,BX,CX,DI,ES
+; Dark line
+F40_30		PROC	NEAR	USES	AX BX CX DI ES
 		CBW
 		MOV	DI,AX
 		MOV	ES:MnuList[DI-1],0
@@ -1018,8 +1016,8 @@ F40_31:		MOV	AH,MnuDr_C
 		RET
 F40_30		ENDP
 
-F40_40		PROC	NEAR			; Get mouse cursor
-		USES	CX
+; Get mouse cursor
+F40_40		PROC	NEAR	USES	CX
 		XOR	AX,AX
 		CALL	GetMous
 		XCHG	AL,DS:MnuMous
@@ -1028,8 +1026,8 @@ F40_40		PROC	NEAR			; Get mouse cursor
 		RET
 F40_40		ENDP
 
-F40_50		PROC	NEAR			; Menu position
-		USES	BX,SI,DS
+; Menu position
+F40_50		PROC	NEAR	USES	BX SI DS
 		MOV	DS,CS:SubsSeg
 		MOV	AH,AL
 		MOV	SI,OFFSET PtMnu_S
@@ -1074,8 +1072,7 @@ M01_03:		MOV	AL,CL
 		JMP	M18_20
 M01_04:		JMP	M04_05
 
-M02_10		PROC	NEAR
-		USES	AX
+M02_10		PROC	NEAR	USES	AX
 		MOV	AL,DS:WinShortPath[0]
 		CALL	Phantom
 		JC	M02_12
@@ -1083,7 +1080,7 @@ M02_10		PROC	NEAR
 		MOV	AH,3Bh
 		CALL	Intr21
 		JNC	M02_11
-		CMP	AX,3
+		CMP	AX,WORD PTR 3
 		STC
 		JNE	M02_12
 M02_11:		MOV	DL,DS:WinShortPath
@@ -1256,7 +1253,7 @@ OkCn_D		DB	 6, 0
 
 		.CODE	Subs
 FilterSub	PROC	NEAR
-		CMP	AX,0FFFEh
+		CMP	AX,WORD PTR 0FFFEh
 		JNE	@@Exit
 		ADD	BX,306h
 		MOV	SI,DS:FiltsPoint
@@ -1578,18 +1575,17 @@ ModeNoVESA_B	BOXHD	< ModeNoVESA_P, 900h, 0, Dialog_K, Cmd_M, Default_H, 0 >
 		DB	0
 
 		.CODE	Subs
-ModeLine	PROC	NEAR
-		USES	AX,CX,SI,DI
+ModeLine	PROC	NEAR	USES	AX CX SI DI
 		MOV	AX,SI
 		SUB	AX,DI
 		ADD	BX,DS:ListBase
 		ADD	BH,AL
 		MOV	AX,SI
-		ADD	AX,'1'
-		CMP	AX,'9'
+		ADD	AX,WORD PTR '1'
+		CMP	AX,WORD PTR '9'
 		JBE	@@HotKey
-		ADD	AX,'A'-'9'-1
-		CMP	AX,'Z'
+		ADD	AX,WORD PTR 'A'-'9'-1
+		CMP	AX,WORD PTR 'Z'
 		JBE	@@HotKey
 		MOV	AL,' '
   @@HotKey:	PUSH	ES
@@ -1723,20 +1719,20 @@ F59_03:		PUSH	DI
 		INT	10h
 		LDS	SI,ES:[DI+0Eh]
 		POP	DI
-		CMP	AX,4Fh
+		CMP	AX,WORD PTR 4Fh
 		JNE	F59_10
 		PUSH	DI
 F59_04:		LODSW
-		CMP	AX,0FFFFh
+		CMP	AX,WORD PTR 0FFFFh
 		JE	F59_05
-		CMP	AX,7
+		CMP	AX,WORD PTR 7
 		JBE	F59_04
 		PUSH	DI
 		MOV	DI,OFFSET TmpBuf+256
 		MOV	CX,AX
 		MOV	AX,4F01h
 		INT	10h
-		CMP	AX,4Fh
+		CMP	AX,WORD PTR 4Fh
 		MOV	AX,ES:[DI]
 		POP	DI
 		JNE	F59_04
@@ -1976,8 +1972,8 @@ F69_21:		CALL	IniMous
 F69_22:		CALL	PutPrompt
 		JMP	Panels00
 
-F69_30		PROC	NEAR			; Compare size of screen buffer
-		USES	AX,BX,CX,DX
+; Compare size of screen buffer
+F69_30		PROC	NEAR	USES	AX BX CX DX
 		CALL	F69_31
 		MOV	DX,AX
 		MOV	AL,DS:Lines
@@ -2280,7 +2276,7 @@ M62_10		PROC	NEAR			; Test zoom stages
 		JE	@@Enter
 		CALL	TxtNum
 		JC	@@Error
-		CMP	AX,10
+		CMP	AX,WORD PTR 10
 		JA	@@Error
 		CMP	AL,2
 		JB	@@Error
@@ -2464,8 +2460,7 @@ M63_11		PROC	FAR
 		RET
 M63_11		ENDP
 
-M63_12		PROC	FAR
-		USES	DI
+M63_12		PROC	FAR	USES	DI
 		MOV	CX,10
 		MOV	AL,0
 		REPNE	SCASB
@@ -2475,9 +2470,8 @@ M63_12		PROC	FAR
 		RET
 M63_12		ENDP
 
-M63_20		PROC	NEAR
-		USES	AX
-		CMP	AX,0FFFEh
+M63_20		PROC	NEAR	USES	AX
+		CMP	AX,WORD PTR 0FFFEh
 		JAE	@@Exit
 		MOV	BP,DI
 		LEA	DI,[SI]+SIZE BoxHd
@@ -2627,7 +2621,7 @@ M64_10		PROC	NEAR			; Test delay time
 		JE	@@ChkTime1
 		CALL	TxtNum
 		JC	@@Error
-		CMP	AX,99
+		CMP	AX,WORD PTR 99
 		JA	@@Error
 		MOV	CH,AL
 		PUSH	SI
@@ -2659,7 +2653,7 @@ M64_10		PROC	NEAR			; Test delay time
 		CMP	AL,0
 		POP	AX
 		JNE	@@Error
-		CMP	AX,10
+		CMP	AX,WORD PTR 10
 		JAE	@@ChkTime3
 		MOV	AH,10
 		MUL	AH
@@ -2934,7 +2928,7 @@ F49_00:		PUSH	ES			; Save setup
 		JNE	Func04
 		CALL	SaveSet
 		JNC	F49_01
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	F49_01
 		MOV	BP,OFFSET SetEr_B
 		CALL	Dialog

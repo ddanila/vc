@@ -301,7 +301,7 @@ F87_07:		CALL	SetFileTime
 		JC	F87_15
 F87_08:		CALL	F87_DelEAs
 		JNC	F87_10
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	FuncExit
 		MOV	DX,OFFSET AttrErrEAs_T
 		JMP	F87_16
@@ -354,10 +354,10 @@ F87_12:		CMP	ES:HidDirs,0
 		DEC	SI
 F87_13:		MOV	BYTE PTR DS:[SI],0
 		JMP	FuncExit
-F87_15:		CMP	AX,53h			; Error
+F87_15:		CMP	AX,WORD PTR 53h		; Error
 		JE	FuncExit
 		MOV	DX,OFFSET AttrErr_T
-		CMP	AX,3
+		CMP	AX,WORD PTR 3
 		JA	F87_16
 		MOV	DX,OFFSET AttrErrDir_T
 F87_16:		MOV	BP,OFFSET AttrErrDir_B
@@ -401,7 +401,7 @@ F87_20:		CMP	DS:ArcPnt,0		; From file panel
 		CALL	F87_ChkEAs
 		MOV	BP,OFFSET AttrFileEA_B
 		JNC	F87_21
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	FuncExit
 		MOV	BP,OFFSET AttrFile_B
 F87_21:		MOV	DI,DS:[BX].DateF
@@ -461,8 +461,7 @@ F87_26:		MOV	DS:AttribMask,AX
 ;---------------------------------------------------------------
 ;	Setting attributes
 ;---------------------------------------------------------------
-F87_50		PROC	NEAR
-		USES	BX,CX,DX,SI,DI,BP,DS
+F87_50		PROC	NEAR	USES	BX CX DX SI DI BP DS
 		PUSH	ES
 		POP	DS
 		TEST	AL,10h
@@ -502,11 +501,11 @@ F87_51:		MOV	BX,500h
 		MOV	AX,5700h
 		CALL	Intr21
 		MOV	AX,DS:AttribDate
-		CMP	AX,0FFFFh
+		CMP	AX,WORD PTR 0FFFFh
 		JE	F87_52
 		MOV	DX,AX
 F87_52:		MOV	AX,DS:AttribTime
-		CMP	AX,0FFFFh
+		CMP	AX,WORD PTR 0FFFFh
 		JE	F87_53
 		MOV	CX,AX
 F87_53:		MOV	AX,5701h
@@ -529,14 +528,14 @@ F87_54:		MOV	CX,DI
 		JMP	F87_59
 F87_55:		MOV	AX,100h
 		JMP	F87_59
-F87_56:		CMP	AX,53h
+F87_56:		CMP	AX,WORD PTR 53h
 		JE	F87_55
 		MOV	DX,OFFSET AttrErrEAs_T
 		JMP	F87_58
-F87_57:		CMP	AX,53h
+F87_57:		CMP	AX,WORD PTR 53h
 		JE	F87_55
 		MOV	DX,OFFSET AttrErrFnd_T
-		CMP	AX,3
+		CMP	AX,WORD PTR 3
 		JBE	F87_58
 		MOV	DX,OFFSET AttrErr_T
 F87_58:		MOV	BP,OFFSET AttrErr_B
@@ -660,7 +659,13 @@ F87_68:		LEA	SI,[DI-17]
 		CALL	TxtNum
 		JC	F87_74
 		OR	AH,AH
+IF	__TASMIDENT__
+		JE	@F
+		JMP	NEAR PTR F87_74
+  @@:
+ELSE
 		JNE	F87_74
+ENDIF
 		MOV	CH,AL
 		CALL	FndLet
 		CMP	AL,ES:Country.TimeSep
@@ -751,8 +756,7 @@ F87_Parse1	ENDP
 ;		DS:SI - pointer to attributes
 ;	Return:	   AL - attributes
 ;---------------------------------------------------------------
-F87_CombAttr	PROC	NEAR
-		USES	BX
+F87_CombAttr	PROC	NEAR	USES	BX
 		MOV	AL,0
 		MOV	BL,1
 		CALL	F87_Comb1
@@ -778,8 +782,7 @@ F87_Comb1	ENDP
 ;		DS:DX - file
 ;	Return:    CY - no EAs or error
 ;---------------------------------------------------------------
-F87_ChkEAs	PROC	NEAR
-		USES	BX,CX,DX,SI,DI
+F87_ChkEAs	PROC	NEAR	USES	BX CX DX SI DI
 		CMP	ES:OS2box,0
 		JE	@@Error
 		CALL	ChgDisk
@@ -806,8 +809,7 @@ F87_ChkEAs	ENDP
 ;	Delete EAs
 ;	Return:    CY - error
 ;---------------------------------------------------------------
-F87_DelEAs	PROC	NEAR
-		USES	BX,CX,DX,SI,DI,DS
+F87_DelEAs	PROC	NEAR	USES	BX CX DX SI DI DS
 		CMP	DS:AttribEA,0
 		JE	@@Exit
 		MOV	AX,DS:WorkBuffer

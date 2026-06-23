@@ -43,8 +43,7 @@ ChgAdr		PROC	FAR
 		RET
 ChgAdr		ENDP
 
-BriefNumFiles	PROC	FAR
-		USES	CX,DX
+BriefNumFiles	PROC	FAR	USES	CX DX
 		CALL	NameWidthAL
 		CALL	SizDX
 		XCHG	AL,DL
@@ -281,7 +280,13 @@ F04_00:		CMP	DS:Visible,0		; PgUp
 		JA	Func10			; Info or QuickView panel
 		CALL	F04_30
 		OR	DI,DI
+IF	__TASMIDENT__
+		JNZ	@F
+		JMP	NEAR PTR F06_01
+  @@:
+ELSE
 		JE	F06_01
+ENDIF
 		SUB	DI,BX
 		JAE	F04_01
 		XOR	DI,DI
@@ -566,8 +571,7 @@ F10_21:		MOV	AL,0
 		CALL	F10_35
 		JMP	F00_75
 
-F10_30		PROC	FAR
-		USES	BX,DS
+F10_30		PROC	FAR	USES	BX DS
 		MOV	DS,ES:TreeSeg
 		MOV	BX,SI
 		MOV	CX,SI
@@ -584,8 +588,7 @@ F10_32:		MOV	SI,BX
 		RET
 F10_30		ENDP
 
-F10_35		PROC	FAR
-		USES	BX,DX,DS
+F10_35		PROC	FAR	USES	BX DX DS
 		MOV	DS,ES:TreeSeg
 		MOV	BX,SI
 		MOV	DX,SI
@@ -804,7 +807,7 @@ F20_12:		CALL	HidCur
 		MOV	AH,3Bh
 		CALL	Intr21
 		JNC	F20_14
-		CMP	AX,3
+		CMP	AX,WORD PTR 3
 		JE	F20_14
 F20_13:		MOV	SI,OFFSET WinShortPath
 		MOV	DI,OFFSET DosPath
@@ -874,7 +877,7 @@ F21_12:		OR	BP,BP
 		POP	DS
 		JNC	F24_10
 F21_13:		JMP	Func04
-F21_14:		CMP	AX,53h
+F21_14:		CMP	AX,WORD PTR 53h
 		JE	F21_13
 F21_15:		PUSH	DS
 		PUSH	ES
@@ -1091,7 +1094,7 @@ F23_02:		MOV	BX,0FFFFh
 		MOV	BP,AX
 		CALL	Dialog
 		JMP	Func04
-F23_03:		CMP	AX,0FFFFh
+F23_03:		CMP	AX,WORD PTR 0FFFFh
 		JE	Func04
 		MOV	BX,AX
 		MOV	DI,SI
@@ -1754,7 +1757,7 @@ F62_06:		MOV	AX,DI
 		AND	BX,1
 		SUB	AX,BX
 		MOV	ES:DriveOffset,AX
-		ADD	AX,12
+		ADD	AX,WORD PTR 12
 		CMP	AX,DX
 		JB	F62_07
 		LOOP	F62_06
@@ -1924,10 +1927,15 @@ DriveSub	PROC	NEAR
 		MOV	AL,0
 		CALL	TypMous
 		JMP	@@Enter
-DriveInit:	MOV	CX,ES:DriveOffset
+IFDEF	__JWASM__
+DriveInit::
+ELSE
+DriveInit:
+ENDIF
+		MOV	CX,ES:DriveOffset
 		MOV	AL,DL
 		MOV	AH,0
-		SUB	AX,11
+		SUB	AX,WORD PTR 11
 		SHR	AX,1
 		PUSH	CX
 		INC	CX
@@ -1944,15 +1952,35 @@ DriveInit:	MOV	CX,ES:DriveOffset
 		MOV	ES:DriveOffset,AX
 		MOV	ES:DriveWin,CX
 		JMP	@@WriteCur
-DriveLeft:	OR	CX,CX			; Left
+IFDEF	__JWASM__
+DriveLeft::
+ELSE
+DriveLeft:
+ENDIF
+		OR	CX,CX			; Left
 		JNE	@@DecDrv
-DriveEnd:	MOV	CX,ES:DriveNum		; End
+IFDEF	__JWASM__
+DriveEnd::
+ELSE
+DriveEnd:
+ENDIF
+		MOV	CX,ES:DriveNum		; End
   @@DecDrv:	DEC	CX
 		JMP	@@ChgCur
-DriveRight:	INC	CX			; Right
+IFDEF	__JWASM__
+DriveRight::
+ELSE
+DriveRight:
+ENDIF
+		INC	CX			; Right
 		CMP	CX,ES:DriveNum
 		JB	@@ChgCur
-DriveHome:	XOR	CX,CX			; Home
+IFDEF	__JWASM__
+DriveHome::
+ELSE
+DriveHome:
+ENDIF
+		XOR	CX,CX			; Home
   @@ChgCur:	CMP	CX,ES:DrivePoint
 		JE	@@Done
 		MOV	ES:DrivePoint,CX
@@ -1964,8 +1992,7 @@ DriveHome:	XOR	CX,CX			; Home
   @@Exit:	RET
 DriveSub	ENDP
 
-DriveCursor	PROC	NEAR
-		USES	AX,CX,ES
+DriveCursor	PROC	NEAR	USES	AX CX ES
 		MOV	CL,DL
 		MOV	CH,0
 		MOV	AH,CS:Drive_P[0]
@@ -2063,8 +2090,8 @@ F68_06:		MOV	DS:DosBuf[0],AL
 		JMP	F21_40
 
 		.CODE	Subs
-HistoryLine	PROC	NEAR			; Line of history
-		USES	AX,CX,SI,DI,ES
+; Line of history
+HistoryLine	PROC	NEAR	USES	AX CX SI DI ES
 		MOV	CX,DS:ListTotal
 		SUB	CX,SI
 		DEC	CX
@@ -2105,8 +2132,8 @@ HistoryLine	PROC	NEAR			; Line of history
 		RET
 HistoryLine	ENDP
 
-HistoryHotKey	PROC	NEAR			; Hot keys
-		USES	AX
+; Hot keys
+HistoryHotKey	PROC	NEAR	USES	AX
 		CALL	UpCase
 		MOV	AH,AL
 		MOV	SI,DS:ListCursor
@@ -2303,8 +2330,8 @@ F84_15:		CALL	PutPrompt
 F84_16:		RET
 F84_10		ENDP
 
-F84_20		PROC	NEAR			; Save panel size
-		USES	AX
+; Save panel size
+F84_20		PROC	NEAR	USES	AX
 		MOV	AL,0
 		XCHG	AL,ES:PanelSize1
 		CMP	AL,0
@@ -2365,8 +2392,7 @@ F86_02:		CALL	F86_10
 F86_03:		POP	DS
 		JMP	M04_05
 
-F86_10		PROC	FAR
-		USES	BX,DS
+F86_10		PROC	FAR	USES	BX DS
 		MOV	BX,OFFSET HidDirs
 		CALL	InvVar
 		MOV	DS,ES:TreeSeg
@@ -2563,8 +2589,7 @@ F77_30		ENDP
 ;		   NZ - found
 ;		   SI - new address
 ;---------------------------------------------------------------
-SpeedSearch	PROC	FAR
-		USES	DI
+SpeedSearch	PROC	FAR	USES	DI
 		PUSH	DS
 		PUSH	SI
 		CMP	AL,0Ah

@@ -9,8 +9,7 @@
 ;		   AL - 0=uppercase all, 1=uppercase path
 ;	Return:	   CY - error or not equal
 ;---------------------------------------------------------------
-F35_Compare	PROC	NEAR
-		USES	BX,CX,SI,DI,DS
+F35_Compare	PROC	NEAR	USES	BX CX SI DI DS
 		PUSH	ES
 		POP	DS
 		MOV	CH,AL
@@ -23,7 +22,7 @@ F35_Compare	PROC	NEAR
 		MOV	DI,OFFSET LineBuf4
 		CALL	F35_TrueName
 		JNC	@@Compare
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@Error
   @@NotEqu:	XOR	AX,AX
   @@Error:	STC
@@ -91,16 +90,15 @@ F35_ShortPath	ENDP
 ;	Return:	   CY - if error
 ;		   AX - error code
 ;---------------------------------------------------------------
-F35_TrueName	PROC	NEAR
-		USES	BX,CX,DX,SI,DI
+F35_TrueName	PROC	NEAR	USES	BX CX DX SI DI
 		CMP	BYTE PTR ES:[DI+514-1],2
 		JE	@@Exit
 		CALL	TrueName
 		JNC	@@NoErr
 		MOV	DL,0
-		CMP	AX,2
+		CMP	AX,WORD PTR 2
 		JE	@@TruePath
-		CMP	AX,3
+		CMP	AX,WORD PTR 3
 		JNE	@@Status
 @@TruePath:	MOV	BX,SI
 		CALL	CutPath
@@ -129,8 +127,7 @@ F35_TrueName	ENDP
 ;		   AL - 0=don't add target file size
 ;	Return:	   AL - action: Continue/Another drive/Skip/Cancel
 ;---------------------------------------------------------------
-F35_ChkTarget	PROC	NEAR
-		USES	CX,DX
+F35_ChkTarget	PROC	NEAR	USES	CX DX
 		CMP	DS:ChkTarget,0
 		JE	@@ExitOk
 		XOR	SI,SI
@@ -142,7 +139,7 @@ F35_ChkTarget	PROC	NEAR
 		CALL	OpenFil
 		MOV	DS:BlocEr,0
 		JNC	@@GetSize
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JNE	@@SetDrive
 		CMP	DS:ErrDat,2
 		JNE	@@Exit
@@ -169,7 +166,7 @@ F35_ChkTarget	PROC	NEAR
 		MOV	DI,OFFSET TmpBuf
 		CALL	GetDiskInfo
 		JNC	@@ChkSpace
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@Exit
   @@ExitOk:	MOV	AL,0
 		JMP	@@Exit
@@ -205,8 +202,7 @@ F35_ChkTarget	ENDP
 ;		DS:DX - filename
 ;	Return:	   CY - error
 ;---------------------------------------------------------------
-F35_MkPath	PROC	NEAR
-		USES	BX,CX,SI
+F35_MkPath	PROC	NEAR	USES	BX CX SI
 		MOV	SI,DX
 		LODSW
 		CMP	AX,'\\'
@@ -234,7 +230,7 @@ F35_MkPath	PROC	NEAR
 		CALL	Intr21
 		XCHG	DS:[SI-1],BL
 		JNC	@@FindNext
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		STC
 		JE	@@Exit
 		XCHG	DS:[SI-1],BL
@@ -255,8 +251,7 @@ F35_MkPath	ENDP
 ;		DS:DX - filename
 ;	Return:	   CY - error, AX - error code
 ;---------------------------------------------------------------
-F35_UpdPath	PROC	NEAR
-		USES	BX,CX,DX,SI,DI,DS
+F35_UpdPath	PROC	NEAR	USES	BX CX DX SI DI DS
 		MOV	AL,0
 		MOV	BX,DS:GroupTree2
 		CMP	BX,1
@@ -345,8 +340,7 @@ F35_SetDate	ENDP
 ;---------------------------------------------------------------
 ;	Progress bar
 ;---------------------------------------------------------------
-F35_PerCent	PROC	NEAR
-		USES	AX,BX,CX,DX,SI,DI,DS,ES
+F35_PerCent	PROC	NEAR	USES	AX BX CX DX SI DI DS ES
 		PUSH	BP
 		PUSH	ES
 		POP	DS
@@ -523,8 +517,7 @@ F35_GetAttr	ENDP
 ;		DS:DX - file name
 ;	Return:	   CY - error, AX=error code
 ;---------------------------------------------------------------
-F35_SetName	PROC	NEAR
-		USES	SI,DI
+F35_SetName	PROC	NEAR	USES	SI DI
 		CMP	DS:CopyAppend,0
 		JNE	@@Exit
 		MOV	DI,DX
@@ -543,8 +536,7 @@ F35_SetName	ENDP
 ;---------------------------------------------------------------
 ;	Save target file in buffer
 ;---------------------------------------------------------------
-F35_SaveTarget	PROC	NEAR
-		USES	AX,CX,DX,SI,DI,BP,DS,ES
+F35_SaveTarget	PROC	NEAR	USES	AX CX DX SI DI BP DS ES
 		MOV	AX,ES:GroupFiles
 		MOV	DS,AX
 		OR	AX,AX
@@ -589,7 +581,7 @@ F35_SaveTarget	PROC	NEAR
 		XCHG	DL,DS:[BP-1]
   @@Convert:	CALL	TrueName
 		JNC	@@Length
-		XOR	AX,53h
+		XOR	AX,WORD PTR 53h
 		JNE	@@Restore
 		STC
 		JMP	@@Exit
@@ -607,8 +599,7 @@ F35_SaveTarget	PROC	NEAR
   @@Exit:	RET
 F35_SaveTarget	ENDP
 
-F35_NewBlock	PROC	NEAR
-		USES	BX,CX
+F35_NewBlock	PROC	NEAR	USES	BX CX
 		MOV	AX,ExpandSize
 		MOV	BX,ES
 		ADD	BX,ES:SizeDataSeg
@@ -634,8 +625,7 @@ F35_NewBlock	ENDP
 ;	Return:	   CY - found
 ;		   NC - not found
 ;---------------------------------------------------------------
-ChkInBuffer	PROC	FAR
-		USES	AX,CX,SI
+ChkInBuffer	PROC	FAR	USES	AX CX SI
 		MOV	SI,DS
 		OR	SI,SI
 		JE	@@Exit
@@ -668,8 +658,7 @@ ChkInBuffer	ENDP
 ;---------------------------------------------------------------
 ;	Do function with uppercased short name
 ;---------------------------------------------------------------
-F35_FuncShort	PROC	NEAR
-		USES	SI
+F35_FuncShort	PROC	NEAR	USES	SI
 		PUSH	DI
 		PUSH	AX
 		MOV	SI,DI
@@ -708,8 +697,7 @@ F35_FuncShort	ENDP
 ;		DS:DI - target directory
 ;	Return:	   CY - error, AX - error code
 ;---------------------------------------------------------------
-F35_MoveDir	PROC	NEAR
-		USES	DX,DI
+F35_MoveDir	PROC	NEAR	USES	DX DI
 		OR	CL,CL
 		JE	@@Move
 		MOV	DX,OFFSET LineBuf3
@@ -772,8 +760,7 @@ F35_MoveDir	ENDP
 ;		   CY - fatal error
 ;---------------------------------------------------------------
 		.CODE	Subs
-F35_Overwrite	PROC	FAR
-		USES	BX,CX,SI,DI,BP
+F35_Overwrite	PROC	FAR	USES	BX CX SI DI BP
 		MOV	BP,CX
 		MOV	DI,OFFSET CopyOverSrc
 		MOV	AX,DS:CopyAttrib
@@ -786,7 +773,7 @@ F35_Overwrite	PROC	FAR
 		CALL	F35_GetAttribs
 		POP	DX
 		JNC	@@DestParms
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		STC
 		JE	@@Exit
 		XOR	SI,SI
@@ -844,8 +831,7 @@ F35_PutAttribs	ENDP
 ;		   DI - date
 ;---------------------------------------------------------------
 		.CODE	Subs
-F35_GetAttribs	PROC	FAR
-		USES	DX
+F35_GetAttribs	PROC	FAR	USES	DX
 		CALL	ChgDisk
 		MOV	AX,53h
 		JC	@@Exit
@@ -867,4 +853,3 @@ F35_GetAttribs	PROC	FAR
 		MOV	BX,DX
   @@Exit:	RET
 F35_GetAttribs	ENDP
-

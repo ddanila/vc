@@ -13,7 +13,7 @@ LenEdit	EQU	LenMenu			; Length of edit buffer
 
 EdData	STRUC
 	DB	TmpBuf+100 DUP(?)
-EdHelp	LABEL	BYTE			; Mini help
+EdHelp	EQU	BYTE PTR $		; Mini help
 EdOffst	DD	?			; Offset of begin of the current line
 EdEndBf	DD	?			; Offset of end of part of current line
 EdSizLn	DW	?			; Length of part of line in buffer
@@ -225,12 +225,12 @@ T00_04:		CALL	ChgDisk
 		MOV	AL,40h
 		CALL	OpenFil
 		JNC	T00_07
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	T00_06
 		MOV	DX,OFFSET ReadView_T
 		CMP	DS:ViewEdit,0
 		JZ	T00_05
-		CMP	AX,2
+		CMP	AX,WORD PTR 2
 		MOV	AX,0FFFFh
 		JE	T00_07
 T99_99:

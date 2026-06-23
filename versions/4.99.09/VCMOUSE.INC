@@ -13,11 +13,11 @@ IniMous		PROC	FAR
 		JZ	@@Reset
 		MOV	AX,21h
 		INT	33h
-		CMP	AX,21h
+		CMP	AX,WORD PTR 21h
 		JNE	@@SkipReset
   @@Reset:	XOR	AX,AX
 		INT	33h
-  @@SkipReset:	CMP	AX,0FFFFh
+  @@SkipReset:	CMP	AX,WORD PTR 0FFFFh
 		CMC
 		MOV	AL,0
 		ADC	AL,AL
@@ -62,8 +62,7 @@ IniMous		ENDP
 ;	Set type of mouse cursor
 ;		   AL - cursor type
 ;---------------------------------------------------------------
-TypMous		PROC	FAR
-		USES	AX,BX,CX,DX
+TypMous		PROC	FAR	USES	AX BX CX DX
 		MOV	CX,0FFFFh
 		MOV	DX,7700h
 		CMP	AL,0
@@ -81,8 +80,7 @@ TypMous		ENDP
 ;---------------------------------------------------------------
 ;	Save mouse cursor
 ;---------------------------------------------------------------
-SavMous		PROC	FAR
-		USES	AX,BX,CX,DX
+SavMous		PROC	FAR	USES	AX BX CX DX
 		CMP	ES:Mouse,0
 		JZ	@@Exit
 		MOV	AX,3
@@ -96,8 +94,7 @@ SavMous		ENDP
 ;	Show mouse cursor
 ;		   AL - hide/show
 ;---------------------------------------------------------------
-ShowMouse		PROC	FAR
-		USES	AX
+ShowMouse	PROC	FAR	USES	AX
 		CMP	ES:Mouse,0
 		JZ	@@Exit
 		CMP	AL,1
@@ -112,8 +109,7 @@ ShowMouse		ENDP
 ;	Return:	CH,CL - mouse cursor
 ;		   AX - mouse buttons
 ;---------------------------------------------------------------
-GetMous		PROC	FAR
-		USES	BX,DX
+GetMous		PROC	FAR	USES	BX DX
 		XOR	CX,CX
 		XOR	AX,AX
 		CMP	ES:Mouse,AL
@@ -137,7 +133,7 @@ GetMous		PROC	FAR
 		AND	AL,4
 		OR	AL,BL
 		OR	AL,BH
-  @@ClearKbd:	AND	AX,7 ; only L,R,M buttons
+  @@ClearKbd:	AND	AX,WORD PTR 7 ; only L,R,M buttons
 		JZ	@@Exit
 		PUSHF
 		CALL	ClrKbd ; discard all typed-ahead keys if the corresponding option is set
@@ -176,8 +172,7 @@ MouseCtrlO	ENDP
 ;---------------------------------------------------------------
 ;	Reset mouse command and restore cursor
 ;---------------------------------------------------------------
-ResMouseCmd	PROC	FAR
-		USES	AX
+ResMouseCmd	PROC	FAR	USES	AX
 		XOR	AX,AX
 		CMP	ES:MouseCmd,AX
 		JE	@@Exit
@@ -192,8 +187,7 @@ ResMouseCmd	ENDP
 ;	Return:	 CY=1 - do command
 ;		 CY=0 - wait
 ;---------------------------------------------------------------
-MouseRepeat	PROC	FAR
-		USES	AX,BX,CX,DX
+MouseRepeat	PROC	FAR	USES	AX BX CX DX
 		CALL	Timer
 		MOV	AL,0
 		CMP	SI,ES:MouseCmd
@@ -296,8 +290,7 @@ MouseDblClick	ENDP
 ;		DH,DL - size of window
 ;	Return:	CY=0  - cursor inside the window
 ;---------------------------------------------------------------
-InWind		PROC	FAR
-		USES	CX,DX
+InWind		PROC	FAR	USES	CX DX
 		SUB	CH,BH
 		JB	@@Exit
 		SUB	CL,BL

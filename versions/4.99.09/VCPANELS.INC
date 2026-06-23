@@ -19,8 +19,7 @@ Ext_F		DB	'vc.ext',0
 WCBsegs_L	DW	WCB1seg, WCB2seg, WCBcrn, WCBsec, 0
 
 		.CODE	Subs
-ReadDir		PROC	FAR
-		USES	AX,BX,CX,DX,SI,DI,ES
+ReadDir		PROC	FAR	USES	AX BX CX DX SI DI ES
 		PUSH	BP
 		MOV	DS:ChgFlg,1
 		CMP	DS:WinTyp,p_File
@@ -88,9 +87,9 @@ ReadDir		PROC	FAR
 		MOV	CX,DS:WinLongPath[2].Lo
 		MOV	DX,DS:WinLongPath[2].Hi
 		JNC	@@CmpSerNum
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@SerialErr
-		CMP	AX,15h
+		CMP	AX,WORD PTR 15h
 		JE	@@SerialErr
 		XOR	CX,CX
 		XOR	DX,DX
@@ -146,7 +145,7 @@ ReadDir		PROC	FAR
 		CALL	TestArchive
 		POP	DS
 		JNC	@@ArcFound
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@ArcPathErr
 		OR	AX,AX
 		JNE	@@NoArchive
@@ -157,7 +156,7 @@ ReadDir		PROC	FAR
 		CALL	DetectArc
 		POP	DS
 		JNC	@@ArcFound
-  @@ArcPathEr1:	CMP	AX,53h
+  @@ArcPathEr1:	CMP	AX,WORD PTR 53h
 		JNE	@@NoArchive
   @@ArcPathErr:	MOV	DI,DS:DiskBuf
 		ADD	DI,SIZE FilEnt+3
@@ -261,12 +260,12 @@ ReadDir		PROC	FAR
 		PUSH	ES
 		POP	DS
 		POP	ES
-		CMP	AX,2
+		CMP	AX,WORD PTR 2
 		JNE	@@FindError
 		MOV	AX,12h
-  @@FindError:	CMP	AX,53h
+  @@FindError:	CMP	AX,WORD PTR 53h
 		JE	@@PathErr
-		CMP	AX,3
+		CMP	AX,WORD PTR 3
 		JA	@@SearchOk
 
 		MOV	AX,DS			; Set new path
@@ -306,9 +305,9 @@ ReadDir		PROC	FAR
 		MOV	AH,47h
 		CALL	Intr21
 		JNC	@@NewDrive
-		CMP	AX,0Fh
+		CMP	AX,WORD PTR 0Fh
 		JE	@@NextDrive
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@NextDrive
 		JMP	@@PathErr
   @@NewDrive:	ADD	DL,'A'-1
@@ -336,7 +335,11 @@ ReadDir		PROC	FAR
 		PUSH	DI
 		AND	DS:DTA.FilAttr,0F9h
 		MOV	DI,ES:DiskBuf
+IFDEF	__TASMIDENT__
+		JMP	NEAR PTR @@SaveAttrib
+ELSE
 		JMP	@@SaveAttrib
+ENDIF
   @@Overflow1:	POP	AX
   @@Overflow2:	MOV	DI,CX
 		CALL	Beep
@@ -353,7 +356,7 @@ ReadDir		PROC	FAR
 		JNE	@@GetChar
 		MOV	AX,DI
 		SUB	AX,CX
-		SUB	AX,OFFSET NameF
+		SUB	AX,WORD PTR OFFSET NameF
 		MOV	SI,CX
 		MOV	ES:[SI].LenShortNamF,AX
 		MOV	SI,OFFSET FindData.WinLongName
@@ -411,7 +414,7 @@ ReadDir		PROC	FAR
 		POP	DS
 		POP	ES
 		JNC	@@SearchOk
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@SearchErr
   @@SearchOk:	MOV	DS:ChgFlg,0
   @@SearchErr:	MOV	DS:EndFul,DI
@@ -692,7 +695,7 @@ DescrEnd	EQU	SizeWCB
   @@EndDescr:	POP	DI
 		POP	ES
 		JMP	@@DirSizes
-  @@ErrDescr:	CMP	AX,53h
+  @@ErrDescr:	CMP	AX,WORD PTR 53h
 		JNE	@@DirSizes
 		MOV	DS:ChgFlg,1
 		JMP	@@Sort
@@ -704,7 +707,7 @@ DescrEnd	EQU	SizeWCB
 
   @@Sort:	MOV	AX,DI			; Sort
 		DEC	AX
-		OR	AX,0Fh
+		OR	AX,WORD PTR 0Fh
 		INC	AX
 		MOV	CL,4
 		SHR	AX,CL
@@ -777,14 +780,19 @@ DescrEnd	EQU	SizeWCB
 		CALL	CompressBlock
 		MOV	AL,DS:LongNames
 		MOV	DS:LongNamFlag,AL
-ExitRdDir:	CMP	DS:ChgFlg,1		; Exit
+IFDEF	__JWASM__
+ExitRdDir::
+ELSE
+ExitRdDir:
+ENDIF
+		CMP	DS:ChgFlg,1		; Exit
 		CMC
 		POP	BP
 		RET
 ReadDir		ENDP
 
-DirTwoNames	PROC	NEAR			; Set short and long path
-		USES	CX,SI,DI,ES
+; Set short and long path
+DirTwoNames	PROC	NEAR	USES	CX SI DI ES
 		MOV	CL,ES:OS2box
 		PUSH	DS
 		POP	ES
@@ -811,7 +819,7 @@ DirTwoNames	PROC	NEAR			; Set short and long path
 		JZ	@@Exit
 		CALL	LongNameOS2
 		JNC	@@Exit
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		STC	
 		JE	@@Exit
 		CLC
@@ -859,18 +867,18 @@ ReadInfo	PROC	FAR
 		XCHG	AX,DS:DirInfoNumb
 		CALL	DelTempArcFile
 		JNC	@@GetSize
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@Exit
   @@GetSize:	MOV	AL,DS:DosPath[0]	; Get total and free space
 		MOV	DI,OFFSET ClusterSize
 		CALL	GetDiskInfo
 		JNC	@@Label
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@Exit
   @@Label:	MOV	SI,OFFSET Volume	; Get volume label
 		CALL	GetVol
 		JNC	@@DirInfo
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@Exit
   @@DirInfo:	POP	DS			; Directory information
 		PUSH	DS
@@ -914,7 +922,7 @@ ReadInfo	PROC	FAR
 		CALL	CloseFindFile
 		MOV	DS:[SI],DI
 		JNC	@@SetFile
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@Exit
 		JMP	@@NextFile
   @@SetFile:	MOV	SI,OFFSET FindData.WinLongName
@@ -971,7 +979,7 @@ ReadInfo	PROC	FAR
 		MOV	DX,OFFSET DirInfo_T
 		CALL	ViewArcExtract
 		JC	@@Exit
-		CMP	AX,0FFFFh
+		CMP	AX,WORD PTR 0FFFFh
 		JE	@@Exit
 		MOV	DS:DirInfoNumb,AX
 		CALL	CutPath
@@ -1174,7 +1182,7 @@ ReadQuickView	PROC	FAR
 		TEST	DS:ViewAttr,2
 		JZ	@@InitFile
 		MOV	AX,DS:ViewTempNumb	; Extract archive
-		CMP	AX,0FFFFh
+		CMP	AX,WORD PTR 0FFFFh
 		JNE	@@InitArc
 		MOV	SI,OFFSET ViewName1
 		MOV	DI,OFFSET LineBuf2
@@ -1187,7 +1195,7 @@ ReadQuickView	PROC	FAR
 		MOV	DX,OFFSET QuickView_T
 		CALL	ViewArcExtract
 		JC	@@FileError
-		CMP	AX,0FFFFh
+		CMP	AX,WORD PTR 0FFFFh
 		JE	@@FileError
 		POP	DS
 		MOV	DS:ViewTempNumb,AX
@@ -1367,10 +1375,10 @@ ReadQuickView	PROC	FAR
 		PUSH	ES
 		MOV	DS,BX
 		OR	DS:ViewAttr,80h
-		ADD	AX,(SIZE QuickViewData-1)/16+1
+		ADD	AX,WORD PTR (SIZE QuickViewData-1)/16+1
 		MOV	DS,AX
 		MOV	AX,BX
-		ADD	AX,(SIZE QuickViewData-1)/16+1
+		ADD	AX,WORD PTR (SIZE QuickViewData-1)/16+1
 		MOV	ES,AX
 		MOV	AL,DS:VwTextHex
 		MOV	ES:VwTextHex,AL
@@ -1393,8 +1401,7 @@ ReadQuickView	PROC	FAR
 ReadQuickView	ENDP
 
 		.CODE
-QuickViewDir	PROC	NEAR
-		USES	BX,CX,DX,SI,DI,DS
+QuickViewDir	PROC	NEAR	USES	BX CX DX SI DI DS
 		XOR	CX,CX
 		TEST	AL,10h
 		JZ	@@AddSize
@@ -1435,8 +1442,7 @@ BytIn_S		DB	'^2E byte^0Q/s/ in ^1I selected file^1P/s/',0
 BytIn_D		DW	TmpErr, TmpErr+4, TmpErr+6
 
 		.CODE	Subs
-PutFls		PROC	FAR
-		USES	AX,BX,CX,DX,SI,DI,BP,DS
+PutFls		PROC	FAR	USES	AX BX CX DX SI DI BP DS
 		CMP	DS:WinTyp,p_File
 		JNE	PutTre
 		CALL	CorPar
@@ -1598,7 +1604,7 @@ PutFls		PROC	FAR
 		JAE	@@NextAdr
 		SUB	DS:NameWidth,DH
   @@NextAdr:	CALL	NextFilEnt
-		LOOP	@@NextFile
+		JLONG	LOOP,	@@NextFile
 
   @@MiniSta:	POP	AX
 		MOV	DS:NameWidth,AH
@@ -1717,7 +1723,12 @@ PutFls		PROC	FAR
 		MOV	AX,'M'
 		STOSW
   @@WriteStat:	CALL	CntLine
-  ExitPutFls:	RET
+IFDEF	__JWASM__
+ExitPutFls::
+ELSE
+ExitPutFls:
+ENDIF
+		RET
 PutFls		ENDP
 
 		.DATA
@@ -1733,33 +1744,42 @@ PutTre:		CMP	DS:WinTyp,p_Tree
 		CALL	PutTree
 		JMP	ExitPutFls
 
-PutTree		PROC	FAR
-		USES	AX,BX,CX,DX,SI,DI,DS
-		LOCAL	LineBuffer:BYTE:1024
-		LOCAL	PathBuffer:BYTE:LenPath
-		LOCAL	Branches  :BYTE:128
+PutTree		PROC	FAR	USES	AX BX CX DX SI DI DS
+		LOCAL	LineBuffer[1024]:BYTE
+		LOCAL	PathBuffer[LenPath]:BYTE
+		LOCAL	Branches[128]:BYTE
+; XXX JWASM aligns word type variables at word boundary, TASM doesn't
+IF	__TASMIDENT__
+		LOCAL	WCBsegment[2]:BYTE
+		LOCAL	StatusLine[2]:BYTE
+		LOCAL	TreeAddr[2]:BYTE
+		LOCAL	TreeFrst[2]:BYTE
+		LOCAL	TreeCount[2]:BYTE
+		LOCAL	Pad1	  :BYTE
+ELSE
 		LOCAL	WCBsegment:WORD
 		LOCAL	StatusLine:WORD
 		LOCAL	TreeAddr  :WORD
 		LOCAL	TreeFrst  :WORD
 		LOCAL	TreeCount :WORD
+ENDIF
 		LOCAL	TreeType  :BYTE
-		MOV	WCBsegment,DS
-		MOV	TreeCount,0
+		MOV	WORD PTR WCBsegment,DS
+		MOV	WORD PTR TreeCount,0
 		MOV	AX,BX
 		ADD	AH,DH
 		SUB	AH,2
 		INC	AX
-		MOV	StatusLine,AX
+		MOV	WORD PTR StatusLine,AX
 		ADD	BX,101h
 		XOR	AX,AX
 		MOV	DS:TreeCrnt,AX
 		MOV	SI,DS:TreeCur
 		CALL	TreeNumb2AdrH
-		MOV	TreeAddr,SI
+		MOV	WORD PTR TreeAddr,SI
 		MOV	SI,DS:TreeFirst
 		CALL	TreeNumb2AdrH
-		MOV	TreeFrst,SI
+		MOV	WORD PTR TreeFrst,SI
 		PUSH	ES			; Set TreeTyp
 		PUSH	DS
 		MOV	DS,ES:TreeSeg
@@ -1784,7 +1804,7 @@ PutTree		PROC	FAR
 		POP	DX
 		MOV	AL,DL
 		MOV	AH,0
-		SUB	AX,4
+		SUB	AX,WORD PTR 4
 		CMP	BX,AX
 		POP	BX
 		MOV	AL,0
@@ -1792,7 +1812,7 @@ PutTree		PROC	FAR
 		INC	AX
   @@SetType:	MOV	ES:TreeTyp,AL
 		MOV	TreeType,AL
-		MOV	SI,TreeAddr		; Set offset
+		MOV	SI,WORD PTR TreeAddr	; Set offset
 		MOV	AH,AL
 		MOV	AL,3
 		SUB	AL,AH
@@ -1862,7 +1882,17 @@ PutTree		PROC	FAR
 
 		LEA	BX,Branches		; Output vertical branches
 		MOV	CL,DS:[SI].DirLevel
+;;		JLONG	JCXZ,	@@ChkNew	; XXX BUG Jump out of range
+
+_JCXZ	MACRO	l_name
+		DB	0E3h
+		DB	offset l_name - ($ + 1)
+ENDM
+IFDEF	__JWASM__
+		_JCXZ	@@ChkNew
+ELSE
 		JCXZ	@@ChkNew
+ENDIF
 		DEC	CX
 		JCXZ	@@PutBranch
 		MOV	AL,0B3h ; '│'
@@ -1879,7 +1909,7 @@ PutTree		PROC	FAR
 
   @@PutBranch:	PUSH	SI			; Output horizontal branch
 		MOV	CX,DS:TreeLenH
-		SUB	CX,TreeCount
+		SUB	CX,WORD PTR TreeCount
 		JBE	@@EndBranch
 		MOV	AL,0C3h ; '├'
 		MOV	AH,DS:[SI].DirLevel
@@ -1959,7 +1989,7 @@ PutTree		PROC	FAR
 
 		PUSH	DS			; Current directory
 		PUSH	SI
-		MOV	DS,WCBsegment
+		MOV	DS,WORD PTR WCBsegment
 		MOV	DS:TreeCrnt,SI
 		MOV	BX,[BP]
 		MOV	AX,CS:[BX+2]
@@ -1981,7 +2011,7 @@ PutTree		PROC	FAR
 
   @@ChkCursor:	PUSH	AX			; Check cursor
 		PUSH	DS
-		MOV	DS,WCBsegment
+		MOV	DS,WORD PTR WCBsegment
 		MOV	AL,DS:LongNames
 		POP	DS
 		CALL	DirLen1
@@ -1995,11 +2025,11 @@ PutTree		PROC	FAR
 		MOV	CX,AX
   @@CurColor:	POP	AX
 		XCHG	AH,AL
-		CMP	SI,TreeAddr
+		CMP	SI,WORD PTR TreeAddr
 		JE	@@SetCursor
 		CALL	Color
 		JMP	@@PutName
-  @@SetCursor:	MOV	BX,WCBsegment
+  @@SetCursor:	MOV	BX,WORD PTR WCBsegment
 		CMP	BX,ES:WCBcrn
 		MOV	BX,0DDDEh ; '▌▐'
 		JNE	@@WriteCur
@@ -2039,7 +2069,7 @@ PutTree		PROC	FAR
 
   @@PutStatus:	PUSH	ES			; Output status line
 		PUSH	SI
-		MOV	ES,WCBsegment
+		MOV	ES,WORD PTR WCBsegment
 		MOV	DI,OFFSET CrnPath
 		MOV	CX,LenPath-1
 		PUSH	DI
@@ -2063,7 +2093,7 @@ PutTree		PROC	FAR
 		MOV	AX,CX
 		CALL	ShrtLin
 		POP	AX
-		MOV	BX,StatusLine
+		MOV	BX,WORD PTR StatusLine
 		CALL	BasAdr
   @@PutStat1:	LODSB
 		CMP	AL,0
@@ -2080,7 +2110,7 @@ PutTree		PROC	FAR
 		POP	ES
 
   @@PutName:	PUSH	DS			; Output name
-		MOV	DS,WCBsegment
+		MOV	DS,WORD PTR WCBsegment
 		MOV	AL,DS:LongNames
 		POP	DS
 		CALL	DirOffset1
@@ -2096,11 +2126,11 @@ PutTree		PROC	FAR
   @@ChkOut:	POP	BX
 		POP	CX
 		INC	CX
-		CMP	SI,TreeFrst
+		CMP	SI,WORD PTR TreeFrst
 		JB	@@NextLine
 		PUSH	ES			; Write line
 		PUSH	CX
-		MOV	DS,WCBsegment
+		MOV	DS,WORD PTR WCBsegment
 		MOV	CL,DS:TreeOffset
 		PUSH	SS
 		POP	DS
@@ -2119,8 +2149,8 @@ PutTree		PROC	FAR
   @@NextLine:	POP	SI			; Next line
 		MOV	DS,ES:TreeSeg
 		CALL	NextDirEntH
-		INC	TreeCount
-		LOOP	@@WriteLine
+		INC	WORD PTR TreeCount
+		JLONG	LOOP,	@@WriteLine
   @@Exit:	RET
 PutTree		ENDP
 
@@ -2315,16 +2345,31 @@ PtIn20		PROC	NEAR
 		POP	DX
 		MOV	SI,OFFSET PtIn12_S
 		JMP	PtIn23
-PtIn21:		PUSH	BX
+IFDEF	__JWASM__
+PtIn21::
+ELSE
+PtIn21:
+ENDIF
+		PUSH	BX
 		MOV	BX,OFFSET ClusterSize
 		MOV	DI,OFFSET TmpBuf
 		CALL	LongMul
 		POP	BX
 		MOV	SI,OFFSET PtIn45_S
-PtIn22:		MOV	DI,OFFSET TmpBuf
+IFDEF	__JWASM__
+PtIn22::
+ELSE
+PtIn22:
+ENDIF
+		MOV	DI,OFFSET TmpBuf
 		CALL	ReduceNumb
 		MOV	WORD PTR ES:TmpBuf[10],AX
-PtIn23:		PUSH	DX
+IFDEF	__JWASM__
+PtIn23::
+ELSE
+PtIn23:
+ENDIF
+		PUSH	DX
 		PUSH	BX
 		CALL	BegBX
 		CALL	SizDX
@@ -2380,7 +2425,7 @@ PutView		PROC	FAR
 		JNZ	@@PutDir
 		TEST	DS:ViewAttr,8
 		JNZ	@@Absent
-		ADD	AX,(SIZE QuickViewData-1)/16+1 ; File
+		ADD	AX,WORD PTR (SIZE QuickViewData-1)/16+1 ; File
 		MOV	DS,AX
 		MOV	DS:VwBase,BX
 		MOV	DS:VwSize,DX
@@ -2597,8 +2642,7 @@ PutVwName	ENDP
 ;	Get current path
 ;	Return:	   CY - if error
 ;---------------------------------------------------------------
-GetPath		PROC	FAR
-		USES	AX,CX,DX,SI,DI,DS
+GetPath		PROC	FAR	USES	AX CX DX SI DI DS
 		PUSH	ES
 		POP	DS
 		MOV	AH,19h
@@ -2634,7 +2678,7 @@ GetPath		PROC	FAR
 		CALL	CutPath
 		MOV	AX,SI
 		SUB	AX,DX
-		CMP	AX,3
+		CMP	AX,WORD PTR 3
 		JBE	@@SetNewDir
 		DEC	SI
   @@SetNewDir:	MOV	BYTE PTR DS:[SI],0
@@ -2642,7 +2686,7 @@ GetPath		PROC	FAR
 		MOV	AH,3Bh
 		CALL	Intr21
 		JNC	@@ShortPath
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@Error
 		CMP	BYTE PTR DS:[SI+3],0
 		JNE	@@CutSubDir
@@ -2668,8 +2712,7 @@ GetPath		ENDP
 ;		ES:DX - ini file
 ;	Return:	   CY - error, AX - error code
 ;---------------------------------------------------------------
-SaveSet		PROC	FAR
-		USES	BX,CX,DX,SI,DI,DS
+SaveSet		PROC	FAR	USES	BX CX DX SI DI DS
 		CALL	MakeIni
 		PUSH	ES
 		POP	DS
@@ -2679,7 +2722,7 @@ SaveSet		PROC	FAR
 		MOV	AX,4300h
 		CALL	Intr21
 		JNC	@@Open
-		CMP	AX,2
+		CMP	AX,WORD PTR 2
 		JNE	@@Error
 		XOR	CX,CX
   @@Open:	OR	CL,20h
@@ -2709,8 +2752,7 @@ SaveSet		PROC	FAR
   @@Exit:	RET
 SaveSet		ENDP
 
-MakeIni		PROC	FAR
-		USES	AX,DI,DS
+MakeIni		PROC	FAR	USES	AX DI DS
 		MOV	DI,OFFSET IniBuffer
 		PUSH	DI
 		MOV	AL,'V'
@@ -2766,8 +2808,7 @@ MkIni1		ENDP
 SumSize		EQU	DWORD PTR TmpBuf[100]
 
 		.CODE
-DirSize		PROC	FAR
-		USES	AX,BX,CX,DX,SI,DI,DS
+DirSize		PROC	FAR	USES	AX BX CX DX SI DI DS
 		MOV	CL,AL
 		MOV	ES:FncAddr,OFFSET DirSiz1
 		MOV	SI,OFFSET WinLongPath
@@ -2830,8 +2871,7 @@ DirSize		PROC	FAR
   @@Exit:	RET
 DirSize		ENDP
 
-DirSiz1		PROC	NEAR
-		USES	BX,CX,DX,SI,DI,DS
+DirSiz1		PROC	NEAR	USES	BX CX DX SI DI DS
 		TEST	AL,10h
 		JZ	@@AddSize
 		CALL	DirFunc

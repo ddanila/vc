@@ -11,15 +11,13 @@
 ;	Return:	ES:DI - end of name
 ;---------------------------------------------------------------
 		.CODE	Subs
-PutArcPathName	PROC	FAR
-		USES	AX
+PutArcPathName	PROC	FAR	USES	AX
 		MOV	AL,1
 		CALL	PutArcPathName1
 		RET
 PutArcPathName	ENDP
 
-PutArcPathName1	PROC	FAR
-		USES	AX,BX,DX,SI
+PutArcPathName1	PROC	FAR	USES	AX BX DX SI
 		MOV	DL,AL
 		MOV	BYTE PTR ES:[DI],0
 		MOV	SI,DS:ArcPnt
@@ -51,8 +49,7 @@ PutArcPathName1	ENDP
 ;		ES:DI - target buffer
 ;	Return:	ES:DI - end of buffer
 ;---------------------------------------------------------------
-PutDescriptor	PROC	FAR
-		USES	AX,SI
+PutDescriptor	PROC	FAR	USES	AX SI
 		MOV	SI,OFFSET ArcExt
 		CALL	strcpy
 		MOV	AL,':'
@@ -76,8 +73,7 @@ InternExt	DB	'ZIP',0
 		DB	0
 
 		.CODE	Subs
-ChkArcExt	PROC	FAR
-		USES	SI,DI
+ChkArcExt	PROC	FAR	USES	SI DI
 		CALL	CutPath
 		PUSH	DS			; Find in VCARCH.EXT
 		PUSH	ES
@@ -181,8 +177,7 @@ ChkArcExt	ENDP
 ;	Return:	   NC - Ok, DS:SI - pointer to command
 ;		   CY - error
 ;---------------------------------------------------------------
-FindArcCmd	PROC	FAR
-		USES	AX,CX
+FindArcCmd	PROC	FAR	USES	AX CX
 		CMP	SI,30
 		JB	@@Error
 		MOV	CL,AL
@@ -228,8 +223,7 @@ FindArcCmd	ENDP
 ;		  DTA - archive file parameters
 ;		   CY - error, AX - error code
 ;---------------------------------------------------------------
-TestArchive	PROC	FAR
-		USES	SI,DI
+TestArchive	PROC	FAR	USES	SI DI
 		MOV	DL,0
 		CALL	ChkArcExt
 		MOV	AX,0
@@ -258,8 +252,7 @@ TestArchive	ENDP
 ;		   CX - number of arc or pointer
 ;		   AX - 0=found, 1=new archive
 ;---------------------------------------------------------------
-ParseArcName	PROC	FAR
-		USES	BX,DI,BP,DS
+ParseArcName	PROC	FAR	USES	BX DI BP DS
 		PUSH	ES
 		POP	DS
 		MOV	DI,OFFSET TmpErr
@@ -328,7 +321,7 @@ ParseArcName	PROC	FAR
 		JMP	@@Error
   @@ExitArc:	MOV	AX,BP
 		JMP	@@Exit
-  @@NotFound:	CMP	AX,53h
+  @@NotFound:	CMP	AX,WORD PTR 53h
 		JE	@@Error
 		MOV	DI,SI
 		MOV	SI,DX
@@ -378,8 +371,7 @@ ExtractError_B	BOXHD	< ExtractError_P, 900h, 0, Dialog_K, Def_M, Default_H, 2 >
 		DB	0
 
 		.CODE
-ViewArcExtract	PROC	FAR
-		USES	DX,SI,BP,DS
+ViewArcExtract	PROC	FAR	USES	DX SI BP DS
 		MOV	DI,DX
 		MOV	ES:ArcPathName,0
 		CALL	ParseArcName
@@ -430,7 +422,7 @@ ViewArcExtract	PROC	FAR
   @@Create:	MOV	AH,39h
 		CALL	Intr21
 		JNC	@@Extract
-		CMP	AX,5
+		CMP	AX,WORD PTR 5
 		JNE	@@ErrDir
 		MOV	SI,DI
 		MOV	CX,3
@@ -445,7 +437,7 @@ ViewArcExtract	PROC	FAR
 		POP	CX
 		POP	SI
 		POP	DI
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@Error1
   @@ExtractErr:	MOV	AX,OFFSET ExtractError_B
 		JMP	@@Error
@@ -532,12 +524,17 @@ ViewArcExtract	PROC	FAR
   @@Exit:	RET
 ViewArcExtract	ENDP
 
-ViewArcFunc	PROC	NEAR
-		USES	BX,CX,DX,SI,DI,BP
+ViewArcFunc	PROC	NEAR	USES	BX CX DX SI DI BP
 		MOV	BL,AL
 		MOV	DX,OFFSET LineBuf1
 		CALL	ChgDisk
+IF	__TASMIDENT__
+		JNC	@F
+		JMP	NEAR PTR @@Error
+  @@:
+ELSE
 		JC	@@Error
+ENDIF
 		MOV	CX,20h
 		MOV	AX,4301h
 		CALL	Intr21
@@ -548,14 +545,14 @@ ViewArcFunc	PROC	NEAR
 		MOV	AH,56h
 		CALL	Intr21
 		JNC	@@Done
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@Error
 		MOV	SI,DI
 		MOV	DI,OFFSET VwArcTmp
 		MOV	AH,60h
 		CALL	Intr21
 		JNC	@@Compare
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@Error
 		JMP	@@Del
   @@Compare:	PUSH	SI
@@ -579,7 +576,7 @@ ViewArcFunc	PROC	NEAR
 		MOV	AH,3Ah
 		CALL	Intr21
 		JNC	@@Done
-  @@ChkErr:	CMP	AX,53h
+  @@ChkErr:	CMP	AX,WORD PTR 53h
 		JE	@@Error
 		XOR	AX,AX
 		JMP	@@Exit
@@ -594,9 +591,8 @@ ViewArcFunc	ENDP
 ;	Return:	   CY - error, AX - error code
 ;---------------------------------------------------------------
 		.CODE	Subs
-DelTempArcFile	PROC	FAR
-		USES	BX,CX,DX,SI,DI,DS
-		CMP	AX,0FFFFh
+DelTempArcFile	PROC	FAR	USES	BX CX DX SI DI DS
+		CMP	AX,WORD PTR 0FFFFh
 		JE	@@Exit
 		PUSH	SI
 		MOV	DX,OFFSET TmpBuf
@@ -643,8 +639,7 @@ DelTempQuickVw	ENDP
 ;		   DS - WCB segment
 ;	Return:	   CY - error, AX - error code
 ;---------------------------------------------------------------
-DelAllTempArcs	PROC	FAR
-		USES	SI
+DelAllTempArcs	PROC	FAR	USES	SI
 		CMP	DS:ArcPnt,0
 		JE	@@Exit
 		MOV	SI,OFFSET ArcFiles+2
@@ -656,7 +651,7 @@ DelAllTempArcs	PROC	FAR
 		JA	@@Exit
 		CALL	DelTempArcFile
 		JNC	@@FindNext
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JNE	@@FindNext
 		STC
   @@Exit:	RET
@@ -671,12 +666,17 @@ DelAllTempArcs	ENDP
 ;		   CY - error, AX - error code
 ;---------------------------------------------------------------
 		.CODE	Subs
-DetectArc	PROC	FAR
-		USES	SI,DS
+DetectArc	PROC	FAR	USES	SI DS
 		MOV	DX,SI			; Open archive file
 		MOV	AX,53h
 		CALL	ChgDisk
+IF	__TASMIDENT__
+		JNC	@F
+		JMP	NEAR PTR @@Exit
+  @@:
+ELSE
 		JC	@@Exit
+ENDIF
 		MOV	AL,40h
 		CALL	OpenFil
 		JC	@@Exit
@@ -749,8 +749,7 @@ DetectArc	ENDP
 ;			    DX SI - offset in file
 ;		   CY - error, AX - error code, 0=error in archive
 ;---------------------------------------------------------------
-ReadZipHdr	PROC	NEAR
-		USES	ES
+ReadZipHdr	PROC	NEAR	USES	ES
 		MOV	AX,0FFFFh
 		MOV	ES,AX
 		XOR	CX,CX
@@ -1205,7 +1204,7 @@ ZipDisk_T	DW	LineBuf2, TmpBuf+200
 		MOV	SI,DX
 		MOV	DL,0
   @@ZipDir10:	MOV	AX,CX
-		SUB	AX,OFFSET ZipName
+		SUB	AX,WORD PTR OFFSET ZipName
 		JB	@@ZipDir20
 		CMP	AX,DS:[SI].ZipNameLen
 		JB	@@ZipDir20
@@ -1341,7 +1340,7 @@ ZipDisk_T	DW	LineBuf2, TmpBuf+200
 		POP	DS
 		MOV	BX,AX
 		JNC	@@ZipDir01
-		CMP	AX,3
+		CMP	AX,WORD PTR 3
 		JBE	@@ZipDir25
 		JMP	@@ArcRdErr3
 
@@ -1354,7 +1353,7 @@ ZipDisk_T	DW	LineBuf2, TmpBuf+200
 		CALL	Intr21
 		JC	@@ArcRdErr3
 		MOV	AX,CX
-  @@ArcRdErr3:	CMP	AX,53h
+  @@ArcRdErr3:	CMP	AX,WORD PTR 53h
 		JE	@@Error
 		MOV	DX,OFFSET ArcErr1_T
 		JMP	@@ArcErr
@@ -1376,7 +1375,7 @@ ExecArcCalcEnt	PROC	NEAR
 		JE	@@Exit
 		PUSH	ES			; Compare path
 		MOV	AX,ES
-		SUB	AX,(SIZE QuickViewData-1)/16+1
+		SUB	AX,WORD PTR (SIZE QuickViewData-1)/16+1
 		MOV	ES,AX
 		MOV	DI,ES:ViewArcPath
 		CALL	StrLen

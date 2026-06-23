@@ -27,8 +27,7 @@ BegBX		ENDP
 ;	Size of main windows
 ;	Return:	DH,DL - size
 ;---------------------------------------------------------------
-SizDX		PROC	FAR
-		USES	AX
+SizDX		PROC	FAR	USES	AX
 		MOV	DH,ES:Lines
 		SUB	DH,2
 		CMP	ES:FulScr,0
@@ -51,8 +50,7 @@ SizDX		ENDP
 ;	Files in main windows
 ;	Return:	   AX - lines on file panel
 ;---------------------------------------------------------------
-LnsAX		PROC	FAR
-		USES	DX
+LnsAX		PROC	FAR	USES	DX
 		CALL	SizDX
 		MOV	AL,DH
 		CBW
@@ -67,8 +65,7 @@ LnsAX		ENDP
 ;	File name width
 ;	Return:	   AL - file name width
 ;---------------------------------------------------------------
-NameWidthAL	PROC	FAR
-		USES	DX
+NameWidthAL	PROC	FAR	USES	DX
 		MOV	AL,12
 		CMP	DS:LongNames,0
 		JZ	@@Exit
@@ -349,8 +346,7 @@ PutKey		PROC	FAR
 		RET
 PutKey		ENDP
 
-PutKey0		PROC	FAR
-		USES	AX,BX,CX,DX,SI,DI,DS
+PutKey0		PROC	FAR	USES	AX BX CX DX SI DI DS
 		PUSH	CS
 		POP	DS
 		SHL	AL,1
@@ -466,8 +462,7 @@ PutMnu		PROC	FAR
 		RET
 PutMnu		ENDP
 
-PutMnu1		PROC	FAR
-		USES	AX,BX,CX,DX,SI,DI,DS,ES
+PutMnu1		PROC	FAR	USES	AX BX CX DX SI DI DS ES
 		PUSH	ES
 		PUSH	CS
 		POP	DS
@@ -510,9 +505,8 @@ PutMnu1		ENDP
 ;---------------------------------------------------------------
 ;	Output prompt & command line
 ;---------------------------------------------------------------
-PutPrompt	PROC	FAR
-		USES	AX,BX,DX,SI,DI,DS
-		LOCAL	PathBuf:BYTE:LenPath
+PutPrompt	PROC	FAR	USES	AX BX DX SI DI DS
+		LOCAL	PathBuf[LenPath]:BYTE
 		MOV	DS,ES:WCBsec
 		CALL	BegBX
 		CALL	SizDX
@@ -778,8 +772,7 @@ Panel		PROC	FAR
 		RET
 Panel		ENDP
 
-PanelTitle	PROC	NEAR
-		USES	DS,ES
+PanelTitle	PROC	NEAR	USES	DS ES
 		PUSH	DI
 		PUSH	ES
 		POP	DS
@@ -857,8 +850,7 @@ Ext_S		DB	'COM',0
 		DB	'BAT',0
 
 		.CODE	Subs
-TstExe		PROC	FAR
-		USES	AX,CX,SI,DI,ES
+TstExe		PROC	FAR	USES	AX CX SI DI ES
 		CALL	FindFileExt
 		PUSH	CS
 		POP	ES
@@ -876,8 +868,7 @@ TstExe		ENDP
 ;	File sort
 ;		   DS - WCBseg
 ;---------------------------------------------------------------
-FileSort	PROC	FAR
-		USES	AX,BX,CX,DX,SI,DI,BP
+FileSort	PROC	FAR	USES	AX BX CX DX SI DI BP
 		MOV	DI,OFFSET TmpBuf	; Prepare masks
 		MOV	CL,DS:FiltTyp
 		MOV	CH,0
@@ -1086,7 +1077,7 @@ FileSort	PROC	FAR
 		ADD	AX,ES:SizeDataSeg
 		SUB	AX,SI
 		MOV	CX,512
-		CMP	AX,512/16
+		CMP	AX,WORD PTR 512/16
 		JBE	@@Move2
 		MOV	ES,SI
 		XOR	DI,DI
@@ -1175,8 +1166,7 @@ FileSort	PROC	FAR
   @@Exit:	RET
 FileSort	ENDP
 
-CompEntries	PROC	NEAR
-		USES	AX,CX
+CompEntries	PROC	NEAR	USES	AX CX
 		MOV	AL,DS:SortTyp
 		CMP	AL,s_None
 		JB	@@CmpDirAttr
@@ -1343,8 +1333,7 @@ CompName	PROC	NEAR
   @@Exit:	RET
 CompName	ENDP
 
-CmpNumbLen	PROC	NEAR
-		USES	SI
+CmpNumbLen	PROC	NEAR	USES	SI
 		XOR	CX,CX
   @@Char:	INC	CX
 		LODSB
@@ -1363,8 +1352,7 @@ CmpNumbLen	ENDP
 ;	Return:	DS:SI - Address of file, CF=0
 ;			Not found,       CF=1
 ;---------------------------------------------------------------
-FindFile	PROC	FAR
-		USES	AX
+FindFile	PROC	FAR	USES	AX
 		MOV	SI,DS:DiskBuf
   @@FindFile:	CALL	FindFileNext
 		JC	@@FindOffln1
@@ -1399,9 +1387,8 @@ FindFile	ENDP
 ;	Return:	DS:SI - Address of file, CF=0
 ;			Not found,       CF=1
 ;---------------------------------------------------------------
-FindFileNext	PROC	NEAR
-		USES	AX,CX,DI,ES
-		LOCAL	NameBuf:BYTE:257
+FindFileNext	PROC	NEAR	USES	AX CX DI ES
+		LOCAL	NameBuf[257]:BYTE
 		PUSH	DS
 		PUSH	SI
 		PUSH	SS
@@ -1441,8 +1428,7 @@ FindFileNext	PROC	NEAR
   @@Exit:	RET
 FindFileNext	ENDP
 
-FindFileCmp	PROC	NEAR
-		USES	DI
+FindFileCmp	PROC	NEAR	USES	DI
   @@NextChar:	LODSB
 		CALL	UpCase
 		SCASB
@@ -1459,8 +1445,7 @@ FindFileCmp	ENDP
 ;	Return:	DS:SI - Address of file, CF=0
 ;			Not found,       CF=1
 ;---------------------------------------------------------------
-FindFileEntry	PROC	FAR
-		USES	AX,BX,CX,DI
+FindFileEntry	PROC	FAR	USES	AX BX CX DI
 		PUSH	DS
 		PUSH	ES
 		POP	DS
@@ -1536,8 +1521,7 @@ FindFileNear	ENDP
 ;		DS:SI - file entry
 ;	Return:	   AX - number of file
 ;---------------------------------------------------------------
-FileNumb	PROC	FAR
-		USES	BX,CX,SI,DI,ES
+FileNumb	PROC	FAR	USES	BX CX SI DI ES
 		XOR	AX,AX
 		TEST	DS:[SI].AttrF,10h
 		JNZ	@@Exit
@@ -1593,10 +1577,9 @@ Tree_S		DB	'Tree',0
 Info_S		DB	'Info',0
 
 		.CODE	Subs
-PutPath		PROC	FAR
-		LOCAL	PathTitle:BYTE:LenPath+4+13+1
-		LOCAL	FiltTitle:BYTE:16
-		USES	AX,BX,CX,DX,SI,DI,DS,ES
+PutPath		PROC	FAR	USES	AX BX CX DX SI DI DS ES
+		LOCAL	PathTitle[LenPath+4+13+1]:BYTE
+		LOCAL	FiltTitle[16]:BYTE
 		MOV	AL,DS:WinTyp
 		MOV	AH,Back_C
 		MOV	BX,DS
@@ -1785,8 +1768,7 @@ PutPath		ENDP
 ;		ES:DI - address of buffer
 ;		   AL - 0=auto format, 1=long format
 ;---------------------------------------------------------------
-PutName		PROC	NEAR
-		USES	AX,BX,CX,DX,SI
+PutName		PROC	NEAR	USES	AX BX CX DX SI
 		MOV	BL,AL
 		MOV	AH,DS:[SI].AttrF
 		CALL	NameOffset1
@@ -1908,8 +1890,7 @@ PutNam2		ENDP
 ;		ES:DI - address of buffer
 ;		   AL - divider
 ;---------------------------------------------------------------
-SzDtTm		PROC	NEAR
-		USES	AX
+SzDtTm		PROC	NEAR	USES	AX
 		CMP	DS:ShowSize,0
 		JZ	@@SkipSize
 		STOSB
@@ -1951,8 +1932,7 @@ SubDir		DB	'SUB-DIR'
 Absent		DB	'  absent '
 
 		.CODE	Subs
-PutSize		PROC	NEAR
-		USES	AX,BX,CX,SI,DS
+PutSize		PROC	NEAR	USES	AX BX CX SI DS
 		MOV	AL,DS:[SI].AttrF
 		AND	AL,18h
 		JZ	@@Size
@@ -1996,25 +1976,24 @@ PutSize		ENDP
 ;		ES:DI - address of buffer
 ;		   AL - year format: 0=YY, 1=YYYY
 ;---------------------------------------------------------------
-PutDate		PROC	FAR
-		USES	AX,BX,CX,DX,SI
+PutDate		PROC	FAR	USES	AX BX CX DX SI
 		MOV	DL,AL
 		MOV	AX,DS:[SI].DateF
 		PUSH	AX
-		AND	AX,1Fh
+		AND	AX,WORD PTR 1Fh
 		CALL	BinDec
 		MOV	SI,AX
 		POP	AX
 		MOV	CL,5
 		SHR	AX,CL
 		PUSH	AX
-		AND	AX,0Fh
+		AND	AX,WORD PTR 0Fh
 		CALL	BinDec
 		MOV	BX,AX
 		POP	AX
 		MOV	CL,4
 		SHR	AX,CL
-		AND	AX,7Fh
+		AND	AX,WORD PTR 7Fh
 		ADD	AL,80
 		MOV	CL,100
 		DIV	CL
@@ -2064,15 +2043,14 @@ PutDate		ENDP
 ;		DS:SI - address of disk buffer
 ;		ES:DI - address of buffer
 ;---------------------------------------------------------------
-PutTime		PROC	FAR
-		USES	AX,BX,CX,DX
+PutTime		PROC	FAR	USES	AX BX CX DX
 		CMP	ES:Country.TimeFmt,0
 		JZ	@@Space
 		MOV	AL,' '
 		STOSB
   @@Space:	MOV	AX,DS:[SI].TimeF
 		PUSH	AX
-		AND	AX,1Fh
+		AND	AX,WORD PTR 1Fh
 		ADD	AX,AX
 		CALL	BinDec
 		MOV	BX,AX
@@ -2080,13 +2058,13 @@ PutTime		PROC	FAR
 		MOV	CL,5
 		SHR	AX,CL
 		PUSH	AX
-		AND	AX,3Fh
+		AND	AX,WORD PTR 3Fh
 		CALL	BinDec
 		MOV	DX,AX
 		POP	AX
 		MOV	CL,6
 		SHR	AX,CL
-		AND	AX,1Fh
+		AND	AX,WORD PTR 1Fh
 		CMP	ES:Country.TimeFmt,0
 		JNE	@@ConvHours
 		MOV	CL,12
@@ -2130,8 +2108,7 @@ PutTime		ENDP
 Attributes_S	DB	'ASHR'
 
 		.CODE	Subs
-PutAttr		PROC	NEAR
-		USES	AX,SI
+PutAttr		PROC	NEAR	USES	AX SI
 		MOV	AH,AL
 		MOV	SI,OFFSET Attributes_S
 		SHL	AH,1
@@ -2161,8 +2138,7 @@ SetAttrib	ENDP
 ;		   CX - length
 ;---------------------------------------------------------------
 		.CODE	Subs
-PutDescr	PROC	NEAR
-		USES	AX,CX,SI
+PutDescr	PROC	NEAR	USES	AX CX SI
 		INC	CX
 		MOV	SI,DS:[SI].DescrF
 		OR	SI,SI
@@ -2227,8 +2203,7 @@ PutDescr	ENDP
 ;	Return:	AL,AH - high and low digits
 ;---------------------------------------------------------------
 		.CODE	Subs
-BinDec		PROC	FAR
-		USES	CX
+BinDec		PROC	FAR	USES	CX
 		MOV	AH,0
 		MOV	CL,10
 		DIV	CL
@@ -2240,8 +2215,7 @@ BinDec		ENDP
 ;	Correct first parameter
 ;		   DS - WCBseg
 ;---------------------------------------------------------------
-CorPar		PROC	FAR
-		USES	AX,BX,CX,DX,SI,DI
+CorPar		PROC	FAR	USES	AX BX CX DX SI DI
 		CMP	DS:WinTyp,p_Tree
 		JA	@@Exit			; Info or QuickView panel
 		CALL	AdrNum
@@ -2274,8 +2248,7 @@ CorPar		ENDP
 ;		 AL=0 - reset cursor
 ;		 AL=1 - set cursor
 ;---------------------------------------------------------------
-SetCur		PROC	FAR
-		USES	AX,BX,CX,DX,SI,DI,ES
+SetCur		PROC	FAR	USES	AX BX CX DX SI DI ES
 		MOV	AH,Back_C
 		CMP	AL,0
 		JZ	@@SetColor
@@ -2395,8 +2368,7 @@ SetCur		ENDP
 ;---------------------------------------------------------------
 ;	Test info
 ;---------------------------------------------------------------
-TstInfo		PROC	FAR
-		USES	AX,DS
+TstInfo		PROC	FAR	USES	AX DS
 		MOV	AL,DS:WinTyp
 		CALL	InvWCB
 		CMP	AL,DS:WinTyp
@@ -2416,8 +2388,7 @@ TstInfo		ENDP
 FilDi_S	DB	' files and  directoriesy'
 
 		.CODE	Subs
-FilDir		PROC	FAR
-		USES	AX,CX,SI,DS
+FilDir		PROC	FAR	USES	AX CX SI DS
 		PUSH	CS
 		POP	DS
 		MOV	AH,AL
@@ -2464,8 +2435,7 @@ FilDir		ENDP
 ;	Return:	   DX - files
 ;		   BX - directories
 ;---------------------------------------------------------------
-TotSel		PROC	FAR
-		USES	SI
+TotSel		PROC	FAR	USES	SI
 		MOV	SI,DS:DiskBuf
 		XOR	BX,BX
 		XOR	DX,DX
@@ -2531,7 +2501,12 @@ FindNextItem	PROC	FAR
 		JE	FndItem
 		CMP	AL,1Ah
 		JNE	FindNextItem
-  NotFoundItem:	STC
+IFDEF	__JWASM__
+NotFoundItem::
+ELSE
+NotFoundItem:
+ENDIF
+		STC
 		RET
 FindNextItem	ENDP
 
@@ -2544,10 +2519,14 @@ FindNextItem	ENDP
 ;		DS:SI - string, 0 - if not found
 ;		DS:AX - main extension
 ;---------------------------------------------------------------
-FindExt		PROC	FAR
-		USES	BX,CX,DX
-		LOCAL	NameBuf:BYTE:256+1
+FindExt		PROC	FAR	USES	BX CX DX
+		LOCAL	NameBuf[256+1]:BYTE
+; XXX JWASM aligns word type variables on word boundary, but TASM doesn't
+IF	__TASMIDENT__
+		LOCAL	ExtMain[2]:BYTE
+ELSE
 		LOCAL	ExtMain:WORD
+ENDIF
 		MOV	DL,AL
 		CALL	FndItem
   @@Item:	JC	@@NotFound
@@ -2586,7 +2565,7 @@ FindExt		PROC	FAR
 		LEA	SI,NameBuf
 		CMP	DI,SI
 		JNE	@@ChkFlags
-		MOV	ExtMain,BX
+		MOV	WORD PTR ExtMain,BX
   @@ChkFlags:	CMP	DL,1
 		JB	@@ChkSize
 		JE	@@ChkName
@@ -2681,7 +2660,7 @@ FindExt		PROC	FAR
 		POP	SI
 		POP	ES
 		POP	DS
-		MOV	AX,ExtMain
+		MOV	AX,WORD PTR ExtMain
 		JZ	@@Exit
   @@NextItem:	CALL	FindNextItem
 		JMP	@@Item
@@ -2740,8 +2719,7 @@ FindCommand	ENDP
 ;		   CY - single line, ES:DX = TmpBuf - result file
 ;				     AL - 0=no path, 1=path present
 ;---------------------------------------------------------------
-SingleLine	PROC	FAR
-		USES	BP
+SingleLine	PROC	FAR	USES	BP
 		XOR	BP,BP
 		CMP	BYTE PTR DS:[SI],'"'
 		JNE	@@ChkDrv
@@ -2828,8 +2806,7 @@ SingleLine	ENDP
 ;---------------------------------------------------------------
 ;	Release time-slice
 ;---------------------------------------------------------------
-Yield		PROC	FAR
-		USES	AX
+Yield		PROC	FAR	USES	AX
 		CMP	ES:TaskStack,0
 		JE	@@DOSIdle
 		CALL	TaskSwitch
@@ -2856,8 +2833,7 @@ Yield		ENDP
 ;---------------------------------------------------------------
 ;	Task switch
 ;---------------------------------------------------------------
-TaskSwitch	PROC	FAR
-		USES	AX,BX,CX,DX,SI,DI,DS,ES
+TaskSwitch	PROC	FAR	USES	AX BX CX DX SI DI DS ES
 		PUSH	BP
 		PUSHF
 		XCHG	SP,ES:TaskStack
@@ -2901,8 +2877,7 @@ EdKeys2		DW	0E08h, ELBackSpace	; BackSpace
 		DW	0
 
 		.CODE	Subs
-EdLin		PROC	FAR
-		USES	AX,BX,CX,SI,DI,DS
+EdLin		PROC	FAR	USES	AX BX CX SI DI DS
 		MOV	BX,CX
 		AND	CH,7Fh
 		MOV	DI,SI
@@ -2960,22 +2935,52 @@ EdLin		PROC	FAR
 		JNE	@@Delete
   @@Changes:	STC
 		JMP	@@Exit
-ELLeftChar:	OR	DX,DX			; Left,   ^S
+IFDEF	__JWASM__
+ELLeftChar::
+ELSE
+ELLeftChar:
+ENDIF
+		OR	DX,DX			; Left,   ^S
 		JE	@@NoChanges
 		DEC	DX
 		JMP	@@Changes
-ELRightChar:	ADD	DI,DX			; Right,  ^D
+IFDEF	__JWASM__
+ELRightChar::
+ELSE
+ELRightChar:
+ENDIF
+		ADD	DI,DX			; Right,  ^D
 		CMP	BYTE PTR DS:[DI],0
 		JE	@@NoChanges
 		INC	DX
 		JMP	@@Changes
-ELLeftWord:	CALL	ELWordLeft		; ^Left,  ^A
+IFDEF	__JWASM__
+ELLeftWord::
+ELSE
+ELLeftWord:
+ENDIF
+		CALL	ELWordLeft		; ^Left,  ^A
 		JMP	@@Changes
-ELRightWord:	CALL	ELWordRight		; ^Right, ^F
+IFDEF	__JWASM__
+ELRightWord::
+ELSE
+ELRightWord:
+ENDIF
+		CALL	ELWordRight		; ^Right, ^F
 		JMP	@@Changes
-ELHome:		XOR	DX,DX			; Home
+IFDEF	__JWASM__
+ELHome::
+ELSE
+ELHome:
+ENDIF
+		XOR	DX,DX			; Home
 		JMP	@@Changes
-ELEnd:		MOV	SI,DI			; End
+IFDEF	__JWASM__
+ELEnd::
+ELSE
+ELEnd:
+ENDIF
+		MOV	SI,DI			; End
 		MOV	AL,0
 		INC	CX
 		PUSH	ES
@@ -2987,25 +2992,60 @@ ELEnd:		MOV	SI,DI			; End
 		MOV	DX,DI
 		SUB	DX,SI
 		JMP	@@Changes
-ELBackSpace:	OR	DX,DX			; BackSpace
+IFDEF	__JWASM__
+ELBackSpace::
+ELSE
+ELBackSpace:
+ENDIF
+		OR	DX,DX			; BackSpace
 		JE	@@NoChanges
 		DEC	DX
-ELDelChar:	ADD	DI,DX			; Del, ^G
+IFDEF	__JWASM__
+ELDelChar::
+ELSE
+ELDelChar:
+ENDIF
+		ADD	DI,DX			; Del, ^G
 		CMP	BYTE PTR DS:[DI],0
 		JE	@@NoChanges
 		LEA	SI,[DI+1]
 		JMP	@@Delete
-ELDelLine:	XOR	DX,DX			; ^Y
-ELDelEnd:	ADD	DI,DX			; ^K
+IFDEF	__JWASM__
+ELDelLine::
+ELSE
+ELDelLine:
+ENDIF
+		XOR	DX,DX			; ^Y
+IFDEF	__JWASM__
+ELDelEnd::
+ELSE
+ELDelEnd:
+ENDIF
+		ADD	DI,DX			; ^K
 		MOV	BYTE PTR DS:[DI],0
 		JMP	@@Changes
-ELDelWordLeft:	CALL	ELWordLeft		; ^BackSpace, ^W
+IFDEF	__JWASM__
+ELDelWordLeft::
+ELSE
+ELDelWordLeft:
+ENDIF
+		CALL	ELWordLeft		; ^BackSpace, ^W
 		JMP	@@Delete
-ELDelWordRight:	PUSH	DX			; ^T
+IFDEF	__JWASM__
+ELDelWordRight::
+ELSE
+ELDelWordRight:
+ENDIF
+		PUSH	DX			; ^T
 		CALL	ELWordRight
 		POP	DX
 		JMP	@@Delete
-ELQuote:	MOV	ES:Quote,1		; ^Q
+IFDEF	__JWASM__
+ELQuote::
+ELSE
+ELQuote:
+ENDIF
+		MOV	ES:Quote,1		; ^Q
   @@NoChanges:	CLC
   @@Exit:	RET
 EdLin		ENDP
@@ -3063,8 +3103,7 @@ ELWordRight	ENDP
 CtEn_T		DB	' +:.,><|\"',9
 
 		.CODE	Subs
-CmpSym		PROC	FAR
-		USES	CX,DI,ES
+CmpSym		PROC	FAR	USES	CX DI ES
 		PUSH	CS
 		POP	ES
 		MOV	DI,OFFSET CtEn_T
@@ -3140,8 +3179,7 @@ ExeExt_S	DB	'.exe',0
 ComExt_S	DB	'.com',0
 
 		.CODE	Subs
-FindPath	PROC	FAR
-		USES	BX,CX,DX,SI,DI,BP,DS,ES
+FindPath	PROC	FAR	USES	BX CX DX SI DI BP DS ES
 		PUSH	DS			; Check file without path
 		POP	ES
 		MOV	DX,SI
@@ -3222,7 +3260,7 @@ FindPath	PROC	FAR
 		TEST	CX,18h
 		JZ	@@Exit
 		MOV	AL,0
-  @@NotCom:	CMP	AX,53h
+  @@NotCom:	CMP	AX,WORD PTR 53h
 		JE	@@Error
 		PUSH	DS
 		PUSH	SI
@@ -3250,7 +3288,7 @@ FindPath	PROC	FAR
 		JZ	@@Exit
 		MOV	AL,0
   @@NotExe:	MOV	BYTE PTR ES:[DI],0
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JE	@@Error
 		JMP	@@AddPath
 
@@ -3317,10 +3355,9 @@ FindPathMove	ENDP
 ;		ES:DI - buffer (cluster, total, free)
 ;	Return:	   CY - error, AX - code
 ;---------------------------------------------------------------
-GetDiskInfo	PROC	FAR
-		USES	BX,CX,DX,SI,DI,DS
-		LOCAL	DiskBuffer:BYTE:4
-		LOCAL	InfoBuffer:BYTE:3Ch
+GetDiskInfo	PROC	FAR	USES	BX CX DX SI DI DS
+		LOCAL	DiskBuffer[4]:BYTE
+		LOCAL	InfoBuffer[3Ch]:BYTE
 		MOV	BL,AL
 		CALL	Phantom
 		MOV	AX,53h
@@ -3346,7 +3383,7 @@ GetDiskInfo	PROC	FAR
 		POP	SI
 		POP	ES
 		JNC	@@SaveInfo
-		CMP	AX,53h
+		CMP	AX,WORD PTR 53h
 		JNE	@@Fat16
 		STC
 		JMP	@@Exit

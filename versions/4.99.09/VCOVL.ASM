@@ -7,8 +7,13 @@
 		.MODEL	Medium,C
 ;		.STACK	3072 ; 3K
 		.STACK	2304 ; 2.2K
+IFDEF	__JWASM__
+		OPTION oldstructs
+		.DOSSEG
+ELSE
 		LOCALS	@@
 		JUMPS
+ENDIF
 Dgroup		GROUP	Subs,_DATA,CONST
 
 		INCLUDE	VCDATA.INC
@@ -266,7 +271,7 @@ AllocDataSeg	PROC	NEAR
 		MOV	BX,0FFFFh		; Check max free space
 		MOV	AH,4Ah
 		INT	21h			; realloc(-1)
-		CMP	AX,8			; insufficient memory
+		CMP	AX,WORD PTR 8		; insufficient memory
 		JNE	InitAbort		; unexpected error
 		MOV	DI,BX			; max available reallocation size
 		MOV	AX,SP			; compress our memory block
@@ -286,7 +291,7 @@ AllocDataSeg	PROC	NEAR
 		MOV	BX,0FFFFh		; Allocate data segment
 		MOV	AH,48h
 		INT	21h			; fmem = malloc(-1) - query largest free memory block
-		CMP	AX,8			; insufficient memory
+		CMP	AX,WORD PTR 8		; insufficient memory
 		JNE	InitAbort		; unexpected error
 		MOV	AH,48h
 		INT	21h			; DataSegment = malloc(fmem)
@@ -414,7 +419,7 @@ Restore_XMS	PROC	NEAR
 		MOV	DS:[SI].DestOffset.Segm,DS
 		MOV	AH,0Bh
 		CALL	ES:CallXMS
-		CMP	AX,1
+		CMP	AX,WORD PTR 1
 		JNE	@@Error
 		MOV	BX,DS:ComnIni.NormalSize
 		MOV	AH,0Fh
@@ -678,7 +683,7 @@ RebuildPanelFiles	PROC	NEAR
   @@SetShortNameLen:
 		MOV	AX,DI
 		SUB	AX,BP
-		SUB	AX,SIZE FilEnt
+		SUB	AX,WORD PTR SIZE FilEnt
 		MOV	ES:[BP].LenShortNamF,AX	; p - &DiskBuf - sizeof(FilEnt)
 		MOV	ES:[BP].LenLongNamF,0
 		JMP	RebuildPanelFiles
@@ -687,7 +692,7 @@ RebuildPanelFiles	ENDP
 
 PadPanelBlock	PROC	NEAR
 		MOV	AX,ES:DiskBuf
-		ADD	AX,SIZE FilEnt+3
+		ADD	AX,WORD PTR SIZE FilEnt+3
 		CMP	AX,DI
 		JBE	@@Exit
 		MOV	DI,AX
@@ -1095,7 +1100,7 @@ GetVerDOS	PROC	NEAR
 		CMP	AL,0FFh
 		JE	@@GetDOSVer		; true DOS version < 5.0
 		MOV	AX,BX
-		CMP	AX,0FFFFh
+		CMP	AX,WORD PTR 0FFFFh
 		JE	@@GetDOSVer		; DOS version -1
 		CMP	AH,100
 		JAE	@@GetDOSVer		; DOS minor version >= 100
@@ -1114,7 +1119,7 @@ GetVerDOS	PROC	NEAR
   @@GetDOSVer:
 		MOV	AH,30h
 		INT	21h			; DOS_GetVer()
-		CMP	AX,4
+		CMP	AX,WORD PTR 4
 		JNE	@@Exit
 		CMP	BH,0FFh
 		JNE	@@Exit
@@ -1488,8 +1493,7 @@ Panels30:	PUSH	ES			; Mode error
 Panels31:	MOV	DS,ES:WCBcrn
 		JMP	Func02
 
-Panels40	PROC	NEAR
-		USES	AX,BX,SI,BP
+Panels40	PROC	NEAR	USES	AX BX SI BP
 		XOR	AX,AX
 		XOR	BX,BX
 		MOV	SI,OFFSET GlobalSegs_L
@@ -1548,7 +1552,7 @@ Panels40	ENDP
 Panels50	PROC	NEAR
 		MOV	AX,0FFFFh
 		XCHG	AX,DS:[SI]
-		CMP	AX,0FFFFh
+		CMP	AX,WORD PTR 0FFFFh
 		JE	@@Exit
 		MOV	SI,OFFSET List_F
 		MOV	DI,OFFSET TmpBuf
@@ -1893,7 +1897,13 @@ Func31:		POP	DS
 		POP	AX
 		MOV	ES:MouseCur,0FFh
 		CMP	AH,0FCh
+IF	__TASMIDENT__
+		JNE	@F
+		JMP	NEAR PTR Mouse00
+  @@:
+ELSE
 		JE	Mouse00
+ENDIF
 		CMP	DS:Visible,0
 		JZ	Func40
 		CMP	DS:WinTyp,p_Info
@@ -2049,7 +2059,13 @@ Mouse30:	MOV	BP,AX			; Change width of long name
 		CMP	AL,DL
 		POP	AX
 		POP	DX
+IF	__TASMIDENT__
+		JNE	@F
+		JMP	NEAR PTR Mouse40
+  @@:
+ELSE
 		JE	Mouse40
+ENDIF
 Mouse31:	XCHG	AL,DL
 		INC	DX
 		DIV	DL
@@ -2668,7 +2684,7 @@ Run_50:		CMP	AL,'@'			; !@
 Run_51:		MOV	DX,OFFSET TmpBuf
 		MOV	SI,OFFSET List_F
 		MOV	AX,ES:[BP]
-		CMP	AX,0FFFFh
+		CMP	AX,WORD PTR 0FFFFh
 		JNE	Run_54
 		MOV	DI,DX
 		CALL	MoveTempPath
@@ -2966,7 +2982,7 @@ RunCmd20:	CMP	AL,2			; XMS mode
 		MOV	DS,CS:SubsSeg
 		MOV	AH,0Eh
 		CALL	DS:CallXMS
-		CMP	AX,1
+		CMP	AX,WORD PTR 1
 		JNE	RunCmd24
 		MOV	CL,10
 		MOV	BX,ES:DatPoint
@@ -2983,7 +2999,7 @@ RunCmd21:	PUSH	BX
 		MOV	AH,0Fh
 		CALL	DS:CallXMS
 		POP	DX
-		CMP	AX,1
+		CMP	AX,WORD PTR 1
 		JE	RunCmd22
 		DEC	DX
 		CMP	BL,0A0h
@@ -3231,7 +3247,7 @@ RunCmd45:	CMP	AL,2			; XMS mode
 		CALL	DWORD PTR [BP-4]
 		MOV	SP,BP
 		POP	DS
-		CMP	AX,1
+		CMP	AX,WORD PTR 1
 		JE	RunCmd60
 		MOV	DX,OFFSET ErrorXMS_S
 RunCmd46:	MOV	DS,CS:SubsSeg
@@ -3247,7 +3263,7 @@ RunCmd46:	MOV	DS,CS:SubsSeg
 		MOV	BX,0FFFFh
 		MOV	AH,4Ah
 		INT	21h
-		CMP	AX,8			; insufficient memory
+		CMP	AX,WORD PTR 8		; insufficient memory
 		JNE	InitAbort
 		PUSH	ES:ComnIni.FreeMem
 		PUSH	SI
@@ -3316,8 +3332,8 @@ RunCmd63:	MOV	AH,49h
 		CLC
 		JMP	GoResident
 
-RunCmd70	PROC	NEAR			; Open swap file
-		USES	CX,DX,SI,DI
+; Open swap file
+RunCmd70	PROC	NEAR	USES	CX DX SI DI
 		PUSH	ES
 		POP	DS
 		MOV	DX,OFFSET ComnIni.TempDir
@@ -3366,15 +3382,18 @@ RestVct		PROC	NEAR
 		MOV	AX,2524h
 		INT	21h
 
+IFDEF	__JWASM__
+RestVct_CtrlBreak::
+ELSE
 RestVct_CtrlBreak:
+ENDIF
 		LDS	DX,ES:BrkVct
 		MOV	AX,251Bh
 		INT	21h
 		RET
 RestVct		ENDP
 
-HookVct		PROC	NEAR
-		USES	DS
+HookVct		PROC	NEAR	USES	DS
 		MOV	AX,3524h
 		INT	21h
 		MOV	DS:ErrVct.Offs,BX
@@ -3398,8 +3417,7 @@ HookVct		ENDP
 ;	Output to StdError
 ;		DS:DX - string
 ;---------------------------------------------------------------
-OutErr		PROC	NEAR
-		USES	BX,CX,DI,ES
+OutErr		PROC	NEAR	USES	BX CX DI ES
 		PUSH	DS
 		POP	ES
 		MOV	BX,2
