@@ -395,14 +395,14 @@ DialBox		ENDP
 ;			^nnnQs1/s2/	- insert string s1 if 1, or s2 if not
 ;	Return:	   AX - length of string (if AL was 0)
 ;---------------------------------------------------------------
-IFDEF	__TASMIDENT__
+IF	__TASMIDENT__
 NgLine		PROC	FAR
 ELSE
 NgLine		PROC	FAR	USES	BX CX DI ES
 ENDIF
 		LOCAL	StringBuf[128]:BYTE
 ; XXX JWASM uses add sp,byte -0x80 instead of sub sp, 0x80
-IFDEF	__TASMIDENT__
+IF	__TASMIDENT__
 		NOP
 		PUSH	BX
 		PUSH	CX
@@ -654,7 +654,7 @@ ENDIF
 		JNE	@@NoReturn
 		MOV	AX,DI
   @@NoReturn:
-IFDEF	__TASMIDENT__
+IF	__TASMIDENT__
 		POP	ES
 		POP	DI
 		POP	CX
