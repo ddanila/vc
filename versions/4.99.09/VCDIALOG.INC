@@ -401,7 +401,7 @@ ELSE
 NgLine		PROC	FAR	USES	BX CX DI ES
 ENDIF
 		LOCAL	StringBuf[128]:BYTE
-; XXX JWASM uses add sp,byte -0x80 instead of sub sp, 0x80
+; JWASM uses add sp,byte -0x80 instead of sub sp,0x80
 IF	__TASMIDENT__
 		NOP
 		PUSH	BX

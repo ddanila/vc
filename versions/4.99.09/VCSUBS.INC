@@ -2521,7 +2521,7 @@ FindNextItem	ENDP
 ;---------------------------------------------------------------
 FindExt		PROC	FAR	USES	BX CX DX
 		LOCAL	NameBuf[256+1]:BYTE
-; XXX JWASM aligns word type variables on word boundary, but TASM doesn't
+; JWASM aligns word type variables at word boundary, but TASM doesn't
 IF	__TASMIDENT__
 		LOCAL	ExtMain[2]:BYTE
 ELSE

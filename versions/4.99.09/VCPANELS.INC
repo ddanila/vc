@@ -1748,7 +1748,7 @@ PutTree		PROC	FAR	USES	AX BX CX DX SI DI DS
 		LOCAL	LineBuffer[1024]:BYTE
 		LOCAL	PathBuffer[LenPath]:BYTE
 		LOCAL	Branches[128]:BYTE
-; XXX JWASM aligns word type variables at word boundary, TASM doesn't
+; JWASM aligns word type variables at word boundary, TASM doesn't
 IF	__TASMIDENT__
 		LOCAL	WCBsegment[2]:BYTE
 		LOCAL	StatusLine[2]:BYTE
@@ -1882,8 +1882,8 @@ ENDIF
 
 		LEA	BX,Branches		; Output vertical branches
 		MOV	CL,DS:[SI].DirLevel
-;;		JLONG	JCXZ,	@@ChkNew	; XXX BUG Jump out of range
 
+; TODO restore jcxz opcode when JWASM version with bugfix is released
 _JCXZ	MACRO	l_name
 		DB	0E3h
 		DB	offset l_name - ($ + 1)

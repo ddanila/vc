@@ -21,6 +21,11 @@ Dgroup		GROUP	Subs,_DATA,CONST
 		.CODE	Subs2
 		DB	13,10,13,10,'SUBROUTINES',13,10
 
+; make sure Subs segment is align(16)
+IF	__TASMIDENT__
+Subs SEGMENT PARA 'CODE'
+Subs ENDS
+ENDIF
 		.CODE	Subs
 		DB	13,10,13,10,'SUBROUTINES2',13,10
 DataSegment	DW	0

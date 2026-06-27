@@ -1109,7 +1109,7 @@ F35_Init	ENDP
 ;	Copy/move/rename file or directory
 ;---------------------------------------------------------------
 C00_00		PROC	NEAR
-; XXX was USES prologue, changed because of nested C00_40 proc
+; was USES prologue, JWASM doesn't understand nested procs(C00_40)
 		PUSH	BX
 		PUSH	CX
 		PUSH	DX
@@ -1333,7 +1333,7 @@ C00_32:		TEST	DS:GroupAttr,10h
 		MOV	AL,0
 		JMP	C30_00			; Rename dir
 
-C00_40:					; XXX was nested proc
+C00_40:					; was nested proc, changed for JWASM compatibility
 		CMP	AX,'\\'
 		JE	C00_42
 		CALL	UpCase
@@ -3205,7 +3205,7 @@ C00_81:		MOV	ES:SftErr,0
 		CMP	AH,1
 		CMC
 
-; XXX was USES epilogue, changed because of nested C00_40 proc
+; was USES epilogue, JWASM doesn't understand nested procs(C00_40)
 		POP	DS
 		POP	BP
 		POP	DI

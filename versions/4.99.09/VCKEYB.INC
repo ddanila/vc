@@ -167,7 +167,7 @@ Input		PROC	FAR
 Input		ENDP
 
 Input0		PROC	FAR	USES	DS SI DI DX CX BX
-; XXX TASM aligns stack variables at word boundary, JWASM doesn't
+; TASM aligns stack variables at word boundary, JWASM doesn't
 IF	__TASMIDENT__
 		LOCAL	Pad1	:BYTE
 ENDIF
