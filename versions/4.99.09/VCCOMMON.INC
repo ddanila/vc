@@ -438,7 +438,7 @@ ShortName	PROC	FAR	USES	CX DX SI DI DS
 		JE	@@Phantom
 		MOV	AL,ES:DosPath[0]
   @@Phantom:	CALL	Phantom
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		POP	ES
 		JC	@@Error
 		MOV	CX,8001h
@@ -559,7 +559,7 @@ NormPath	PROC	FAR	USES	BX CX DX SI DI
 		JMP	@@AddSlash
   @@CurDir:	MOV	DL,AL
 		CALL	Phantom
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		JC	@@Exit
 		PUSH	DS
 		PUSH	SI
@@ -1281,7 +1281,7 @@ GetFS		PROC	FAR	USES	BX CX DX SI DI DS
 		MOV	AX,71A0h
 		INT	21h
 		JNC	@@ChkLen
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JNE	@@Zero
 		STC
 		JMP	@@Exit
@@ -1563,7 +1563,7 @@ ENDIF
 		STC
 		RET
   @@Error:	POPF
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		STC
   @@Exit:	RET
 Intr21		ENDP
@@ -1797,7 +1797,7 @@ RealPath	PROC	FAR	USES	CX DX SI DI DS ES
 		MOV	AX,7160h
 		CALL	Intr21
 		JNC	@@ChDir
-		XOR	AX,WORD PTR 53h
+		XOR	AX,WORD PTR ErrFail
 		JNE	@@Exit
 		STC
 		JMP	@@Exit
@@ -1854,12 +1854,12 @@ OpenTempFile	PROC	FAR	USES	CX SI DS
 		PUSH	ES
 		POP	DS
 		CALL	ChgDisk
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		JC	@@Error
 		XOR	BX,BX
   @@OpenFile:	MOV	CX,20h
 		MOV	AH,5Bh
-		CALL	Intr21
+		CALL	Intr21			; CreatNew()
 		JNC	@@Exit
 		CMP	AX,WORD PTR 3
 		JBE	@@Error

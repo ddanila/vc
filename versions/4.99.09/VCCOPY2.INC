@@ -22,7 +22,7 @@ F35_Compare	PROC	NEAR	USES	BX CX SI DI DS
 		MOV	DI,OFFSET LineBuf4
 		CALL	F35_TrueName
 		JNC	@@Compare
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@Error
   @@NotEqu:	XOR	AX,AX
   @@Error:	STC
@@ -139,7 +139,7 @@ F35_ChkTarget	PROC	NEAR	USES	CX DX
 		CALL	OpenFil
 		MOV	DS:BlocEr,0
 		JNC	@@GetSize
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JNE	@@SetDrive
 		CMP	DS:ErrDat,2
 		JNE	@@Exit
@@ -149,12 +149,12 @@ F35_ChkTarget	PROC	NEAR	USES	CX DX
 		XOR	CX,CX
 		XOR	DX,DX
 		MOV	BX,AX
-		MOV	AX,4202h
+		MOV	AX,4202h		; lseek(.., 0, SEEK_END)
 		CALL	Intr21
 		MOV	DI,DX
 		MOV	SI,AX
 		MOV	AH,3Eh
-		CALL	Intr21
+		CALL	Intr21			; close()
 		POP	DX
   @@SetDrive:	MOV	BX,DX
 		MOV	AX,DS:[BX]
@@ -166,7 +166,7 @@ F35_ChkTarget	PROC	NEAR	USES	CX DX
 		MOV	DI,OFFSET TmpBuf
 		CALL	GetDiskInfo
 		JNC	@@ChkSpace
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@Exit
   @@ExitOk:	MOV	AL,0
 		JMP	@@Exit
@@ -230,12 +230,12 @@ F35_MkPath	PROC	NEAR	USES	BX CX SI
 		CALL	Intr21
 		XCHG	DS:[SI-1],BL
 		JNC	@@FindNext
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		STC
 		JE	@@Exit
 		XCHG	DS:[SI-1],BL
 		MOV	AH,39h
-		CALL	Intr21
+		CALL	Intr21			; mkdir()
 		XCHG	DS:[SI-1],BL
 		JC	@@Exit
 		MOV	DS:GroupChg,1
@@ -581,7 +581,7 @@ F35_SaveTarget	PROC	NEAR	USES	AX CX DX SI DI BP DS ES
 		XCHG	DL,DS:[BP-1]
   @@Convert:	CALL	TrueName
 		JNC	@@Length
-		XOR	AX,WORD PTR 53h
+		XOR	AX,WORD PTR ErrFail
 		JNE	@@Restore
 		STC
 		JMP	@@Exit
@@ -773,7 +773,7 @@ F35_Overwrite	PROC	FAR	USES	BX CX SI DI BP
 		CALL	F35_GetAttribs
 		POP	DX
 		JNC	@@DestParms
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		STC
 		JE	@@Exit
 		XOR	SI,SI
@@ -833,23 +833,23 @@ F35_PutAttribs	ENDP
 		.CODE	Subs
 F35_GetAttribs	PROC	FAR	USES	DX
 		CALL	ChgDisk
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		JC	@@Exit
 		MOV	AL,40h
 		CALL	OpenFil
 		JC	@@Exit
 		MOV	BX,AX
 		MOV	AX,5700h
-		CALL	Intr21
+		CALL	Intr21			; GetFTime()
 		MOV	SI,CX
 		MOV	DI,DX
 		XOR	CX,CX
 		XOR	DX,DX
 		MOV	AX,4202h
-		CALL	Intr21
+		CALL	Intr21			; lseek(.., 0, SEEK_END)
 		MOV	CX,AX
 		MOV	AH,3Eh
-		CALL	Intr21
+		CALL	Intr21			; close()
 		MOV	BX,DX
   @@Exit:	RET
 F35_GetAttribs	ENDP

@@ -87,7 +87,7 @@ ReadDir		PROC	FAR	USES	AX BX CX DX SI DI ES
 		MOV	CX,DS:WinLongPath[2].Lo
 		MOV	DX,DS:WinLongPath[2].Hi
 		JNC	@@CmpSerNum
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@SerialErr
 		CMP	AX,WORD PTR 15h
 		JE	@@SerialErr
@@ -145,7 +145,7 @@ ReadDir		PROC	FAR	USES	AX BX CX DX SI DI ES
 		CALL	TestArchive
 		POP	DS
 		JNC	@@ArcFound
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@ArcPathErr
 		OR	AX,AX
 		JNE	@@NoArchive
@@ -156,7 +156,7 @@ ReadDir		PROC	FAR	USES	AX BX CX DX SI DI ES
 		CALL	DetectArc
 		POP	DS
 		JNC	@@ArcFound
-  @@ArcPathEr1:	CMP	AX,WORD PTR 53h
+  @@ArcPathEr1:	CMP	AX,WORD PTR ErrFail
 		JNE	@@NoArchive
   @@ArcPathErr:	MOV	DI,DS:DiskBuf
 		ADD	DI,SIZE FilEnt+3
@@ -214,7 +214,7 @@ ReadDir		PROC	FAR	USES	AX BX CX DX SI DI ES
 		JNE	@@ErrMsg
 		CMP	AL,0
 		JE	@@NoArchive
-		CMP	AL,53h
+		CMP	AL,ErrFail
 		JE	@@PathErr
 		JMP	@@SearchOk
   @@ErrMsg:	PUSH	BP
@@ -263,7 +263,7 @@ ReadDir		PROC	FAR	USES	AX BX CX DX SI DI ES
 		CMP	AX,WORD PTR 2
 		JNE	@@FindError
 		MOV	AX,12h
-  @@FindError:	CMP	AX,WORD PTR 53h
+  @@FindError:	CMP	AX,WORD PTR ErrFail
 		JE	@@PathErr
 		CMP	AX,WORD PTR 3
 		JA	@@SearchOk
@@ -303,12 +303,12 @@ ReadDir		PROC	FAR	USES	AX BX CX DX SI DI ES
 		JC	@@PathErr
 		MOV	SI,OFFSET WinShortPath+3
 		MOV	AH,47h
-		CALL	Intr21
+		CALL	Intr21			; getcwd()
 		JNC	@@NewDrive
 		CMP	AX,WORD PTR 0Fh
 		JE	@@NextDrive
-		CMP	AX,WORD PTR 53h
-		JE	@@NextDrive
+		CMP	AX,WORD PTR ErrFail
+		JE	@@NextDrive		; no disk in drive
 		JMP	@@PathErr
   @@NewDrive:	ADD	DL,'A'-1
 		MOV	DS:WinShortPath[0],DL
@@ -414,7 +414,7 @@ ENDIF
 		POP	DS
 		POP	ES
 		JNC	@@SearchOk
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@SearchErr
   @@SearchOk:	MOV	DS:ChgFlg,0
   @@SearchErr:	MOV	DS:EndFul,DI
@@ -473,7 +473,7 @@ ENDIF
 		MOV	BYTE PTR DS:[DI],1Ah
 		INC	DI
 		JMP	@@ReadDescr
-  @@ErrExt:	CMP	AL,53h
+  @@ErrExt:	CMP	AL,ErrFail
 		JNE	@@ReadDescr
 		MOV	DS:ChgFlg,1
 		JMP	@@Sort
@@ -695,7 +695,7 @@ DescrEnd	EQU	SizeWCB
   @@EndDescr:	POP	DI
 		POP	ES
 		JMP	@@DirSizes
-  @@ErrDescr:	CMP	AX,WORD PTR 53h
+  @@ErrDescr:	CMP	AX,WORD PTR ErrFail
 		JNE	@@DirSizes
 		MOV	DS:ChgFlg,1
 		JMP	@@Sort
@@ -819,7 +819,7 @@ DirTwoNames	PROC	NEAR	USES	CX SI DI ES
 		JZ	@@Exit
 		CALL	LongNameOS2
 		JNC	@@Exit
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		STC	
 		JE	@@Exit
 		CLC
@@ -867,18 +867,18 @@ ReadInfo	PROC	FAR
 		XCHG	AX,DS:DirInfoNumb
 		CALL	DelTempArcFile
 		JNC	@@GetSize
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@Exit
   @@GetSize:	MOV	AL,DS:DosPath[0]	; Get total and free space
 		MOV	DI,OFFSET ClusterSize
 		CALL	GetDiskInfo
 		JNC	@@Label
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@Exit
   @@Label:	MOV	SI,OFFSET Volume	; Get volume label
 		CALL	GetVol
 		JNC	@@DirInfo
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@Exit
   @@DirInfo:	POP	DS			; Directory information
 		PUSH	DS
@@ -922,7 +922,7 @@ ReadInfo	PROC	FAR
 		CALL	CloseFindFile
 		MOV	DS:[SI],DI
 		JNC	@@SetFile
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@Exit
 		JMP	@@NextFile
   @@SetFile:	MOV	SI,OFFSET FindData.WinLongName
@@ -2684,9 +2684,9 @@ GetPath		PROC	FAR	USES	AX CX DX SI DI DS
   @@SetNewDir:	MOV	BYTE PTR DS:[SI],0
 		POP	SI
 		MOV	AH,3Bh
-		CALL	Intr21
+		CALL	Intr21			; chdir()
 		JNC	@@ShortPath
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@Error
 		CMP	BYTE PTR DS:[SI+3],0
 		JNE	@@CutSubDir

@@ -201,7 +201,7 @@ ExecArcCmd	PROC	FAR	USES	BX CX DX SI DI BP DS
 		CALL	ShortName
 
 		JNC	@@ExitPrgNam
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		STC
 		JE	@@ExitPrgNam
 		CLC
@@ -527,15 +527,15 @@ ExecArcCmd	PROC	FAR	USES	BX CX DX SI DI BP DS
 		MOV	AH,3Eh
 		CALL	Intr21
 		JNC	@@FileList10
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@FileList12
   @@FileList10:	PUSH	ES
 		POP	DS
 		MOV	DX,OFFSET ExecArcFileLst
 		MOV	AH,41h
-		CALL	Intr21
+		CALL	Intr21			; unlink()
 		JNC	@@FileList11
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@FileList12
   @@FileList11:	MOV	AX,CX
   @@FileList12:	PUSH	ES
@@ -545,7 +545,7 @@ ExecArcCmd	PROC	FAR	USES	BX CX DX SI DI BP DS
 		POP	SI
 		OR	AX,AX
 		JE	@@ChgDir0
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@ExecError4
 		PUSH	AX
 		MOV	BP,OFFSET ExecArcLstEr_B
@@ -564,20 +564,20 @@ ExecArcCmd	PROC	FAR	USES	BX CX DX SI DI BP DS
 		JE	@@ChgDir1
 		MOV	DH,AL
 		CALL	Phantom
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		JC	@@ExecError2
 		PUSH	SI
 		MOV	SI,OFFSET DosPath+3
 		MOV	DL,DH
 		SUB	DL,'A'-1
 		MOV	AH,47h
-		CALL	Intr21
+		CALL	Intr21			; getcwd()
 		POP	SI
 		JC	@@ChgDir3
 		MOV	DS:DosPath[0],DH
 		DEC	DX
 		MOV	AH,0Eh
-		CALL	Intr21
+		CALL	Intr21			; SetCurDrv()
   @@ChgDir1:	MOV	DX,OFFSET ExecArcCmdLine
 		MOV	DI,DX
 		CALL	strcpy
@@ -588,16 +588,16 @@ ExecArcCmd	PROC	FAR	USES	BX CX DX SI DI BP DS
 		MOV	AX,'.'
 		STOSW
   @@ChgDir2:	CALL	ChgDisk
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		JC	@@ExecError2
 		MOV	AH,3Bh
-		CALL	Intr21
+		CALL	Intr21			; chdir()
   @@ChgDir3:	POP	DX
 		JNC	@@CmdLine00
 
 		PUSH	SI
-  @@ExecError1:	POP	SI			; Error
-		CMP	AX,WORD PTR 53h
+  @@ExecError1:	POP	SI
+		CMP	AX,WORD PTR ErrFail
 		JE	@@ExecError3
 		PUSH	AX
 		MOV	BP,OFFSET ExecArcErr_B
@@ -609,7 +609,7 @@ ExecArcCmd	PROC	FAR	USES	BX CX DX SI DI BP DS
 		MOV	DL,DS:DosPath[0]
 		SUB	DL,'A'
 		MOV	AH,0Eh
-		CALL	Intr21
+		CALL	Intr21			; SetCurDrv()
 		POP	AX
   @@ExecError4:	POP	SI
 		POP	DS

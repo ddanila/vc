@@ -217,8 +217,8 @@ ENDIF
   @@MkDir1:	MOV	AH,39h
 		CALL	Intr21			; mkdir()
 		JNC	@@MkDir2
-		CMP	AX,WORD PTR 53h
-		JE	Func04			; Critical Error(int 24h)
+		CMP	AX,WORD PTR ErrFail
+		JE	Func04			; Critical Error(int 24h/Fail)
 		MOV	SI,DX
 		CALL	CutPath
 		DEC	SI
@@ -246,8 +246,8 @@ ENDIF
 		JNC	@@MkDir2
 		MOV	BYTE PTR [DI-1],0	; make valid path for @@UpdateTreePanelPath
 
-  @@Error:	CMP	AX,WORD PTR 53h
-		JE	Func04                  ; Critical Error(int 24h)
+  @@Error:	CMP	AX,WORD PTR ErrFail
+		JE	Func04                  ; Critical Error(int 24h/Fail)
 
   @@DispErrorDialog:
 		PUSH	DX

@@ -229,7 +229,7 @@ TestArchive	PROC	FAR	USES	SI DI
 		MOV	AX,0
 		PUSH	CX
 		JC	@@Exit
-		MOV	AL,53h			; Find archive file
+		MOV	AL,ErrFail		; Find archive file
 		CALL	ChgDisk
 		JC	@@Exit
 		MOV	DX,SI
@@ -286,7 +286,7 @@ ParseArcName	PROC	FAR	USES	BX DI BP DS
 		DEC	DI
 		MOV	SI,DI
 		CALL	ChgDisk
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		JC	@@Exit
   @@SplitPath:	MOV	BL,0
 		XCHG	BL,DS:[SI]
@@ -321,7 +321,7 @@ ParseArcName	PROC	FAR	USES	BX DI BP DS
 		JMP	@@Error
   @@ExitArc:	MOV	AX,BP
 		JMP	@@Exit
-  @@NotFound:	CMP	AX,WORD PTR 53h
+  @@NotFound:	CMP	AX,WORD PTR ErrFail
 		JE	@@Error
 		MOV	DI,SI
 		MOV	SI,DX
@@ -417,10 +417,10 @@ ViewArcExtract	PROC	FAR	USES	DX SI BP DS
 		XOR	AX,AX
 		CALL	MakeFileName
 		CALL	ChgDisk
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		JC	@@ErrDir
   @@Create:	MOV	AH,39h
-		CALL	Intr21
+		CALL	Intr21			; mkdir()
 		JNC	@@Extract
 		CMP	AX,WORD PTR 5
 		JNE	@@ErrDir
@@ -437,7 +437,7 @@ ViewArcExtract	PROC	FAR	USES	DX SI BP DS
 		POP	CX
 		POP	SI
 		POP	DI
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@Error1
   @@ExtractErr:	MOV	AX,OFFSET ExtractError_B
 		JMP	@@Error
@@ -469,7 +469,7 @@ ViewArcExtract	PROC	FAR	USES	DX SI BP DS
 		MOV	CX,0
 		MOV	BYTE PTR DS:[SI+3],CL
 		JNC	@@RmDir
-		CMP	BP,53h
+		CMP	BP,ErrFail
 		JE	@@Error1
 		INC	CX
   @@RmDir:	PUSH	DI
@@ -545,14 +545,14 @@ ENDIF
 		MOV	AH,56h
 		CALL	Intr21
 		JNC	@@Done
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@Error
 		MOV	SI,DI
 		MOV	DI,OFFSET VwArcTmp
 		MOV	AH,60h
 		CALL	Intr21
 		JNC	@@Compare
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@Error
 		JMP	@@Del
   @@Compare:	PUSH	SI
@@ -576,7 +576,7 @@ ENDIF
 		MOV	AH,3Ah
 		CALL	Intr21
 		JNC	@@Done
-  @@ChkErr:	CMP	AX,WORD PTR 53h
+  @@ChkErr:	CMP	AX,WORD PTR ErrFail
 		JE	@@Error
 		XOR	AX,AX
 		JMP	@@Exit
@@ -607,14 +607,14 @@ DelTempArcFile	PROC	FAR	USES	BX CX DX SI DI DS
 		PUSH	ES
 		POP	DS
 		CALL	ChgDisk
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		JC	@@Exit
 		MOV	AH,41h
-		CALL	Intr21
+		CALL	Intr21			; unlink()
 		JC	@@Exit
 		MOV	BYTE PTR DS:[BX],0
 		MOV	AH,3Ah
-		CALL	Intr21
+		CALL	Intr21			; rmdir()
   @@Exit:	RET
 DelTempArcFile	ENDP
 
@@ -651,7 +651,7 @@ DelAllTempArcs	PROC	FAR	USES	SI
 		JA	@@Exit
 		CALL	DelTempArcFile
 		JNC	@@FindNext
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JNE	@@FindNext
 		STC
   @@Exit:	RET
@@ -668,7 +668,7 @@ DelAllTempArcs	ENDP
 		.CODE	Subs
 DetectArc	PROC	FAR	USES	SI DS
 		MOV	DX,SI			; Open archive file
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		CALL	ChgDisk
 IF	__TASMIDENT__
 		JNC	@F
@@ -1353,7 +1353,7 @@ ZipDisk_T	DW	LineBuf2, TmpBuf+200
 		CALL	Intr21
 		JC	@@ArcRdErr3
 		MOV	AX,CX
-  @@ArcRdErr3:	CMP	AX,WORD PTR 53h
+  @@ArcRdErr3:	CMP	AX,WORD PTR ErrFail
 		JE	@@Error
 		MOV	DX,OFFSET ArcErr1_T
 		JMP	@@ArcErr

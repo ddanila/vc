@@ -413,7 +413,7 @@ F34_40:		PUSH	ES			; Check standard viewer
 F34_41:		MOV	AX,4300h
 		CALL	Intr21
 		JNC	F34_42
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JNE	F34_43
 		JMP	Func04
 F34_42:		TEST	CL,10h
@@ -425,7 +425,7 @@ F34_43:		MOV	SI,DX
 		MOV	SI,DX
 		CALL	FindPath
 		JNC	F34_50
-F34_44:		CMP	AX,WORD PTR 53h
+F34_44:		CMP	AX,WORD PTR ErrFail
 		JNE	F34_34
 		JMP	Func04
 
@@ -442,7 +442,7 @@ F34_50:		MOV	DX,DS:MenuViewEdit	; Execute standard viewer
 		MOV	DI,OFFSET LineBuf4
 		CALL	ShortName
 		JNC	F34_51
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	Func04
 F34_51:		MOV	SI,OFFSET SourceFile
 		MOV	DI,OFFSET LineBuf3
@@ -461,7 +461,7 @@ F34_52:		CALL	strcpy
 		MOV	DI,OFFSET ViewExecCmdLn+1
 		CALL	ShortName
 		JNC	F34_53
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	Func04
 F34_53:		CALL	StrLen
 		DEC	CX
@@ -526,7 +526,7 @@ F34_55:		MOV	BX,DS:WorkBuffer
 		POP	AX
 		POPF
 		JNC	F34_57
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	F34_57
 		MOV	DX,OFFSET ViewFile_T
 		MOV	BP,OFFSET RunEr1_B

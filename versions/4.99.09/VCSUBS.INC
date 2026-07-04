@@ -3248,7 +3248,7 @@ FindPath	PROC	FAR	USES	BX CX DX SI DI BP DS ES
 		POP	DS
 		CALL	ChgDisk
 		POP	DS
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		JC	@@Error
 		PUSH	DS
 		PUSH	ES
@@ -3260,7 +3260,7 @@ FindPath	PROC	FAR	USES	BX CX DX SI DI BP DS ES
 		TEST	CX,18h
 		JZ	@@Exit
 		MOV	AL,0
-  @@NotCom:	CMP	AX,WORD PTR 53h
+  @@NotCom:	CMP	AX,WORD PTR ErrFail
 		JE	@@Error
 		PUSH	DS
 		PUSH	SI
@@ -3275,7 +3275,7 @@ FindPath	PROC	FAR	USES	BX CX DX SI DI BP DS ES
 		POP	DS
 		CALL	ChgDisk
 		POP	DS
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		JC	@@Error
 		PUSH	DS
 		PUSH	ES
@@ -3288,7 +3288,7 @@ FindPath	PROC	FAR	USES	BX CX DX SI DI BP DS ES
 		JZ	@@Exit
 		MOV	AL,0
   @@NotExe:	MOV	BYTE PTR ES:[DI],0
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@Error
 		JMP	@@AddPath
 
@@ -3360,7 +3360,7 @@ GetDiskInfo	PROC	FAR	USES	BX CX DX SI DI DS
 		LOCAL	InfoBuffer[3Ch]:BYTE
 		MOV	BL,AL
 		CALL	Phantom
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		JC	@@Exit
 		PUSH	ES			; FAT 32
 		PUSH	DI
@@ -3383,7 +3383,7 @@ GetDiskInfo	PROC	FAR	USES	BX CX DX SI DI DS
 		POP	SI
 		POP	ES
 		JNC	@@SaveInfo
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JNE	@@Fat16
 		STC
 		JMP	@@Exit

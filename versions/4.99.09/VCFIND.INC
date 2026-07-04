@@ -444,7 +444,7 @@ F67_31:		MOV	SI,OFFSET LineBuf2	; Canonize path
 		CALL	NormPath
 		MOV	DS:[BX],CL
 		JNC	F67_32
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JNE	F67_30
 		JMP	F67_35
 F67_32:		MOV	SI,DI
@@ -527,7 +527,7 @@ FindProc	PROC	NEAR	USES	BX CX DX SI DI BP
 		CALL	FindSearching
 		CALL	FindString
 		JNC	@@StoreEntry
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@CloseFF
 		JMP	@@Next
 
@@ -658,7 +658,7 @@ FindProc	PROC	NEAR	USES	BX CX DX SI DI BP
   @@CloseFF:	CALL	CloseFindFile		; Exit
 		POP	SI
 		MOV	BYTE PTR DS:[SI],0
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JNE	@@Recurse
   @@StopFF:	MOV	AX,100h
 		JMP	@@Exit
@@ -722,7 +722,7 @@ FindString	PROC	NEAR
 		MOV	BP,OFFSET FindError_B
 		CALL	Dialog
 		MOV	ES:TaskStack,CX
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		JMP	@@CloseErr
   @@MoveEnd:	PUSH	ES			; Move last 512 bytes to the beginning
 		PUSH	DS
@@ -854,7 +854,7 @@ FindChkOver	PROC	NEAR
 		MOV	BP,OFFSET FindError_B
 		CALL	Dialog
 		MOV	DS:TaskStack,CX
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		STC
   @@Exit:	RET
 FindChkOver	ENDP
@@ -1846,7 +1846,7 @@ TableSelect	PROC	FAR
 		POP	SI
 		CLC
 		JMP	@@SetParam
-  @@ChkErr:	CMP	AX,WORD PTR 53h
+  @@ChkErr:	CMP	AX,WORD PTR ErrFail
 		JE	@@ExitErr
   @@Error:	MOV	DX,BP
 		MOV	BP,OFFSET TblError_B
@@ -1995,13 +1995,13 @@ TableRead	PROC	NEAR	USES	CX
   @@Next:	INC	BX
 		INC	BX
 		JMP	@@FindNext
-  @@ChkErr:	CMP	AX,WORD PTR 53h
+  @@ChkErr:	CMP	AX,WORD PTR ErrFail
 		JE	@@Error
   @@Skip:	MOV	DI,DS:[BX]
   @@FindNext:	MOV	AH,4Fh
-  @@FindFile:	CALL	Intr21
+  @@FindFile:	CALL	Intr21			; FindFirst()
 		JNC	@@ChkSize
-		XOR	AX,WORD PTR 53h
+		XOR	AX,WORD PTR ErrFail
 		JNE	@@Exit
   @@Error:	STC
   @@Exit:	CALL	CloseFindFile

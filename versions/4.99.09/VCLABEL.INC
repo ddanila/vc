@@ -65,7 +65,7 @@ F54_00:		CALL	HidCur			; Change label
 		MOV	SI,OFFSET Volume	; Get label
 		CALL	GetVol
 		JNC	F54_01
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	Func04
 		MOV	BL,1
 F54_01:		MOV	DS:LabelSerNum.Lo,BX
@@ -87,7 +87,7 @@ F54_01:		MOV	DS:LabelSerNum.Lo,BX
 		STOSW
 F54_02:		MOV	DX,OFFSET LineBufs_T	; Check drive
 		MOV	AH,19h
-		INT	21h
+		INT	21h			; GetCurDrv()
 		ADD	AL,'A'
 		CALL	TstDrv
 		CMP	AL,Network
@@ -147,11 +147,11 @@ F54_05:		MOV	SI,OFFSET LineBuf1
 		REP	MOVSB
 		MOV	CX,8
 		MOV	AH,3Ch
-		CALL	Intr21
+		CALL	Intr21			; creat()
 		JNC	F54_10
 F54_06:		MOV	DX,OFFSET LabelSetErr_T
 F54_07:		MOV	BP,OFFSET LabelErr_B
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	F54_18
 		CALL	Dialog
 		JMP	F54_18
@@ -195,7 +195,7 @@ F54_10:		MOV	AX,DS:LabelSerNum.Lo	; Update TREEINFO in home dir
 		MOV	CX,27h
 		MOV	AH,4Eh
 F54_11:		MOV	DX,OFFSET LineBuf2
-		CALL	Intr21
+		CALL	Intr21			; FindFirst()/FindNext()
 		JC	F54_17
 		MOV	SI,OFFSET DTA.FilName
 F54_12:		LODSB
@@ -217,14 +217,14 @@ F54_12:		LODSB
 		MOV	AL,12h
 		CALL	OpenFil
 		JNC	F54_13
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JNE	F54_15
 		JMP	F54_17
 F54_13:		MOV	DX,OFFSET LabelTreeBuf
 		MOV	CX,OFFSET TreeList
 		MOV	BX,AX
 		MOV	AH,3Fh
-		CALL	Intr21
+		CALL	Intr21			; read()
 		JC	F54_16
 		CMP	AX,CX
 		JNE	F54_14
@@ -240,7 +240,7 @@ F54_13:		MOV	DX,OFFSET LabelTreeBuf
 		MOV	DX,OFFSET TreeLabel
 		MOV	SI,DX
 		MOV	AX,4200h
-		CALL	Intr21
+		CALL	Intr21			; lseek(.., SEEK_SET)
 		JC	F54_16
 		CMP	AX,SI
 		JNE	F54_14
@@ -249,20 +249,20 @@ F54_13:		MOV	DX,OFFSET LabelTreeBuf
 		MOV	DX,OFFSET LineBuf1
 		MOV	CX,11
 		MOV	AH,40h
-		CALL	Intr21
+		CALL	Intr21			; write()
 		JC	F54_16
 F54_14:		MOV	AH,3Eh
-		CALL	Intr21
+		CALL	Intr21			; close()
 		JNC	F54_15
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	F54_17
 F54_15:		MOV	AH,4Fh
 		JMP	F54_11
-F54_16:		CMP	AX,WORD PTR 53h
+F54_16:		CMP	AX,WORD PTR ErrFail
 		JNE	F54_14
 		PUSH	AX
 		MOV	AH,3Eh
-		CALL	Intr21
+		CALL	Intr21			; close()
 		POP	AX
 F54_17:		CALL	CloseFindFile
 F54_18:		JMP	FuncExit2
@@ -283,7 +283,7 @@ GetVol		PROC	FAR	USES	DX SI DI DS ES
 		INC	BX
 		ADD	AL,'A'
 		CALL	Phantom
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		JC	@@Exit
 		PUSH	DS			; Get serial number
 		PUSH	SS
@@ -300,7 +300,7 @@ GetVol		PROC	FAR	USES	DX SI DI DS ES
 		JNC	@@SaveSerNum
 		XOR	BX,BX
 		XOR	CX,CX
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		STC
 		JE	@@Exit
   @@SaveSerNum:	PUSH	CX
@@ -318,7 +318,7 @@ GetVol		PROC	FAR	USES	DX SI DI DS ES
 		MOV	WORD PTR DS:[SI+1],'A'
 		LEA	DI,LabelBuf
 		MOV	AH,60h
-		CALL	Intr21
+		CALL	Intr21			; truename()
 		MOV	BYTE PTR DS:[SI],0
 		POP	SI
 		POP	ES
@@ -353,11 +353,11 @@ GetVol		PROC	FAR	USES	DX SI DI DS ES
 		MOV	DX,OFFSET Mask_S
 		MOV	CX,8
 		MOV	AH,4Eh
-		CALL	Intr21
+		CALL	Intr21			; FindNext()
 		POP	DS
 		POP	ES
 		JNC	@@Found
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JNE	@@NoError
 		STC
 		JMP	@@EndLine

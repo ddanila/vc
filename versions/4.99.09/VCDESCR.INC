@@ -112,7 +112,7 @@ ReadDescription	PROC	FAR	USES	BX DX SI
 		POP	ES
 		POP	DS
 		JNC	@@RdDescr
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JNE	@@DescrName
   @@Error:	STC
 		JMP	@@Exit
@@ -341,7 +341,7 @@ SaveDescription	PROC	FAR	USES	BX CX DX SI DI
 		CMP	ES:GroupFiles,0		; Get real name
 		JE	@@Exist
 		CALL	ChgDisk
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		JC	@@Exit
 		MOV	SI,DX
 		LEA	DI,DescrFileName2
@@ -355,7 +355,7 @@ SaveDescription	PROC	FAR	USES	BX CX DX SI DI
 		POP	ES
 		POP	DS
 		JNC	@@ChkInBuf0
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@Error
 		JMP	@@Exist
   @@ChkInBuf0:	PUSH	DS			; Check file in buffer
@@ -376,7 +376,7 @@ SaveDescription	PROC	FAR	USES	BX CX DX SI DI
 		CALL	Intr21
 		POP	DS
 		JNC	@@ChkDescr
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@Error
 		JMP	@@Exit
   @@ChkDescr:	MOV	SI,OFFSET DscrBegin	; Empty description
@@ -398,10 +398,10 @@ SaveDescription	PROC	FAR	USES	BX CX DX SI DI
 		PUSH	SS
 		POP	DS
 		MOV	AH,41h
-		CALL	Intr21
+		CALL	Intr21			; unlink()
 		POP	DS
 		JNC	@@Exit
-  @@Error1:	CMP	AX,WORD PTR 53h
+  @@Error1:	CMP	AX,WORD PTR ErrFail
 		JE	@@Error
   @@Beep:	CALL	Beep
   @@Error:	STC
@@ -459,7 +459,7 @@ SaveDescrs	PROC	FAR	USES	AX BX CX DX SI DI DS
 		MOV	DX,OFFSET LineBuf1
 		CALL	SaveDescription
 		JNC	@@SaveDescr2
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@Exit
   @@SaveDescr2:	MOV	AL,0
 		XCHG	AL,ES:GroupDescrChg2
@@ -469,7 +469,7 @@ SaveDescrs	PROC	FAR	USES	AX BX CX DX SI DI DS
 		MOV	DX,OFFSET LineBuf2
 		CALL	SaveDescription
 		JNC	@@FreeMem
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@Exit
   @@FreeMem:	MOV	SI,OFFSET AllSegs_L
 		XOR	BX,BX

@@ -1182,7 +1182,7 @@ V28_31:		MOV	SI,DS:VwSearch.Lo
 		MOV	DS,ES:UserScreen
 		CALL	ViewFileRead
 		JNC	V28_32
-		XOR	AX,WORD PTR 53h
+		XOR	AX,WORD PTR ErrFail
 		CMP	AX,WORD PTR 1
 V28_32:		MOV	SI,BP
 		MOV	AX,DS
@@ -1362,7 +1362,7 @@ ViewInit	PROC	FAR
 		MOV	AL,40h
 		CALL	OpenFil
 		JNC	@@Break
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@Error
 		OR	CL,CL
 		JNE	@@Error

@@ -497,7 +497,7 @@ F35_09:		MOV	DS,CS:SubsSeg
 		MOV	SI,OFFSET TargetFile
 		CALL	ParseArcName
 		JNC	F35_10
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	Func04
 		JMP	FuncSelect
 F35_10:		PUSH	DS			; Copy / Move to archive
@@ -725,7 +725,7 @@ F35_31:		CALL	ChgDisk
 		TEST	CL,10h
 		JZ	F35_33
 		JMP	F35_34
-F35_32:		CMP	AX,WORD PTR 53h
+F35_32:		CMP	AX,WORD PTR ErrFail
 		JE	Func04
 F35_33:		PUSH	ES
 		POP	DS
@@ -1135,7 +1135,7 @@ C00_01:		MOV	DS:LineBuf4+514-1,0
 		MOV	DI,OFFSET LineBuf3
 		CALL	F35_TrueName
 		JNC	C00_02
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 		JMP	C00_06
 C00_02:		PUSH	DS			; Check recursion
@@ -1187,7 +1187,7 @@ C00_08:		MOV	AL,3
 C00_09:		MOV	AX,4300h		; Get attributes
 		CALL	Intr21
 		JNC	C00_11
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 C00_10:		MOV	AL,1
 		JMP	C00_13
@@ -1198,7 +1198,7 @@ C00_11:		TEST	CL,10h
 		MOV	AL,0
 		CALL	F35_Compare
 		JNC	C00_30
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 C00_12:		MOV	AL,2
 C00_13:		MOV	DS:CopyTargetType,AL
@@ -1372,7 +1372,7 @@ C10_01:		MOV	DX,OFFSET LineBuf2
 		MOV	AH,56h
 		CALL	F35_FuncShort
 		JNC	C10_12
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 		CMP	AX,WORD PTR 3
 		JNE	C10_03
@@ -1383,7 +1383,7 @@ C10_01:		MOV	DX,OFFSET LineBuf2
 		JC	C10_09
 		CALL	F35_UpdPath
 		JNC	C10_02
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 C10_02:		MOV	DI,DX
 		MOV	DX,OFFSET LineBuf1
@@ -1413,7 +1413,7 @@ C10_03:		CMP	AX,WORD PTR 5
 		CALL	Intr21
 		POP	DX
 		JNC	C10_04
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 		XOR	CX,CX
 C10_04:		MOV	DS:CopyAttrib,CX
@@ -1427,7 +1427,7 @@ C10_04:		MOV	DS:CopyAttrib,CX
 		POP	DX
 		POP	DI
 		JNC	C10_05
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 		XOR	SI,SI
 		XOR	CX,CX
@@ -1447,9 +1447,9 @@ C10_05:		MOV	DS:CopyTime,SI
 		JE	C10_11
 		JA	C00_70
 C10_06:		MOV	AH,41h
-		CALL	Intr21
+		CALL	Intr21			; unlink()
 		JNC	C10_08
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 		TEST	CL,1
 		JZ	C10_10
@@ -1475,9 +1475,9 @@ C10_07:		AND	CL,0FEh
 		JC	C10_10
 		MOV	DS:GroupChg,1
 		MOV	AH,41h
-		CALL	Intr21
+		CALL	Intr21			; unlink()
 		JNC	C10_08
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 		OR	CL,1
 		MOV	AX,4301h
@@ -1776,7 +1776,7 @@ C20_06:		MOV	DS:[0].Lo,CX
 		MOV	ES:CopyFlagEAs,1
 		CALL	F35_PerCent
 		JMP	C20_08
-C20_07:		CMP	AX,WORD PTR 53h
+C20_07:		CMP	AX,WORD PTR ErrFail
 		JE	C20_82
 C20_08:		CMP	ES:ChkTarget,0
 		JE	C20_10
@@ -1958,7 +1958,7 @@ C20_26:		MOV	BX,AX
 		MOV	DS:CopyWrite.Lo,AX
 		CALL	F35_PerCent
 		JMP	C20_28
-C20_27:		CMP	AX,WORD PTR 53h
+C20_27:		CMP	AX,WORD PTR ErrFail
 		JE	C20_82
 C20_28:		MOV	DS:CopyHandle2,BX
 		MOV	DS:GroupChg,1
@@ -2126,7 +2126,7 @@ C20_51:		CALL	UpCase
 		MOV	DI,OFFSET TmpBuf
 		CALL	GetDiskInfo
 		JNC	C20_52
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JNE	C20_53
 		JMP	C20_82
 C20_52:		MOV	AX,ES:[DI+0].Lo
@@ -2138,7 +2138,7 @@ C20_52:		MOV	AX,ES:[DI+0].Lo
 		JAE	C20_53
 		MOV	CX,AX
 		MOV	AH,40h
-		CALL	Intr21
+		CALL	Intr21			; write()
 		JC	C20_44
 		ADD	ES:CopyWrite.Lo,AX
 		ADC	ES:CopyWrite.Hi,0
@@ -2165,7 +2165,7 @@ C20_53:		MOV	SI,DS
 		MOV	DX,OFFSET LineBuf2
 		CALL	F35_SetName
 		JNC	C20_54
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C20_82
 C20_54:		MOV	CX,DS:CopyAttrib
 		OR	CL,20h
@@ -2175,9 +2175,9 @@ C20_54:		MOV	CX,DS:CopyAttrib
 		OR	SI,SI
 		JNE	C20_55
 		MOV	AH,41h
-C20_55:		CALL	Intr21
+C20_55:		CALL	Intr21			; unlink()
 		JNC	C20_56
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C20_82
 C20_56:		MOV	AL,DS:CopySplitMenu
 		MOV	DS:MinMnuDefault,AL
@@ -2198,7 +2198,7 @@ C20_57:		PUSH	CX
 		CALL	F35_DelCut
 		POP	CX
 		JNC	C20_58
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C20_82
 C20_58:		CMP	CL,2
 		JA	C20_82
@@ -2242,20 +2242,20 @@ C20_70:		PUSH	ES			; Close target file
 		JE	C20_71
 		CALL	F35_UpdPath
 		JNC	C20_71
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 C20_71:		CMP	DS:CopyTargetDev,0
 		JNE	C20_73
 		CALL	F35_SetName
 		JNC	C20_72
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 C20_72:		MOV	CX,DS:CopyAttrib
 		OR	CL,20h
 		MOV	AX,4301h
 		CALL	Intr21
 		JNC	C20_73
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 C20_73:		CMP	DS:CopyMove,0
 		JE	C40_00
@@ -2263,9 +2263,9 @@ C20_73:		CMP	DS:CopyMove,0
 		CALL	ChgDisk
 		JC	C00_72
 		MOV	AH,41h
-		CALL	Intr21
+		CALL	Intr21			; unlink()
 		JNC	C40_00
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 		MOV	AX,4300h
 		CALL	Intr21
@@ -2293,9 +2293,9 @@ C20_74:		AND	CX,36h
 		CALL	Intr21
 		JC	C20_75
 		MOV	AH,41h
-		CALL	Intr21
+		CALL	Intr21			; unlink()
 		JNC	C40_00
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 		OR	CL,1
 		MOV	AX,4301h
@@ -2305,7 +2305,7 @@ C20_74:		AND	CX,36h
 C20_75:		MOV	BP,OFFSET DelFileErr_B
 		JMP	C00_75
 
-C20_80:		CMP	AX,WORD PTR 53h		; Error
+C20_80:		CMP	AX,WORD PTR ErrFail
 		JE	C20_82
 		CALL	F35_Table
 		CALL	Dialog
@@ -2324,13 +2324,13 @@ C20_83:		PUSH	AX
 		CALL	ChgDisk
 		JC	C20_84
 		MOV	AH,3Eh
-		CALL	Intr21
+		CALL	Intr21			; close()
 		CALL	F35_DelCut
 C20_84:		MOV	BX,DS:CopyHandle1
 		OR	BX,BX
 		JE	C20_85
 		MOV	AH,3Eh
-		CALL	Intr21
+		CALL	Intr21			; close()
 C20_85:		MOV	DS:BlocEr,0
 		POP	AX
 		JMP	C00_81
@@ -2383,7 +2383,7 @@ C30_01:		MOV	DI,DX
 		MOV	DX,SI
 		CALL	F35_MoveDir
 		JNC	C30_02
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 		CMP	AX,WORD PTR 3
 		JNE	C30_20
@@ -2402,7 +2402,7 @@ C30_02:		MOV	DS:GroupChg,1
 		MOV	DI,OFFSET LineBuf4
 		CALL	F35_ShortPath
 		JNC	C30_03
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 		MOV	BYTE PTR DS:[DI],0
 C30_03:		MOV	SI,DI
@@ -2455,9 +2455,9 @@ C30_05:		MOV	DI,DX
 		MOV	AL,0
 		STOSB
 C30_06:		MOV	AH,3Bh
-		CALL	Intr21
+		CALL	Intr21			; chdir()
 		JNC	C30_07
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 C30_07:		CALL	F35_SaveTarget
 		JC	C00_72
@@ -2568,7 +2568,7 @@ C30_15:		CMP	SI,DI
 		INC	DS:TreeLen
 		CALL	NextDirEnt
 		JMP	C30_15
-C30_16:		CMP	AX,WORD PTR 53h
+C30_16:		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 C30_17:		JMP	C10_20
 
@@ -2585,7 +2585,7 @@ C30_20:		MOV	AL,0			; Make target directory
 		MOV	DS:CopyAttrib,CX
 		CALL	GetFileTime
 		JNC	C30_21
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 		MOV	CX,0FFFFh
 		MOV	DI,CX
@@ -2632,7 +2632,7 @@ C30_24:		MOV	DX,OFFSET LineBuf2
 		MOV	AH,39h
 		CALL	Intr21
 		JNC	C30_26
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 		CMP	AX,WORD PTR 3
 		JE	C30_25
@@ -2647,7 +2647,7 @@ C30_24:		MOV	DX,OFFSET LineBuf2
 C30_25:		CALL	F35_MkPath
 		JC	C00_75
 		MOV	AH,39h
-		CALL	Intr21
+		CALL	Intr21			; mkdir()
 		JC	C00_75
 C30_26:		MOV	DS:GroupChg,1
 		MOV	AX,DS:CopyDate
@@ -2658,14 +2658,14 @@ C30_26:		MOV	DS:GroupChg,1
 		JZ	C30_27
 		CALL	SetFileTime
 		JNC	C30_27
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 C30_27:		MOV	CX,DS:CopyAttrib
 		AND	CX,27h
 		MOV	AX,4301h
 		CALL	Intr21
 		JNC	C30_28
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 C30_28:		MOV	DS,DS:WorkBuffer
 		CMP	DS:[0].Lo,4
@@ -2679,7 +2679,7 @@ C30_28:		MOV	DS,DS:WorkBuffer
 		MOV	CX,12
 		MOV	BX,0FFFFh
 		MOV	AX,5703h
-		CALL	Intr21
+		CALL	Intr21			; DosSetPathInfo() [OS/2]
 		MOV	DS:BlocEr,0
 C30_30:		CALL	F35_SaveTarget
 		JC	C00_72
@@ -2698,7 +2698,7 @@ C30_30:		CALL	F35_SaveTarget
 		CALL	AllocateBlock
 C30_31:		CALL	F35_AddTree
 		JNC	C30_40
-C30_32:		CMP	AX,WORD PTR 53h
+C30_32:		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 
 C30_40:		PUSH	ES			; Delete source directory
@@ -2713,7 +2713,7 @@ C30_40:		PUSH	ES			; Delete source directory
 		MOV	BYTE PTR DS:[DI+514-1],0
 		CALL	F38_65
 		JNC	C30_42
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 		CMP	AX,WORD PTR 5
 		JE	C30_41
@@ -2750,7 +2750,7 @@ C30_41:		MOV	DI,OFFSET LineBuf2	; Copy / move files in directory
 		MOV	DS:LineBuf4[514-1],0
 		CALL	F38_65
 		JNC	C30_42
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 		MOV	DS:FncAddr,OFFSET F38_Empty ; Empty ?
 		MOV	CL,1
@@ -2802,7 +2802,7 @@ C30_46:		CALL	FindTreeEntry
 		MOV	ES:GroupTreeChg1,1
 		CALL	DelTreeEntry
 		JMP	C40_00
-C30_47:		CMP	AX,WORD PTR 53h
+C30_47:		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 
 C40_00:		MOV	ES:CopyResult,1		; Update description
@@ -2826,7 +2826,7 @@ C40_03:		MOV	BX,0FFFFh		; Load source description
 		CALL	GetDescription
 		JNC	C40_05
 		MOV	ES:GroupDescr1,1
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JNE	C40_07
 		JMP	C00_72
 C40_05:		MOV	ES:GroupDescr1,DS
@@ -2886,7 +2886,7 @@ C40_08:		XOR	AX,AX
 		POP	CX
 		JNC	C40_10
 		MOV	ES:GroupDescr2,1
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 		CMP	ES:DescrCreate,0	; Create description
 		JE	C40_51
@@ -2933,7 +2933,7 @@ C40_20:		MOV	BP,CX			; Delete old target description
 		CALL	ShortName
 		POP	DS
 		JNC	C40_21
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 		MOV	BYTE PTR ES:[DI],0
 C40_21:		PUSH	DS
@@ -2973,7 +2973,7 @@ C40_23:		CMP	BX,0FFFFh
 		JNE	C40_26
 C40_24:		CALL	ShortName
 		JNC	C40_25
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	C00_72
 		CMP	AX,7100h
 		JNE	C40_25
@@ -3176,7 +3176,7 @@ C40_46:		MOV	ES:DscrSize,DI
 		MOV	ES:GroupDescrChg2,1
 		JMP	C40_52
 
-C40_50:		CMP	AX,WORD PTR 53h		; Error reading target description
+C40_50:		CMP	AX,WORD PTR ErrFail	; Error reading target description
 		JE	C00_72
 C40_51:		CMP	BX,0FFFFh
 		JE	C40_53
@@ -3189,7 +3189,7 @@ C40_52:		CMP	ES:CopyMove,0
 C40_53:		MOV	AX,ES:CopyResult
 		JMP	C00_81
 
-C00_75:		CMP	AX,WORD PTR 53h		; Exit
+C00_75:		CMP	AX,WORD PTR ErrFail	; Exit
 		JE	C00_72
 C00_76:		CALL	F35_Table
 		CALL	Dialog

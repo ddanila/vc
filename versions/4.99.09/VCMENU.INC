@@ -2928,7 +2928,7 @@ F49_00:		PUSH	ES			; Save setup
 		JNE	Func04
 		CALL	SaveSet
 		JNC	F49_01
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	F49_01
 		MOV	BP,OFFSET SetEr_B
 		CALL	Dialog

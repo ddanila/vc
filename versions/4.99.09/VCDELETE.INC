@@ -324,7 +324,11 @@ F38_16:		POP	DI
 		MOV	ES:GroupChg,1
 		JMP	FuncExit0
 
-F48_00:		PUSH	ES			; Shift F8 - delete
+;---------------------------------------------------------------
+; Shift F8 - delete files with mask
+;---------------------------------------------------------------
+F48_00		PROC	NEAR
+		PUSH	ES
 		POP	DS
 		MOV	BP,OFFSET DelMask_B
 		CALL	Dialog
@@ -333,13 +337,14 @@ F48_00:		PUSH	ES			; Shift F8 - delete
 		MOV	DX,OFFSET DelMask_T
 		MOV	BP,OFFSET F48_10
 		JMP	FuncMask
+F48_00		ENDP
 
 F48_10		PROC	NEAR
 		CMP	AL,0
 		MOV	AX,0
-		JNE	F48_13
+		JNE	@@Exit
 		CMP	DS:GroupMask[0],AL
-		JNE	F48_13
+		JNE	@@Exit
 		PUSH	DS
 		MOV	DS,CS:SubsSeg
 		MOV	SI,OFFSET DelWarn4_S
@@ -361,9 +366,10 @@ F48_10		PROC	NEAR
 		POP	DS
 		MOV	SI,OFFSET Mask_S
 		CMP	AL,0
-		JNE	F48_11
-		INC	SI
-F48_11:		CALL	strcpy
+		JNE	@@AddMask
+		INC	SI			; '\*.*' -> '*.*'
+  @@AddMask:
+		CALL	strcpy
 		MOV	AX,' '
 		STOSW
 F48_12:		POP	DS
@@ -371,14 +377,21 @@ F48_12:		POP	DS
 		MOV	BP,OFFSET DelWarn_B
 		CALL	Dialog
 		MOV	AX,100h
-		JNZ	F48_13
+		JNZ	@@Exit
 		CALL	F38_80
 		OR	DS:GroupFound,AL
-F48_13:		RET
+
+  @@Exit:
+		RET
 F48_10		ENDP
 
-F58_00:		MOV	ES:OneFile,1		; ^F8 - delete one file
+;---------------------------------------------------------------
+; Ctrl F7 - delete one file under cursor even if group of files is selected
+;---------------------------------------------------------------
+F58_00		PROC	NEAR
+		MOV	ES:OneFile,1
 		JMP	F38_00
+F58_00		ENDP
 
 ;---------------------------------------------------------------
 ;	Confirm group delete
@@ -425,14 +438,14 @@ F38_40		PROC	NEAR	USES	BX CX DX SI DI BP DS
 		CALL	ChgDisk
 		JC	F38_50
 		MOV	AH,41h
-		CALL	Intr21
+		CALL	Intr21			; unlink()
 		JNC	F38_54
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	F38_50
 		MOV	AX,4300h
 		CALL	Intr21
 		JNC	F38_41
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JNE	F38_43
 		JMP	F38_50
 F38_41:		MOV	AL,0
@@ -462,9 +475,9 @@ F38_42:		AND	CL,0FEh
 		JC	F38_43
 		MOV	DS:GroupChg,1
 		MOV	AH,41h
-		CALL	Intr21
+		CALL	Intr21			; unlink()
 		JNC	F38_54
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	F38_50
 		OR	CL,1
 		MOV	AX,4301h
@@ -473,7 +486,7 @@ F38_42:		AND	CL,0FEh
 		MOV	AL,0
 F38_43:		MOV	DX,OFFSET DelFileErr_T
 		MOV	BP,OFFSET DelFileErr_B
-F38_44:		CMP	AX,WORD PTR 53h
+F38_44:		CMP	AX,WORD PTR ErrFail
 		JE	F38_50
 		CALL	Dialog
 		JNZ	F38_50
@@ -491,7 +504,7 @@ F38_46:		CMP	DS:GroupMask,0		; Deleting subdirectory
 		JC	F38_50
 		CALL	F38_65			; Try to delete subdirectory
 		JNC	F38_51
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	F38_50
 		MOV	DS:FncAddr,OFFSET F38_Empty ; Empty ?
 		MOV	CL,1
@@ -539,7 +552,7 @@ F38_48:		CALL	DirFunc			; Delete files in subdirectory
 		MOV	DX,OFFSET LineBuf1
 		CALL	F38_65
 		JNC	F38_51
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	F38_50
 F38_49:		MOV	DX,OFFSET LineBufs_T
 		MOV	BP,OFFSET DelDirErr_B
@@ -565,7 +578,7 @@ F38_52:		CALL	FindTreeEntry
 		MOV	ES:GroupTreeChg1,1
 		CALL	DelTreeEntry
 		JMP	F38_54
-F38_53:		CMP	AX,WORD PTR 53h
+F38_53:		CMP	AX,WORD PTR ErrFail
 		JE	F38_50
 F38_54:		MOV	ES:GroupChg,1
 		CMP	ES:DescrUpdate,0	; Update description
@@ -589,7 +602,7 @@ F38_56:		MOV	AX,ES:GroupFileNumb
 		MOV	ES:GroupDescrChg1,1
 		CALL	DelDescription
 		JMP	F38_59
-F38_57:		CMP	AX,WORD PTR 53h
+F38_57:		CMP	AX,WORD PTR ErrFail
 		JE	F38_50
 F38_58:		TEST	ES:GroupAttr,10h
 		JNZ	F38_59
@@ -630,7 +643,7 @@ F38_66:		AND	CL,0EFh
 		CALL	Intr21
 		POP	CX
 		JNC	F38_67
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		STC
 		JE	F38_76
 F38_67:		PUSH	CX
@@ -689,18 +702,18 @@ F38_70:		PUSH	DX
 		PUSH	DX
 		MOV	DX,OFFSET DosPath
 		MOV	AH,3Bh
-		CALL	Intr21
+		CALL	Intr21			; chdir()
 		POP	DX
 		JNC	F38_72
 		JMP	F38_73
-F38_71:		CMP	AX,WORD PTR 53h
+F38_71:		CMP	AX,WORD PTR ErrFail
 		JE	F38_74
 F38_72:		TEST	CL,1
 		JZ	F38_75
 		MOV	AX,4301h
 		CALL	Intr21
 		JNC	F38_75
-F38_73:		CMP	AX,WORD PTR 53h
+F38_73:		CMP	AX,WORD PTR ErrFail
 		JNE	F38_75
 F38_74:		POP	DI
 		PUSH	AX
@@ -742,67 +755,77 @@ F38_81:		PUSH	DI
 		MOV	AL,0FFh
 		STOSB
 		ADD	DI,5
-		MOV	AL,26h
+		MOV	AL,26h			; FA_HIDDEN | FA_SYSTEM | FA_ARCHIVE
 		STOSB
 		MOV	AL,0
-		STOSB
+		STOSB				; default drive
 		MOV	AL,'?'
 		MOV	CX,8+3
-		REP	STOSB
+		REP	STOSB			; '????????.???' = '*.*'
 		MOV	DX,OFFSET LineBuf1	; Save current path
 		CALL	ChgDisk
-		JC	F38_84
+		JC	@@ErrorFail
 		MOV	DI,OFFSET LineBuf2
 		MOV	BYTE PTR DS:[DI],0
 		MOV	SI,DX
 		LODSW
 		CMP	AL,0
-		JE	F38_85
+		JE	@@DelAllFiles
 		CMP	AH,':'
 		JNE	F38_82
 		STOSW
 		CALL	UpCase
 		SUB	AL,'A'-1
-		MOV	DS:DeleteFCB[7],AL
+		MOV	DS:DeleteFCB[7],AL	; FCB.drv
 		LODSB
 		STOSB
 		CMP	AL,0
-		JE	F38_85
+		JE	@@DelAllFiles
 		DEC	DI
 F38_82:		MOV	AL,'\'
 		STOSB
 		PUSH	DX
 		MOV	SI,DI
-		MOV	DL,DS:DeleteFCB[7]
+		MOV	DL,DS:DeleteFCB[7]	; FCB.drv
 		MOV	AH,47h
-		CALL	Intr21
+		CALL	Intr21			; getcwd()
 		POP	DX
-		JC	F38_83
-		MOV	AH,3Bh			; Set current dir
-		CALL	Intr21
-		JNC	F38_85
-F38_83:		CMP	AX,WORD PTR 53h
-		JE	F38_84
+		JC	@@ErrorGetSetDir
+		MOV	AH,3Bh
+		CALL	Intr21			; chdir()
+		JNC	@@DelAllFiles
+
+  @@ErrorGetSetDir:
+		CMP	AX,WORD PTR ErrFail
+		JE	@@ErrorFail
 		XOR	AX,AX
-		JMP	F38_87
-F38_84:		MOV	AX,100h
-		JMP	F38_87
-F38_85:		MOV	DS:GroupChg,1		; Delete files
+		JMP	@@Exit
+
+  @@ErrorFail:
+		MOV	AX,100h
+		JMP	@@Exit
+
+  @@DelAllFiles:
+		MOV	DS:GroupChg,1		; selection changed
 		MOV	DX,OFFSET DeleteFCB
 		MOV	AH,13h
-		CALL	Intr21
-		MOV	BX,1
-		JNC	F38_86
-		CMP	AX,WORD PTR 53h
-		JE	F38_84
-		MOV	BL,0
-F38_86:		MOV	AX,BX
+		CALL	Intr21			; FCB_unlink()
+		MOV	BX,1			; success by default
+		JNC	@@RestoreCurDir
+		CMP	AX,WORD PTR ErrFail
+		JE	@@ErrorFail		; CritError: disk RO, no disk in drive, HW error, ...
+		MOV	BL,0			; return error
+
+  @@RestoreCurDir:
+		MOV	AX,BX
 		CMP	DS:LineBuf2[0],0	; Restore current dir
-		JE	F38_87
+		JE	@@Exit			; CWD was not changed
 		MOV	DX,OFFSET LineBuf2
 		MOV	AH,3Bh
-		CALL	Intr21
-		JC	F38_84
+		CALL	Intr21			; chdir()
+		JC	@@ErrorFail		; CritError: no disk in drive, HW error, ...
 		MOV	AX,BX
-F38_87:		RET
+
+  @@Exit:
+		RET
 F38_80		ENDP

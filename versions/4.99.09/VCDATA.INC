@@ -40,6 +40,9 @@ KbdShiftMask	EQU	03h		; Right/left Shift status bits
 KbdCtrlMask	EQU	04h
 KbdAltMask	EQU	08h
 
+ErrFail		EQU	53h		; Fail action (on INT 0x24)
+
+; Panel types
 p_Left		EQU	0		; Left panel
 p_Right	EQU	1		; Right panel
 p_File		EQU	0		; File (main) panel type

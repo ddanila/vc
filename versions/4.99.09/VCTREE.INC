@@ -581,7 +581,7 @@ ScanTree	PROC	FAR	USES	AX BX CX DX SI DI BP
 		JMP	@@Exit
   @@EmptyTree:	CALL	TreeRoot		; Default tree
 		MOV	DI,SIZE DirTree+SIZE DirEnt+2
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@Exit
 		MOV	DS:TreeLFN,0
 		MOV	AL,ES:DosPath[0]
@@ -777,7 +777,7 @@ TreeFunc	PROC	NEAR
 		POP	BP
 		POP	DS
 		JNC	@@PutBox
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@FindBranch
 
   @@PutBox:	INC	DS:TreeLen		; Put box
@@ -969,7 +969,7 @@ TreeFunc	PROC	NEAR
   @@Overflow:	CALL	Beep			; Buffer overflow
 		MOV	AL,2
 		JMP	@@FindBranch
-  @@Error:	CMP	AX,WORD PTR 53h		; Find error
+  @@Error:	CMP	AX,WORD PTR ErrFail	; Find error
 		JE	@@FindBranch
 		MOV	AL,0
 
@@ -1105,7 +1105,7 @@ ReadTreeInfo	PROC	FAR
 		MOV	TreeSerNumBuf.Hi,CX
 		MOV	AL,ES:VcSet[0]
 		CALL	Phantom
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		JC	@@ErrFind
 		LEA	DX,TreeNameBuf
 		PUSH	DS
@@ -1180,7 +1180,7 @@ ReadTreeInfo	PROC	FAR
 		CALL	OpenFil
 		POP	DS
 		JNC	@@ReadHead
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JNE	@@Next
 		JMP	@@ErrFind
   @@ReadHead:	MOV	SI,CX
@@ -1189,14 +1189,14 @@ ReadTreeInfo	PROC	FAR
 		MOV	CX,OFFSET TreeList
 		MOV	BX,AX
 		MOV	AH,3Fh
-		CALL	Intr21
+		CALL	Intr21			; read()
 		POP	DX
 		JNC	@@ChkHead
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JNE	@@Close
 		PUSH	AX
 		MOV	AH,3Eh
-		CALL	Intr21
+		CALL	Intr21			; close()
 		POP	AX
 		JMP	@@ErrFind
   @@ChkHead:	CMP	AX,CX
@@ -1230,7 +1230,7 @@ ReadTreeInfo	PROC	FAR
   @@Close:	MOV	AH,3Eh
 		CALL	Intr21
 		JNC	@@Next
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@ErrFind
   @@Next:	MOV	AH,4Fh
 		JMP	@@FindFile
@@ -1249,7 +1249,7 @@ ReadTreeInfo	PROC	FAR
 		POP	CX
 		POP	DS
 		JNC	@@ReadHome
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JNE	@@ReadRoot
 		JMP	@@Error
 
@@ -1257,7 +1257,7 @@ ReadTreeInfo	PROC	FAR
 		XOR	CX,CX
 		XOR	DX,DX
 		MOV	AX,4200h
-		CALL	Intr21
+		CALL	Intr21			; lseek(.., SEEK_SET)
 		POP	CX
 		JC	@@Error
 		OR	AX,DX
@@ -1270,10 +1270,10 @@ ReadTreeInfo	PROC	FAR
 		JMP	@@EndRead
 
   @@ReadRoot:	MOV	AH,19h			; Read in root
-		INT	21h
+		INT	21h			; GetCurDrv()
 		ADD	AL,'A'
 		CALL	Phantom
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		JC	@@Error
 		PUSH	DS
 		PUSH	ES
@@ -1301,18 +1301,18 @@ ReadTreeInfo	PROC	FAR
 		JE	@@ExitErr
   @@Error:	MOV	BX,0FFFDh
 		JMP	@@ExitErr
-  @@OpenErr:	CMP	AX,WORD PTR 53h
+  @@OpenErr:	CMP	AX,WORD PTR ErrFail
 		JE	@@Error
 		MOV	BX,0FFFEh
   @@ExitErr:	STC
 		JMP	@@Exit
   @@TreeOk:	MOV	DS:TreeLFN,0
 		MOV	AH,19h
-		INT	21h
+		INT	21h			; GetCurDrv()
 		ADD	AL,'A'
 		MOV	CL,AL
 		CALL	Phantom
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		JC	@@Error
 		MOV	AL,CL
 		CALL	GetFS
@@ -1439,13 +1439,13 @@ SaveTreeInfo	PROC	FAR
 		POP	ES
 		MOV	AL,ES:VcSet[0]
 		CALL	Phantom
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		JC	@@ExDelHome
 		MOV	AH,41h
-		CALL	Intr21
+		CALL	Intr21			; unlink()
   @@ExDelHome:	POP	DS
 		JNC	@@DelRoot
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@Exit
   @@DelRoot:	PUSH	DS
 		PUSH	ES
@@ -1461,13 +1461,13 @@ SaveTreeInfo	PROC	FAR
 		POP	DS
 		POP	ES
 		MOV	AH,19h
-		CALL	Intr21
+		CALL	Intr21			; GetCurDrv()
 		ADD	AL,'A'
 		CALL	Phantom
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		JC	@@ExDelRoot
 		MOV	AH,41h
-		CALL	Intr21
+		CALL	Intr21			; unlink()
   @@ExDelRoot:	POP	DS
 		JMP	@@Exit
   @@SaveTree:	MOV	DX,AX			; Save TREEINFO
@@ -1556,7 +1556,7 @@ SaveTreeInfo	PROC	FAR
 		CALL	SaveTreeFile
 		MOV	BX,0FFFFh
 		JNC	@@ExitSave
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@Error
 		OR	AX,AX
 		JE	@@Error
@@ -1564,7 +1564,7 @@ SaveTreeInfo	PROC	FAR
 		JZ	@@Error
   @@SaveHomNew:	MOV	AL,ES:VcSet[0]		; Save new tree in home directory
 		CALL	Phantom
-		MOV	AX,53h
+		MOV	AX,ErrFail
 		JC	@@Error
 		PUSH	DS
 		PUSH	DI
@@ -1606,7 +1606,7 @@ SaveTreeInfo	PROC	FAR
 		POP	BX
 		JNC	@@ExitSave
   @@Error:	MOV	BX,0FFFDh
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	@@ExitSave
 		CALL	Beep
   @@ExitSave:	POP	DS:TreeSize
@@ -1618,7 +1618,7 @@ SaveTreeInfo	PROC	FAR
   @@Exit:	MOV	DL,ES:DosPath[0]
 		SUB	DL,'A'
 		MOV	AH,0Eh
-		INT	21h
+		INT	21h			; SetCurDrv()
 		RET
 SaveTreeInfo	ENDP
 
@@ -1638,7 +1638,7 @@ SaveTreeFile	PROC	NEAR
 		CALL	Intr21
 		MOV	ES:BlocEr,0
 		JNC	@@WriteFile
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JNE	@@Error
 		MOV	AX,5
 		JMP	@@Error
@@ -1647,12 +1647,12 @@ SaveTreeFile	PROC	NEAR
 		MOV	CX,DI
 		XOR	DX,DX
 		MOV	AH,40h
-		CALL	Intr21
+		CALL	Intr21			; write()
 		PUSH	DS
 		PUSHF
 		PUSH	AX
 		MOV	AH,3Eh
-		CALL	Intr21
+		CALL	Intr21			; close()
 		POP	DX
 		POP	BX
 		JC	@@Error

@@ -141,7 +141,7 @@ DirFunc		PROC	FAR			; Find files in directory
 		JC	@@FuncExit
 		CALL	Intr21
 		JNC	@@ChkName
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JNE	@@SaveDescr3
   @@FuncExit:	MOV	BX,100h
   @@SaveDescr3:	CALL	CloseFindFile
@@ -176,9 +176,9 @@ DirFunc		PROC	FAR			; Find files in directory
 		JC	@@GlobalExit
 		MOV	CX,37h
 		MOV	AH,4Eh
-  @@UpDirFind:	CALL	Intr21
+  @@UpDirFind:	CALL	Intr21			; FindNext()
 		JNC	@@UpDirComp
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JNE	@@UpDirAdd
   @@GlobalExit:	CALL	CloseFindFile
   @@Error:	MOV	BX,100h
@@ -420,7 +420,7 @@ FuncMsk09:	MOV	BX,DX
 		MOV	DX,BX
 		JNC	FuncMsk10
 		POP	CX
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JNE	FuncMsk11
 		JMP	FuncExit
 FuncMsk10:	TEST	CL,10h
@@ -597,7 +597,7 @@ FuncExit01:	CMP	ES:GroupTreeChg1,0
 		MOV	DX,OFFSET LineBuf1
 		CALL	SaveTreeInfo
 		JNC	FuncExit02
-		CMP	AX,WORD PTR 53h
+		CMP	AX,WORD PTR ErrFail
 		JE	FuncExit03
 FuncExit02:	CMP	ES:GroupTreeChg2,0
 		JZ	FuncExit03
@@ -647,7 +647,7 @@ FuncTwoNames	PROC	NEAR	USES	AX SI DI DS
 		POP	DI
 		CALL	ShortName
 		JNC	@@ShortName
-  @@Error:	CMP	AX,WORD PTR 53h
+  @@Error:	CMP	AX,WORD PTR ErrFail
 		JE	@@Exit
 		MOV	DS:DTA.FilName[0],0
 		JMP	@@ExitOk
@@ -786,14 +786,14 @@ FncList		PROC	NEAR	USES	BX CX DX SI DI BP DS
 		SUB	CX,DX
 		MOV	BX,DS:FileListHandle
 		MOV	AH,40h
-		CALL	Intr21
+		CALL	Intr21			; write()
 		MOV	BYTE PTR DS:[DI-2],0
 		JC	@@FncLst2
 		CMP	AX,CX
 		JNE	@@FncLst3
 		MOV	AX,1
 		JMP	@@FncLst5
-  @@FncLst2:	CMP	AX,WORD PTR 53h
+  @@FncLst2:	CMP	AX,WORD PTR ErrFail
 		JE	@@FncLst4
   @@FncLst3:	XOR	AX,AX
 		JMP	@@FncLst5
