@@ -386,7 +386,7 @@ F48_12:		POP	DS
 F48_10		ENDP
 
 ;---------------------------------------------------------------
-; Ctrl F7 - delete one file under cursor even if group of files is selected
+; Ctrl F8 - delete file under cursor even if group of files is selected
 ;---------------------------------------------------------------
 F58_00		PROC	NEAR
 		MOV	ES:OneFile,1
