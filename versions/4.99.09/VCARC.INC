@@ -291,11 +291,11 @@ ParseArcName	PROC	FAR	USES	BX DI BP DS
   @@SplitPath:	MOV	BL,0
 		XCHG	BL,DS:[SI]
 		MOV	AX,4300h
-		CALL	Intr21
+		CALL	Intr21			; stat()
 		MOV	DS:[SI],BL
 		JC	@@NotFound
 		XOR	AX,AX
-		TEST	CL,10h
+		TEST	CL,fa_DIR
 		JZ	@@ChkOneLet
 		OR	BL,BL
 		JZ	@@Error
@@ -535,22 +535,22 @@ IF	__TASMIDENT__
 ELSE
 		JC	@@Error
 ENDIF
-		MOV	CX,20h
+		MOV	CX,fa_ARCHIVE
 		MOV	AX,4301h
-		CALL	Intr21
+		CALL	Intr21			; chmod()
 		JC	@@ChkErr
-		TEST	BL,10h
+		TEST	BL,fa_DIR
 		JNZ	@@Dir
 		MOV	DI,OFFSET VwArcFile
 		MOV	AH,56h
-		CALL	Intr21
+		CALL	Intr21			; rename()
 		JNC	@@Done
 		CMP	AX,WORD PTR ErrFail
 		JE	@@Error
 		MOV	SI,DI
 		MOV	DI,OFFSET VwArcTmp
 		MOV	AH,60h
-		CALL	Intr21
+		CALL	Intr21			; truename()
 		JNC	@@Compare
 		CMP	AX,WORD PTR ErrFail
 		JE	@@Error
@@ -565,7 +565,7 @@ ENDIF
 		CALL	CompNormLines
 		JE	@@Done
   @@Del:	MOV	AH,41h
-		CALL	Intr21
+		CALL	Intr21			; unlink()
 		JC	@@ChkErr
   @@Done:	MOV	AX,1
 		JMP	@@Exit
@@ -574,7 +574,7 @@ ENDIF
 		JNE	@@Error
 		MOV	DX,OFFSET LineBuf1
 		MOV	AH,3Ah
-		CALL	Intr21
+		CALL	Intr21			; rmdir()
 		JNC	@@Done
   @@ChkErr:	CMP	AX,WORD PTR ErrFail
 		JE	@@Error

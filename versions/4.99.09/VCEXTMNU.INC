@@ -405,18 +405,18 @@ F34_40:		PUSH	ES			; Check standard viewer
 		CMP	AL,0
 		JE	F34_41
 		MOV	AX,4300h
-		CALL	Intr21
+		CALL	Intr21			; stat()
 		JC	F34_44
-		TEST	CL,10h
+		TEST	CL,fa_DIR
 		JNZ	F34_34
 		JMP	F34_50
 F34_41:		MOV	AX,4300h
-		CALL	Intr21
+		CALL	Intr21			; stat()
 		JNC	F34_42
 		CMP	AX,WORD PTR ErrFail
 		JNE	F34_43
 		JMP	Func04
-F34_42:		TEST	CL,10h
+F34_42:		TEST	CL,fa_DIR
 		JZ	F34_50
 F34_43:		MOV	SI,DX
 		MOV	DI,DX
@@ -499,7 +499,7 @@ F34_55:		MOV	BX,DS:WorkBuffer
 		SUB	BX,AX
 		ADD	BX,(MinView SHR 4)+1
 		MOV	AH,4Ah
-		INT	21h
+		INT	21h			; realloc()
 		MOV	BX,OFFSET ViewExecEPB
 		MOV	DS:[BX].EnvSeg,0
 		MOV	DS:[BX].CmdLine.Offs,OFFSET ViewExecCmdLn
@@ -510,14 +510,14 @@ F34_55:		MOV	BX,DS:WorkBuffer
 		MOV	DS:[BX].FCB2.Segm,ES
 		MOV	DX,OFFSET LineBuf4
 		MOV	AX,4B00h
-		CALL	Intr21
+		CALL	Intr21			; exec()
 		PUSHF
 		PUSH	AX
 		MOV	BX,0FFFFh
 		MOV	AH,4Ah
-		INT	21h
+		INT	21h			; realloc(-1) // query free memory
 		MOV	AH,4Ah
-		INT	21h
+		INT	21h			; realloc()
 		CALL	HidCur
 		PUSH	ES
 		POP	DS
@@ -812,11 +812,11 @@ F32_06:		MOV	CL,4
 		MOV	DS,ES:WorkBuffer
 		XOR	DX,DX
 		MOV	AH,3Fh
-		CALL	Intr21
+		CALL	Intr21			; read()
 		PUSHF
 		PUSH	AX
 		MOV	AH,3Eh
-		CALL	Intr21
+		CALL	Intr21			; close()
 		POP	BX
 		POP	DX
 		JC	F32_04

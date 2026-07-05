@@ -452,9 +452,9 @@ ShortName	PROC	FAR	USES	CX DX SI DI DS
 		JE	@@Exit
 		MOV	DX,SI
 		MOV	AX,4300h
-		CALL	Intr21
+		CALL	Intr21			; stat()
 		JC	@@Error
-		TEST	CL,18h
+		TEST	CL,fa_LABEL OR fa_DIR
 		JNZ	@@Exit
 		PUSH	ES
 		POP	DS
@@ -1939,7 +1939,7 @@ GetFileTime	PROC	FAR	USES	BX DX SI DS
 		MOV	CX,22
 		MOV	BX,0FFFFh
 		MOV	AX,5702h
-		CALL	Intr21
+		CALL	Intr21			; DosQFileInfo() [OS/2]
 		MOV	CX,DS:[DI+8].Hi
 		MOV	DI,DS:[DI+8].Lo
 		JMP	@@Exit
@@ -1969,7 +1969,7 @@ SetFileTime	PROC	FAR	USES	BX CX DX SI DI DS
 		MOV	CX,22
 		MOV	BX,0FFFFh
 		MOV	AX,5703h
-  @@Exec:	CALL	Intr21
+  @@Exec:	CALL	Intr21			; DosSetFileInfo() [OS/2]
 		RET
 SetFileTime	ENDP
 
@@ -2419,7 +2419,7 @@ NextDirEntH	PROC	FAR	USES	AX
 		JNZ	@@Exit
 		CMP	SI,DS:TreeSize
 		JAE	@@Exit
-  @@ChkEntry:	TEST	DS:[SI].DirAttr,6
+  @@ChkEntry:	TEST	DS:[SI].DirAttr,fa_HIDDEN OR fa_SYSTEM
 		JZ	@@Exit
 		MOV	AL,DS:[SI].DirLevel
   @@FindNext:	CALL	NextDirEnt

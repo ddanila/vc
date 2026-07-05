@@ -131,7 +131,7 @@ GetTreeInfo	PROC	NEAR	USES	BX CX DX SI DI
 		SUB	AL,'A'
 		MOV	DL,AL
 		MOV	AH,0Eh
-		INT	21h
+		INT	21h			; SetCurDrv()
   @@SetSegm:	XOR	BX,BX
 		XCHG	BX,ES:TreeSeg
 		MOV	SI,OFFSET AllSegs_L
@@ -167,7 +167,7 @@ GetTreeInfo	PROC	NEAR	USES	BX CX DX SI DI
   @@RestoreDrv:	MOV	DL,ES:DosPath[0]
 		SUB	DL,'A'
 		MOV	AH,0Eh
-		INT	21h
+		INT	21h			; SetCurDrv()
 		POP	AX
 		POPF
 		RET
@@ -261,7 +261,7 @@ PrepAddTree	PROC	NEAR	USES	CX SI DI
   @@WinName:	XCHG	BX,DI
 		MOV	CX,8002h
 		MOV	AX,7160h
-		CALL	Intr21
+		CALL	Intr21			; LFN_truname()
 		XCHG	BX,DI
 		JC	@@Error
 		CALL	ShortName
@@ -390,7 +390,7 @@ AddTreeEntry	PROC	FAR	USES	AX BX CX DX
 		XCHG	BL,ES:[SI]
 		MOV	ES:BlocEr,1
 		MOV	AX,4300h
-		CALL	Intr21
+		CALL	Intr21			; stat()
 		MOV	ES:BlocEr,0
 		MOV	ES:[SI],BL
 		JNC	@@Attrib
@@ -399,7 +399,7 @@ AddTreeEntry	PROC	FAR	USES	AX BX CX DX
 		POP	DX
 		POP	SI
 		POP	DS
-		AND	CL,27h
+		AND	CL,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_ARCHIVE
 		MOV	DS:[DI].DirAttr,CL
 		XOR	CX,CX
 		MOV	AX,LenLongEntry
@@ -736,7 +736,7 @@ TreeFunc	PROC	NEAR
 		POP	DS
 		POP	DI
 		MOV	AH,4Eh
-		MOV	CX,37h
+		MOV	CX,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_DIR OR fa_ARCHIVE
 
   @@NextEntry:	CALL	TstBrk			; Find entry
 		MOV	AL,2
@@ -744,10 +744,10 @@ TreeFunc	PROC	NEAR
 		PUSH	DS
 		PUSH	ES
 		POP	DS
-		CALL	Intr21
+		CALL	Intr21			; FindFirst()
 		POP	DS
 		JC	@@Error
-		TEST	ES:DTA.FilAttr,10h
+		TEST	ES:DTA.FilAttr,fa_DIR
 		JZ	@@FindNext
 		PUSH	DS
 		PUSH	ES
@@ -897,7 +897,7 @@ TreeFunc	PROC	NEAR
 		MOV	AL,DS:TreeLev
 		MOV	DS:[DI].DirLevel,AL
 		MOV	AL,ES:DTA.FilAttr
-		AND	AL,27h
+		AND	AL,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_ARCHIVE
 		MOV	DS:[DI].DirAttr,AL
 		PUSH	CX
 		XOR	SI,SI
@@ -995,7 +995,7 @@ TreeFunc	PROC	NEAR
 		CMP	AL,DS:[SI].DirLevel
 		JB	@@FindOld1
 		JA	@@ScanIn
-		TEST	DS:[SI].DirAttr,40h
+		TEST	DS:[SI].DirAttr,fa_SELECTED
 		JNZ	@@FindOld1
 		PUSH	ES
 		PUSH	DI
@@ -1011,7 +1011,7 @@ TreeFunc	PROC	NEAR
 		POP	DI
 		POP	ES
 		JNE	@@FindOld1
-		OR	DS:[SI].DirAttr,40h
+		OR	DS:[SI].DirAttr,fa_SELECTED
 		MOV	DS:TreeOldPoint,SI
   @@ScanIn:	PUSH	DS
 		PUSH	ES
@@ -1135,12 +1135,12 @@ ReadTreeInfo	PROC	FAR
 		STOSW
 		POP	ES
 		POP	DS
-		MOV	CX,27h
+		MOV	CX,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_ARCHIVE
 		MOV	AH,4Eh
   @@FindFile:	PUSH	DS
 		PUSH	SS
 		POP	DS
-		CALL	Intr21
+		CALL	Intr21			; FindFirst() / FindNext()
 		POP	DS
 		JC	@@ErrFind
 		MOV	SI,OFFSET DTA.FilName
@@ -1228,7 +1228,7 @@ ReadTreeInfo	PROC	FAR
 		JNE	@@Close
 		JMP	@@ExitFind
   @@Close:	MOV	AH,3Eh
-		CALL	Intr21
+		CALL	Intr21			; close()
 		JNC	@@Next
 		CMP	AX,WORD PTR ErrFail
 		JE	@@ErrFind
@@ -1326,11 +1326,11 @@ ReadTreeInfo	ENDP
 ReadTreeFile	PROC	NEAR			; Read TREEINFO
 		XOR	DX,DX
 		MOV	AH,3Fh
-		CALL	Intr21
+		CALL	Intr21			; read()
 		PUSHF
 		PUSH	AX
 		MOV	AH,3Eh
-		CALL	Intr21
+		CALL	Intr21			; close()
 		POP	BX
 		POP	SI
 		JC	@@Exit
@@ -1411,7 +1411,7 @@ SaveTreeInfo	PROC	FAR
 		SUB	AL,'A'
 		MOV	DL,AL
 		MOV	AH,0Eh
-		INT	21h
+		INT	21h			; SetCurDrv()
   @@DelTree:	MOV	AX,DS:TreeNumber
 		CMP	AX,WORD PTR 0FFFDh
 		JE	@@Exit
@@ -1584,7 +1584,7 @@ SaveTreeInfo	PROC	FAR
 		POP	ES
 		XOR	BX,BX
   @@ChkFile:	MOV	AX,4300h
-		CALL	Intr21
+		CALL	Intr21			; stat()
 		JC	@@ExNewTree
 		INC	BX
 		MOV	SI,DI
@@ -1627,15 +1627,15 @@ SaveTreeFile	PROC	NEAR
 		PUSH	SS
 		POP	DS
 		MOV	AX,4300h
-		CALL	Intr21
+		CALL	Intr21			; stat()
 		JNC	@@OpenFile
 		CMP	AX,WORD PTR 2
 		JNE	@@Error
 		MOV	CX,BX
-  @@OpenFile:	OR	CL,20h
+  @@OpenFile:	OR	CL,fa_ARCHIVE
 		MOV	ES:BlocEr,1
 		MOV	AH,3Ch
-		CALL	Intr21
+		CALL	Intr21			; creat()
 		MOV	ES:BlocEr,0
 		JNC	@@WriteFile
 		CMP	AX,WORD PTR ErrFail

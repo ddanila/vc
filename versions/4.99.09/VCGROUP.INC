@@ -89,14 +89,14 @@ DirFunc		PROC	FAR			; Find files in directory
 		PUSH	ES
 		POP	DS
 		MOV	BX,1
-		MOV	CX,37h
+		MOV	CX,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_DIR OR fa_ARCHIVE
 		MOV	AH,4Eh
 		JMP	@@Find
   @@ChkName:	MOV	SI,OFFSET DTA.FilName	; Check found name
 		CALL	ChkUpDir
 		JE	@@FindNext
 		MOV	DI,OFFSET GroupMask
-		TEST	DS:DTA.FilAttr,10h
+		TEST	DS:DTA.FilAttr,fa_DIR
 		JZ	@@TestMask
 		CMP	DS:IncDirs,0
 		JZ	@@FindNext
@@ -139,7 +139,7 @@ DirFunc		PROC	FAR			; Find files in directory
   @@FindNext:	MOV	AH,4Fh			; Find name
   @@Find:	CALL	ChgDisk
 		JC	@@FuncExit
-		CALL	Intr21
+		CALL	Intr21			; FindFirst() / FindNext()
 		JNC	@@ChkName
 		CMP	AX,WORD PTR ErrFail
 		JNE	@@SaveDescr3
@@ -174,9 +174,9 @@ DirFunc		PROC	FAR			; Find files in directory
 		POP	DS
 		CALL	ChgDisk
 		JC	@@GlobalExit
-		MOV	CX,37h
+		MOV	CX,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_DIR OR fa_ARCHIVE
 		MOV	AH,4Eh
-  @@UpDirFind:	CALL	Intr21			; FindNext()
+  @@UpDirFind:	CALL	Intr21			; FindFirst() / FindNext()
 		JNC	@@UpDirComp
 		CMP	AX,WORD PTR ErrFail
 		JNE	@@UpDirAdd
@@ -184,7 +184,7 @@ DirFunc		PROC	FAR			; Find files in directory
   @@Error:	MOV	BX,100h
 		JMP	@@Exit
   @@UpDirComp:	MOV	AH,4Fh
-		TEST	DS:DTA.FilAttr,10h
+		TEST	DS:DTA.FilAttr,fa_DIR
 		JZ	@@UpDirFind
 		MOV	SI,OFFSET DTA.FilName
 		CMP	DS:ProcLongNams,0
@@ -230,7 +230,7 @@ FuncSel03:	MOV	ES:DescrUpdate,AL
 		MOV	SI,DS:DiskBuf
 FuncSel04:	CMP	SI,DS:EndBuf
 		JAE	FuncSel05
-		AND	DS:[SI].AttrF,7Fh
+		AND	DS:[SI].AttrF,NOT 80h
 		CALL	NextFilEnt
 		JMP	FuncSel04
 FuncSel05:	POP	SI
@@ -240,7 +240,7 @@ FuncSel05:	POP	SI
 		MOV	SI,DS:DiskBuf
 FuncSel06:	CMP	SI,DS:EndBuf		; Loop
 		JAE	FuncExit
-		TEST	DS:[SI].AttrF,40h
+		TEST	DS:[SI].AttrF,fa_SELECTED
 		JZ	FuncSel13
 FuncSel07:	PUSH	SI
 		ADD	SI,OFFSET NameF
@@ -265,9 +265,9 @@ FuncSel07:	PUSH	SI
 		JNZ	FuncExit
 		CMP	AL,0
 		JZ	FuncSel12
-		TEST	DS:[SI].AttrF,40h
+		TEST	DS:[SI].AttrF,fa_SELECTED
 		JZ	FuncSel12
-		AND	DS:[SI].AttrF,3Fh	; Unselect
+		AND	DS:[SI].AttrF,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_LABEL OR fa_DIR OR fa_ARCHIVE	; Unselect
 		OR	DS:[SI].AttrF,80h
 		CMP	ES:UnSlct,0
 		JZ	FuncSel12
@@ -416,14 +416,14 @@ FuncMsk09:	MOV	BX,DX
 		JC	FuncExit
 		PUSH	CX
 		MOV	AX,4300h
-		CALL	Intr21
+		CALL	Intr21			; stat()
 		MOV	DX,BX
 		JNC	FuncMsk10
 		POP	CX
 		CMP	AX,WORD PTR ErrFail
 		JNE	FuncMsk11
 		JMP	FuncExit
-FuncMsk10:	TEST	CL,10h
+FuncMsk10:	TEST	CL,fa_DIR
 		POP	CX
 		JNZ	FuncMsk26
 FuncMsk11:	MOV	BX,SI			; File or mask
@@ -690,7 +690,7 @@ FileList	PROC	FAR	USES	AX BX CX DX SI DI DS
 		MOV	SI,DS:DiskBuf
   @@List01:	CMP	SI,DS:EndBuf
 		JAE	@@List02
-		AND	DS:[SI].AttrF,7Fh
+		AND	DS:[SI].AttrF,NOT 80h
 		CALL	NextFilEnt
 		JMP	@@List01
   @@List02:	MOV	DI,OFFSET LineBuf1
@@ -720,7 +720,7 @@ FileList	PROC	FAR	USES	AX BX CX DX SI DI DS
 		JMP	@@List10
   @@List05:	CMP	SI,DS:EndBuf
 		JAE	@@List10
-		TEST	DS:[SI].AttrF,40h
+		TEST	DS:[SI].AttrF,fa_SELECTED
 		JZ	@@List09
   @@List06:	MOV	DI,ES:FileListOffset
 		PUSH	SI
@@ -743,9 +743,9 @@ FileList	PROC	FAR	USES	AX BX CX DX SI DI DS
 		MOV	DS,ES:FileListSeg
 		CMP	AL,0
 		JZ	@@List08
-		TEST	DS:[SI].AttrF,40h
+		TEST	DS:[SI].AttrF,fa_SELECTED
 		JZ	@@List08
-		AND	DS:[SI].AttrF,3Fh
+		AND	DS:[SI].AttrF,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_LABEL OR fa_DIR OR fa_ARCHIVE	; unselect
 		OR	DS:[SI].AttrF,80h
   @@List08:	CALL	TstBrk
 		JC	@@List10
@@ -755,7 +755,7 @@ FileList	PROC	FAR	USES	AX BX CX DX SI DI DS
 		JMP	@@List05
   @@List10:	MOV	BX,ES:FileListHandle
 		MOV	AH,3Eh
-		CALL	Intr21
+		CALL	Intr21			; close()
 		RET
 FileList	ENDP
 

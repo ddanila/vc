@@ -331,8 +331,8 @@ ExecArcCmd	PROC	FAR	USES	BX CX DX SI DI BP DS
   @@CountFls4:	CMP	DI,ES:EndBuf
 		JAE	@@CountFls8
 		PUSH	DI
-		AND	ES:[DI].AttrF,7Fh
-		TEST	ES:[DI].AttrF,40h
+		AND	ES:[DI].AttrF,NOT 80h
+		TEST	ES:[DI].AttrF,fa_SELECTED
 		JZ	@@CountFls7
 		INC	DX
 
@@ -457,14 +457,14 @@ ExecArcCmd	PROC	FAR	USES	BX CX DX SI DI BP DS
 		MOV	SI,DS:DiskBuf
   @@FileList03:	CMP	SI,DS:EndBuf
 		JAE	@@FileList07
-		TEST	DS:[SI].AttrF,40h
+		TEST	DS:[SI].AttrF,fa_SELECTED
 		JZ	@@FileList06
 		OR	DI,DI
 		JE	@@FileList04
 		MOV	DX,OFFSET ArcPath
 		MOV	CX,DI
 		MOV	AH,40h
-		CALL	Intr21
+		CALL	Intr21			; write()
 		JC	@@FileList09
 		CMP	AX,CX
 		JNE	@@FileList08
@@ -474,7 +474,7 @@ ExecArcCmd	PROC	FAR	USES	BX CX DX SI DI BP DS
 		MOV	DX,OFFSET Mask_S
 		MOV	CX,1
 		MOV	AH,40h
-		CALL	Intr21
+		CALL	Intr21			; write()
 		POP	DS
 		JC	@@FileList09
 		CMP	AX,CX
@@ -487,11 +487,11 @@ ExecArcCmd	PROC	FAR	USES	BX CX DX SI DI BP DS
 
 		DEC	CX
 		MOV	AH,40h
-		CALL	Intr21
+		CALL	Intr21			; write()
 		JC	@@FileList09
 		CMP	AX,CX
 		JNE	@@FileList08
-		TEST	DS:[SI].AttrF,10h
+		TEST	DS:[SI].AttrF,fa_DIR
 		JZ	@@FileList05
 		PUSH	DS
 		PUSH	CS
@@ -499,7 +499,7 @@ ExecArcCmd	PROC	FAR	USES	BX CX DX SI DI BP DS
 		MOV	DX,OFFSET Mask_S
 		MOV	CX,4
 		MOV	AH,40h
-		CALL	Intr21
+		CALL	Intr21			; write()
 		POP	DS
 		JC	@@FileList09
 		CMP	AX,CX
@@ -510,7 +510,7 @@ ExecArcCmd	PROC	FAR	USES	BX CX DX SI DI BP DS
 		MOV	DX,OFFSET CrLf_S
 		MOV	CX,2
 		MOV	AH,40h
-		CALL	Intr21
+		CALL	Intr21			; write()
 		POP	DS
 		JC	@@FileList09
 		CMP	AX,CX
@@ -682,7 +682,7 @@ ENDIF
 		MOV	SI,DS:DiskBuf
   @@CmdLine09:	CMP	SI,DS:EndBuf
 		JAE	@@CmdLine04
-		TEST	DS:[SI].AttrF,40h
+		TEST	DS:[SI].AttrF,fa_SELECTED
 		JZ	@@CmdLine15
 		TEST	BL,10h
 		JZ	@@CmdLine12
@@ -702,7 +702,7 @@ ENDIF
 ;##
 		ADD	CX,DS:[SI].LenShortNamF
 
-		TEST	DS:[SI].AttrF,10h
+		TEST	DS:[SI].AttrF,fa_DIR
 		JZ	@@CmdLine11
 		ADD	CX,4
   @@CmdLine11:	ADD	CX,DI
@@ -728,7 +728,7 @@ ENDIF
 
 		CALL	ExecArcMoveCmd
 		POP	SI
-		TEST	DS:[SI].AttrF,10h
+		TEST	DS:[SI].AttrF,fa_DIR
 		JZ	@@CmdLine14
 		PUSH	DS
 		PUSH	SI
@@ -738,7 +738,7 @@ ENDIF
 		CALL	ExecArcMoveCmd
 		POP	SI
 		POP	DS
-  @@CmdLine14:	AND	DS:[SI].AttrF,3Fh
+  @@CmdLine14:	AND	DS:[SI].AttrF,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_LABEL OR fa_DIR OR fa_ARCHIVE
 		OR	DS:[SI].AttrF,80h
 		TEST	BL,2
 		JZ	@@CmdLine04
@@ -940,7 +940,7 @@ ENDIF
 		JNZ	@@UnSelect
   @@ChkSelFls:	CMP	SI,DS:EndBuf
 		JAE	@@CurDir
-		TEST	DS:[SI].AttrF,40h
+		TEST	DS:[SI].AttrF,fa_SELECTED
 		JNZ	@@DoAgain
 		CALL	NextFilEnt
 		JMP	@@ChkSelFls
@@ -954,9 +954,9 @@ ENDIF
 
   @@UnSelect:	CMP	SI,DS:EndBuf		; Unselect all files
 		JAE	@@DelList
-		TEST	DS:[SI].AttrF,40h
+		TEST	DS:[SI].AttrF,fa_SELECTED
 		JZ	@@UnSelNext
-		AND	DS:[SI].AttrF,3Fh
+		AND	DS:[SI].AttrF,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_LABEL OR fa_DIR OR fa_ARCHIVE
 		OR	DS:[SI].AttrF,80h
   @@UnSelNext:	CALL	NextFilEnt
 		JMP	@@UnSelect
@@ -972,7 +972,7 @@ ENDIF
 		MOV	AX,DS:ExecArcListNum
 		CALL	MakePathName
 		MOV	AH,41h
-		CALL	Intr21
+		CALL	Intr21			; unlink()
 		POP	AX
 
   @@CurDir:	PUSH	AX			; Restore current dir
@@ -981,10 +981,10 @@ ENDIF
 		MOV	DL,DS:DosShortPath[0]
 		SUB	DL,'A'
 		MOV	AH,0Eh
-		CALL	Intr21
+		CALL	Intr21			; SetCurDrv()
 		MOV	DX,OFFSET DosPath
 		MOV	AH,3Bh
-		CALL	Intr21
+		CALL	Intr21			; chdir()
 		CALL	GetPath
 		POP	AX
 		CMP	AX,WORD PTR 1
@@ -1953,22 +1953,22 @@ ExecArcChar	PROC	NEAR	USES	AX BX CX DX SI DI BP DS
 		CMP	AL,0Ah
 		JE	@@CheckSiz8
 		CALL	UpCase
-		MOV	AH,1
+		MOV	AH,fa_RO
 		CMP	AL,'R'
 		JE	@@CheckAtr2
-		MOV	AH,2
+		MOV	AH,fa_HIDDEN
 		CMP	AL,'H'
 		JE	@@CheckAtr2
-		MOV	AH,4
+		MOV	AH,fa_SYSTEM
 		CMP	AL,'S'
 		JE	@@CheckAtr2
-		MOV	AH,8
+		MOV	AH,fa_LABEL
 		CMP	AL,'V'
 		JE	@@CheckAtr2
-		MOV	AH,10h
+		MOV	AH,fa_DIR
 		CMP	AL,'D'
 		JE	@@CheckAtr2
-		MOV	AH,20h
+		MOV	AH,fa_ARCHIVE
 		CMP	AL,'A'
 		JNE	@@CheckAtr1
   @@CheckAtr2:	OR	DS:ExecArcEntry.AttrF,AH
@@ -2178,7 +2178,7 @@ ExecArcChar	PROC	NEAR	USES	AX BX CX DX SI DI BP DS
 
   @@CheckDir:	CMP	AL,13			; Set directory flag
 		JNE	@@CheckConst
-		MOV	DS:ExecArcEntry.AttrF,10h
+		MOV	DS:ExecArcEntry.AttrF,fa_DIR
 		JMP	@@CheckItem
 
   @@CheckConst:	CMP	AL,14			; Check text constant
@@ -2313,9 +2313,9 @@ ExecArcChar	PROC	NEAR	USES	AX BX CX DX SI DI BP DS
 ExecArcChar	ENDP
 
 ExecArcSetEntry	PROC	NEAR
-		TEST	DS:ExecArcEntry.AttrF,8
+		TEST	DS:ExecArcEntry.AttrF,fa_LABEL
 		JNZ	@@Exit
-		TEST	DS:ExecArcEntry.AttrF,10h
+		TEST	DS:ExecArcEntry.AttrF,fa_DIR
 		JZ	@@NormStr
 		OR	DS:ExecArcEntry.AttrF,80h
   @@NormStr:	PUSH	ES			; Remove spaces
@@ -2395,23 +2395,23 @@ ExecArcSaveEnt	PROC	NEAR
 		CMP	AL,'\'
 		JNE	@@CheckDir3
 		MOV	AL,DS:ExecArcEntry.AttrF
-		OR	DS:ExecArcEntry.AttrF,90h
+		OR	DS:ExecArcEntry.AttrF,fa_DIR OR 80h
 		CMP	BYTE PTR DS:[SI],0
 		JE	@@CheckDir4
 		MOV	DS:ExecArcEntry.DateF,0
 		MOV	DS:ExecArcEntry.TimeF,0
-		MOV	DS:ExecArcEntry.AttrF,10h
+		MOV	DS:ExecArcEntry.AttrF,fa_DIR
 		TEST	AL,10h
 		JZ	@@CheckDir4
-		OR	DS:ExecArcEntry.AttrF,40h
+		OR	DS:ExecArcEntry.AttrF,fa_SELECTED
   @@CheckDir4:	MOV	CX,SI
 		SUB	CX,DI
 		DEC	CX
 		JE	@@Exit
 		MOV	SI,DI
-		TEST	DS:ExecArcEntry.AttrF,10h
+		TEST	DS:ExecArcEntry.AttrF,fa_DIR
 		JZ	@@SaveEntry
-		OR	DS:ExecArcEntry.AttrF,8
+		OR	DS:ExecArcEntry.AttrF,fa_LABEL
 		CALL	ExecArcChkDupe
 		JC	@@SaveEntry
 		MOV	AX,DS:ExecArcEntry.SizeF.Lo
@@ -2423,10 +2423,10 @@ ExecArcSaveEnt	PROC	NEAR
 		MOV	AX,ES:[DI].DateF
 		OR	AX,ES:[DI].TimeF
 		JNE	@@SaveDir0
-		TEST	ES:[DI].AttrF,10h
+		TEST	ES:[DI].AttrF,fa_DIR
 		JE	@@SaveDir0
 		MOV	AL,DS:ExecArcEntry.AttrF
-		AND	AL,3Fh
+		AND	AL,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_LABEL OR fa_DIR OR fa_ARCHIVE
 		MOV	ES:[DI].AttrF,AL
 		MOV	AX,DS:ExecArcEntry.TimeF
 		MOV	ES:[DI].TimeF,AX
@@ -2457,15 +2457,15 @@ ExecArcSaveEnt	PROC	NEAR
 		MOV	DS:[SI].NumbF,AX
 		INC	DS:ExecArcNumbF
 		MOV	AH,DS:[SI].AttrF
-		AND	DS:[SI].AttrF,3Fh
+		AND	DS:[SI].AttrF,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_LABEL OR fa_DIR OR fa_ARCHIVE
 		MOV	CX,SIZE FilEnt
 		REP	MOVSB
 		POP	CX
 		POP	SI
 		PUSH	SI
 		PUSH	CX
-		AND	AH,0FEh
-		TEST	AH,10h
+		AND	AH,NOT fa_RO
+		TEST	AH,fa_DIR
 		JNZ	@@MoveName
 		CMP	DS:ConvCase,0
 		JZ	@@MoveName
@@ -2493,7 +2493,7 @@ ExecArcSaveEnt	PROC	NEAR
 
 		MOV	DS:ExecArcEntry.DateF,0	; Included directories
 		MOV	DS:ExecArcEntry.TimeF,0
-		MOV	DS:ExecArcEntry.AttrF,10h
+		MOV	DS:ExecArcEntry.AttrF,fa_DIR
 		MOV	DS:ExecArcEntry.SizeF.Lo,0
 		MOV	DS:ExecArcEntry.SizeF.Hi,0
   @@SaveDir1:	MOV	DI,SI

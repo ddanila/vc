@@ -1882,7 +1882,7 @@ TableRead	PROC	NEAR	USES	CX
 		POP	DI
 		CALL	ChgDisk
 		JC	@@Error
-		MOV	CX,27h
+		MOV	CX,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_ARCHIVE
 		MOV	AH,4Eh
 		JMP	@@FindFile
   @@ChkSize:	CMP	BX,OFFSET TblPoints+2*TblMax
@@ -1911,11 +1911,11 @@ TableRead	PROC	NEAR	USES	CX
 		MOV	CX,TblWidth+2
 		MOV	DX,DI
 		MOV	AH,3Fh
-		CALL	Intr21
+		CALL	Intr21			; read()
 		PUSHF
 		PUSH	AX
 		MOV	AH,3Eh
-		CALL	Intr21
+		CALL	Intr21			; close()
 		POP	BP
 		POP	SI
 		POP	BX
@@ -1999,7 +1999,7 @@ TableRead	PROC	NEAR	USES	CX
 		JE	@@Error
   @@Skip:	MOV	DI,DS:[BX]
   @@FindNext:	MOV	AH,4Fh
-  @@FindFile:	CALL	Intr21			; FindFirst()
+  @@FindFile:	CALL	Intr21			; FindFirst() / FindNext()
 		JNC	@@ChkSize
 		XOR	AX,WORD PTR ErrFail
 		JNE	@@Exit

@@ -174,14 +174,14 @@ F00_70:		TEST	BP,2			; Scroll & select
 		TEST	ES:MouseWin,2
 		JNZ	F00_71
 		OR	ES:MouseWin,2
-		TEST	DS:[BX].AttrF,40h
+		TEST	DS:[BX].AttrF,fa_SELECTED
 		JNZ	F00_71
 		OR	ES:MouseWin,4
 F00_71:		MOV	AL,DS:[BX].AttrF
-		AND	AL,0BFh
+		AND	AL,NOT fa_SELECTED
 		TEST	ES:MouseWin,4
 		JZ	F00_72
-		OR	AL,40h
+		OR	AL,fa_SELECTED
 F00_72:		CMP	AL,DS:[BX].AttrF
 		JE	F00_75
 		MOV	DS:[BX].AttrF,AL
@@ -373,16 +373,16 @@ F08_01:		POP	SI
 		CALL	ChkUpDir
 		POP	SI
 		JE	F08_02
-		XOR	DS:[SI].AttrF,40h
+		XOR	DS:[SI].AttrF,fa_SELECTED
 		CMP	ES:InsDirSize,0
 		JZ	F08_02
 		CMP	DS:ArcPnt,0
 		JNE	F08_02
-		TEST	DS:[SI].AttrF,40h
+		TEST	DS:[SI].AttrF,fa_SELECTED
 		JZ	F08_02
-		TEST	DS:[SI].AttrF,10h
+		TEST	DS:[SI].AttrF,fa_DIR
 		JZ	F08_02
-		TEST	DS:[SI].AttrF,8
+		TEST	DS:[SI].AttrF,fa_LABEL
 		JNZ	F08_02
 		PUSH	SI
 		MOV	ES:FncAddr,OFFSET DirSiz1
@@ -403,7 +403,7 @@ F08_01:		POP	SI
 		MOV	BX,ES:SumSize.Hi
 		MOV	DS:[SI].SizeF.Lo,AX
 		MOV	DS:[SI].SizeF.Hi,BX
-		OR	DS:[SI].AttrF,8
+		OR	DS:[SI].AttrF,fa_LABEL
 F08_02:		CALL	F08_10
 		CMP	ES:InsDwn,0
 		JZ	Func10
@@ -534,16 +534,16 @@ F10_07:		CMP	SI,DS:EndBuf
 		JNE	F10_10
 F10_08:		TEST	CL,1
 		JNZ	F10_09
-		TEST	DS:[SI].AttrF,10h
+		TEST	DS:[SI].AttrF,fa_DIR
 		JNZ	F10_10
 F10_09:		MOV	CH,1
-		XOR	DS:[SI].AttrF,40h
+		XOR	DS:[SI].AttrF,fa_SELECTED
 		CMP	DX,OFFSET Inv_T
 		JE	F10_10
-		OR	DS:[SI].AttrF,40h
+		OR	DS:[SI].AttrF,fa_SELECTED
 		CMP	DX,OFFSET Sel_T
 		JE	F10_10
-		AND	DS:[SI].AttrF,0BFh
+		AND	DS:[SI].AttrF,NOT fa_SELECTED
 F10_10:		CALL	NextFilEnt
 		JMP	F10_07
 F10_11:		OR	CH,CH
@@ -622,7 +622,7 @@ F78_01:		CMP	SI,DS:EndBuf
 		JE	F78_02
 		TEST	DS:[SI].AttrF,80h
 		JZ	F78_02
-		OR	DS:[SI].AttrF,40h
+		OR	DS:[SI].AttrF,fa_SELECTED
 F78_02:		CALL	NextFilEnt
 		JMP	F78_01
 
@@ -805,7 +805,7 @@ F20_12:		CALL	HidCur
 		JC	F20_13
 		MOV	DX,OFFSET WinShortPath
 		MOV	AH,3Bh
-		CALL	Intr21
+		CALL	Intr21			; chdir()
 		JNC	F20_14
 		CMP	AX,WORD PTR 3
 		JE	F20_14
@@ -820,12 +820,12 @@ F20_13:		MOV	SI,OFFSET WinShortPath
 		MOV	DL,DS:WinShortPath[0]
 		SUB	DL,'A'
 		MOV	AH,0Eh
-		INT	21h
+		INT	21h			; SetCurDrv()
 		JMP	F20_16
 F20_14:		MOV	DL,DS:WinShortPath[0]
 		SUB	DL,'A'
 		MOV	AH,0Eh
-		INT	21h
+		INT	21h			; SetCurDrv()
 F20_15:		CALL	GetPath
 F20_16:		CALL	PutPrompt
 		MOV	AX,ES:WCBcrn
@@ -862,10 +862,10 @@ F21_11:		MOV	SI,OFFSET CrnPath
 		PUSH	ES
 		POP	DS
 		MOV	AX,4300h
-		CALL	Intr21
+		CALL	Intr21			; stat()
 		POP	DS
 		JC	F21_14
-		TEST	CL,10h
+		TEST	CL,fa_DIR
 		JZ	F21_15
 F21_12:		OR	BP,BP
 		JNE	F24_10
@@ -926,7 +926,7 @@ F21_20:		JA	F21_13			; Files
 		CALL	Numb2Addr
 		CMP	SI,DS:EndBuf
 		JAE	F21_13
-		TEST	DS:[SI].AttrF,10h
+		TEST	DS:[SI].AttrF,fa_DIR
 		JNZ	F23_10
 		MOV	DI,SI
 		CALL	NameOffset
@@ -1073,7 +1073,7 @@ F23_00:		CMP	DS:Visible,0		; ^PgDn
 		CALL	Numb2Addr
 		CMP	SI,DS:EndBuf
 		JAE	F22_01
-F23_01:		TEST	DS:[SI].AttrF,10h
+F23_01:		TEST	DS:[SI].AttrF,fa_DIR
 		JNZ	F23_10
 		CALL	NameOffset
 F23_02:		MOV	BX,0FFFFh
@@ -1189,9 +1189,9 @@ F23_10:		CMP	DS:ArcPnt,0		; Directory
 		JC	F22_01
 		MOV	DX,OFFSET WinShortPath
 		MOV	AX,4300h
-		CALL	Intr21
+		CALL	Intr21			; stat()
 		JC	F22_01
-		TEST	CL,10h
+		TEST	CL,fa_DIR
 		JZ	F22_01
 		JMP	F23_14
 F23_11:		MOV	DX,SI			; Exit from archive to archive
@@ -1271,12 +1271,12 @@ F23_30:		CALL	HidCur			; Change Directory
 		CALL	LongNameOffset
 		MOV	DX,SI
 		MOV	AH,3Bh
-		CALL	Intr21
+		CALL	Intr21			; chdir()
 		JC	F23_36
 		CALL	ChkUpDir
 		JNE	F24_10
 F23_31:		MOV	SI,OFFSET WinShortPath[3]
-F23_32:		MOV	AH,10h
+F23_32:		MOV	AH,fa_DIR
 F23_33:		MOV	DS:FileCur,0
 		MOV	DS:FileFirst,1
 		MOV	BX,DS:DiskBuf
@@ -1333,7 +1333,7 @@ F24_00:		CALL	HidCur			; ^\
 		MOV	BP,1
 F24_01:		POP	DS
 		MOV	AH,3Bh
-		CALL	Intr21
+		CALL	Intr21			; chdir()
 		POP	DS
 		JC	F23_36
 		CALL	DelAllTempArcs
@@ -1542,7 +1542,7 @@ F80_01:		MOV	SI,DS:DiskBuf
 		PUSH	SI
 F80_02:		CMP	SI,DS:EndBuf
 		JAE	F80_03
-		AND	DS:[SI].AttrF,7Fh
+		AND	DS:[SI].AttrF,NOT 80h
 		CALL	NextFilEnt
 		JMP	F80_02
 F80_03:		POP	SI
@@ -1557,7 +1557,7 @@ F80_03:		POP	SI
 		JMP	F80_05
 F80_04:		CMP	SI,DS:EndBuf
 		JAE	F80_14
-		TEST	DS:[SI].AttrF,40h
+		TEST	DS:[SI].AttrF,fa_SELECTED
 		JZ	F80_13
 F80_05:		PUSH	DI
 		PUSH	SI
@@ -1575,7 +1575,7 @@ F80_05:		PUSH	DI
 		ADD	DI,CX
 		MOV	CX,DS:[SI].LenLongNamF
 F80_06:		MOV	SI,DI
-		TEST	DL,10h
+		TEST	DL,fa_DIR
 		JZ	F80_07
 		ADD	CX,4
 F80_07:		MOV	DI,OFFSET FileSymb2_S
@@ -1596,7 +1596,7 @@ F80_08:		ADD	BX,CX
 		MOV	AL,'"'
 		STOSB
 F80_09:		CALL	strcpy
-		TEST	DL,10h
+		TEST	DL,fa_DIR
 		JZ	F80_10
 		PUSH	DS
 		MOV	DS,CS:SubsSeg
@@ -1615,8 +1615,8 @@ F80_12:		POP	SI
 		AND	BP,0FF03h
 		TEST	BP,0FF00h
 		JE	F80_14
-		AND	DS:[SI].AttrF,0BFh
-		OR	DS:[SI].AttrF, 80h
+		AND	DS:[SI].AttrF,NOT fa_SELECTED
+		OR	DS:[SI].AttrF,80h
 F80_13:		CALL	NextFilEnt
 		JMP	F80_04
 F80_14:		MOV	AL,0
@@ -1654,18 +1654,18 @@ F30_00:		CMP	ES:QuitAck,0		; F10 - quit
 		JZ	F30_01
 		MOV	DX,1
 		MOV	AX,168Fh
-		INT	2Fh
+		INT	2Fh			; Win9x - query Close (window)
 		MOV	DX,OFFSET Name_T
 		MOV	BP,OFFSET Quit_B
 		CALL	Dialog
 		JE	F30_01
-		INT	2Fh
+		INT	2Fh			; XXX
 		XOR	DX,DX
 		MOV	AX,168Fh
-		INT	2Fh
+		INT	2Fh			; Win9x - disable Close (window)
 		MOV	DX,300h
 		MOV	AX,168Fh
-		INT	2Fh
+		INT	2Fh			; Win9x - cancel Close (window)
 		JMP	Func04
 F30_01:		CALL	DelAllTempArcs
 		JC	F30_02
@@ -1813,7 +1813,7 @@ F62_20:		CMP	AL,0
 		MOV	SI,OFFSET WinShortPath[3]
 		MOV	ES:BlocEr,1
 		MOV	AH,47h
-		CALL	Intr21
+		CALL	Intr21			; getcwd()
 		MOV	ES:BlocEr,0
 		JNC	F62_21
 		MOV	AL,DL
@@ -1839,7 +1839,7 @@ F62_22:		PUSH	DS
 		CMP	DS:WinTyp,p_File
 		JE	F62_24
 F62_23:		MOV	AH,0Eh
-		INT	21h
+		INT	21h			; SetCurDrv()
 F62_24:		POP	DS
 		MOV	DS:WinTyp,p_File
 		MOV	DS:ChgFlg,1

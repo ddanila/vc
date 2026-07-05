@@ -227,7 +227,7 @@ F35_MkPath	PROC	NEAR	USES	BX CX SI
   @@ChkDir:	MOV	BL,0
 		XCHG	DS:[SI-1],BL
 		MOV	AX,4300h
-		CALL	Intr21
+		CALL	Intr21			; stat()
 		XCHG	DS:[SI-1],BL
 		JNC	@@FindNext
 		CMP	AX,WORD PTR ErrFail
@@ -285,18 +285,18 @@ F35_UpdPath	ENDP
 ;---------------------------------------------------------------
 F35_DelCut	PROC	NEAR
 		MOV	AX,4300h
-		CALL	Intr21
+		CALL	Intr21			; stat()
 		JC	@@Exit
-		TEST	CL,1
+		TEST	CL,fa_RO
 		JZ	@@Delete
-		AND	CX,3Eh
+		AND	CX,fa_HIDDEN OR fa_SYSTEM OR fa_LABEL OR fa_DIR OR fa_ARCHIVE
 		MOV	AX,4301h
-		CALL	Intr21
+		CALL	Intr21			; chmod()
 		JC	@@Exit
   @@Delete:	CMP	DS:CopyAppend,0
 		JNZ	@@Trunc
 		MOV	AH,41h
-		CALL	Intr21
+		CALL	Intr21			; unlink()
 		JMP	@@Exit
   @@Trunc:	MOV	AL,12h
 		CALL	OpenFil
@@ -306,21 +306,21 @@ F35_DelCut	PROC	NEAR
 		MOV	DX,DS:CopyAppOffset.Lo
 		MOV	CX,DS:CopyAppOffset.Hi
 		MOV	AX,4200h
-		CALL	Intr21
+		CALL	Intr21			; lseek(.., SEEK_SET)
 		XOR	CX,CX
 		MOV	AH,40h
-		CALL	Intr21
+		CALL	Intr21			; write() // truncate file
 		MOV	DX,DS:CopyDate
 		MOV	CX,DS:CopyTime
 		MOV	AX,5701h
-		CALL	Intr21
+		CALL	Intr21			; SetFTime()
 		MOV	AH,3Eh
-		CALL	Intr21
+		CALL	Intr21			; close()
 		POP	DX
 		JC	@@Exit
 		MOV	CX,DS:CopyAttrib
 		MOV	AX,4301h
-		CALL	Intr21
+		CALL	Intr21			; chmod()
   @@Exit:	RET
 F35_DelCut	ENDP
 
@@ -333,7 +333,7 @@ F35_SetDate	PROC	NEAR
 		MOV	DX,DS:CopyDate
 		MOV	CX,DS:CopyTime
 		MOV	AX,5701h
-		CALL	Intr21
+		CALL	Intr21			; SetFTime()
   @@Exit:	RET
 F35_SetDate	ENDP
 
@@ -482,7 +482,7 @@ F35_AddTree	ENDP
 ;---------------------------------------------------------------
 F35_GetAttr	PROC	NEAR
 		MOV	AX,4300h
-		CALL	Intr21
+		CALL	Intr21			; stat()
 		JC	@@Exit
 		CMP	DS:ClearRO,0
 		JE	@@Exit
@@ -500,15 +500,15 @@ F35_GetAttr	PROC	NEAR
 		MOV	CX,AX
 		XOR	BX,BX
 		MOV	AX,150Bh
-		INT	2Fh
+		INT	2Fh			; MSCDEX drive check
 		XOR	BX,0ADADh
 		POP	BX
 		POP	CX
 		POP	SI
-		JNE	@@Exit
+		JNE	@@Exit			; MSCDEX not installed
 		OR	AX,AX
-		JE	@@Exit
-		AND	CL,0FEh
+		JE	@@Exit			; not cdrom drive
+		AND	CL,NOT fa_RO
   @@Exit:	RET
 F35_GetAttr	ENDP
 
@@ -709,7 +709,7 @@ F35_MoveDir	PROC	NEAR	USES	DX DI
   @@SetDir:	MOV	CH,0
 		XCHG	CH,DS:[SI]
 		MOV	AH,3Bh
-		CALL	Intr21
+		CALL	Intr21			; chdir()
 		MOV	DS:[SI],CH
 		JC	@@Exit
 		MOV	AX,DS:[DI]
@@ -737,7 +737,7 @@ F35_MoveDir	PROC	NEAR	USES	DX DI
 		CALL	strcpy
 		POP	DI
   @@Move:	MOV	AH,56h
-		CALL	Intr21
+		CALL	Intr21			; rename()
 		JNC	@@Exit
 		OR	CL,CL
 		JE	@@Error
@@ -745,7 +745,7 @@ F35_MoveDir	PROC	NEAR	USES	DX DI
 		MOV	DS:BlocEr,1
 		MOV	DX,OFFSET DosShortPath
 		MOV	AH,3Bh
-		CALL	Intr21
+		CALL	Intr21			; chdir()
 		MOV	DS:BlocEr,0
 		POP	AX
   @@Error:	STC

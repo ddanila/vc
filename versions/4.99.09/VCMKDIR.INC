@@ -134,7 +134,7 @@ F37_00		ENDP
 ;             // panel's DiskBuf current size
 ;             if (sizeof(FilEnt) + DirName_len <= ActvPanBuf_size - EndBuf) { // have space
 ;                 FileCur = Addr2Numb(MK_FP(WCBcrn, EndBuf))
-;                 FilEnt[EndBuf].AttrF = FA_DIR
+;                 FilEnt[EndBuf].AttrF = fa_DIR
 ;                 FilEnt[EndBuf].LenShortNamF = DirName_len
 ;                 FilEnt[EndBuf].LenLongNamF = 0
 ;                 strlcpy(FilEnt[EndBuf].NameF,
@@ -328,7 +328,7 @@ ENDIF
 		POP	SI
 		POP	DS
 		XCHG	SI,DI
-		MOV	ES:[DI].AttrF,10h	; FA_DIR
+		MOV	ES:[DI].AttrF,fa_DIR
 		MOV	ES:[DI].LenShortNamF,CX
 		MOV	ES:[DI].LenLongNamF,0
 		ADD	DI,OFFSET NameF		; &FilEnt.NameF

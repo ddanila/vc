@@ -123,12 +123,12 @@ ReadDescription	PROC	FAR	USES	BX DX SI
 		SUB	CX,DX
 		DEC	CX
 		MOV	AH,3Fh
-		CALL	Intr21
+		CALL	Intr21			; read()
 		POP	CX
 		PUSHF
 		PUSH	AX
 		MOV	AH,3Eh
-		CALL	Intr21
+		CALL	Intr21			; close()
 		POP	BX
 		POP	SI
 		JC	@@Exit
@@ -143,7 +143,7 @@ ReadDescription	PROC	FAR	USES	BX DX SI
 		POP	DS
 		LEA	DX,DescrFileName
 		MOV	AX,4300h
-		CALL	Intr21
+		CALL	Intr21			; stat()
 		POP	DX
 		POP	DS
 		JC	@@Exit
@@ -373,7 +373,7 @@ SaveDescription	PROC	FAR	USES	BX CX DX SI DI
 		PUSH	SS
 		POP	DS
 		MOV	AX,4300h
-		CALL	Intr21
+		CALL	Intr21			; stat()
 		POP	DS
 		JNC	@@ChkDescr
 		CMP	AX,WORD PTR ErrFail
@@ -408,13 +408,13 @@ SaveDescription	PROC	FAR	USES	BX CX DX SI DI
 		JMP	@@Exit
   @@Save:	MOV	CL,DS:DscrAttr		; Save description
 		MOV	CH,0
-		AND	CL,7Fh
-		OR	CL,20h
+		AND	CL,NOT 80h
+		OR	CL,fa_ARCHIVE
 		PUSH	DS
 		PUSH	SS
 		POP	DS
 		MOV	AH,3Ch
-		CALL	Intr21
+		CALL	Intr21			; creat()
 		POP	DS
 		JC	@@Error1
 		MOV	BX,AX
@@ -422,11 +422,11 @@ SaveDescription	PROC	FAR	USES	BX CX DX SI DI
 		MOV	CX,DS:DscrSize
 		SUB	CX,DX
 		MOV	AH,40h
-		CALL	Intr21
+		CALL	Intr21			; write()
 		PUSHF
 		PUSH	AX
 		MOV	AH,3Eh
-		CALL	Intr21
+		CALL	Intr21			; close()
 		POP	SI
 		POP	DI
 		JC	@@Exit

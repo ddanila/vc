@@ -734,9 +734,9 @@ F39_63:		CMP	DS:ArcPnt,0
 		ADD	SI,OFFSET NameF
 		CALL	ChkUpDir
 		JE	F39_64
-		TEST	AL,10h
+		TEST	AL,fa_DIR
 		JNZ	F39_65
-		TEST	AL,8
+		TEST	AL,fa_LABEL
 		JZ	F39_65
 F39_64:		MOV	AL,10
 		CALL	F40_30
@@ -1515,7 +1515,7 @@ F66_00:		CMP	DS:Visible,0		; Alt F6 - Directory sizes
 		CALL	TotSel
 		OR	BX,BX
 		JNE	F66_01
-		TEST	DS:[SI].AttrF,10h
+		TEST	DS:[SI].AttrF,fa_DIR
 		JZ	F66_03
 		ADD	SI,OFFSET NameF
 		CALL	ChkUpDir
@@ -2083,12 +2083,12 @@ M52_10		PROC	NEAR
 		MOV	DI,ES:DiskBuf
 M52_11:		CMP	DI,ES:EndBuf
 		JAE	M52_14
-		AND	ES:[DI].AttrF,3Fh
-		TEST	ES:[DI].AttrF,10h
+		AND	ES:[DI].AttrF,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_LABEL OR fa_DIR OR fa_ARCHIVE
+		TEST	ES:[DI].AttrF,fa_DIR
 		JNZ	M52_13
 		CALL	FindFileEntry
 		JC	M52_12
-		TEST	DS:[SI].AttrF,10h
+		TEST	DS:[SI].AttrF,fa_DIR
 		JNZ	M52_12
 		MOV	AX,DS:[SI].DateF
 		CMP	AX,ES:[DI].DateF
@@ -2097,7 +2097,7 @@ M52_11:		CMP	DI,ES:EndBuf
 		MOV	AX,DS:[SI].TimeF
 		CMP	AX,ES:[DI].TimeF
 		JAE	M52_13
-M52_12:		OR	ES:[DI].AttrF,40h
+M52_12:		OR	ES:[DI].AttrF,fa_SELECTED
 		MOV	CL,1
 M52_13:		MOV	AX,ES:[DI].LenShortNamF
 		ADD	DI,ES:[DI].LenLongNamF

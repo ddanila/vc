@@ -125,7 +125,7 @@ ReadDir		PROC	FAR	USES	AX BX CX DX SI DI ES
 		PUSH	ES
 		POP	DS
 		MOV	AX,4300h
-		CALL	Intr21
+		CALL	Intr21			; stat()
 		POP	DS
 		JC	@@ArcPathEr1
 		MOV	SI,OFFSET WinShortPath
@@ -252,9 +252,9 @@ ReadDir		PROC	FAR	USES	AX BX CX DX SI DI ES
 		PUSH	ES
 		POP	DS
 		POP	ES
-		MOV	CX,37h
+		MOV	CX,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_DIR OR fa_ARCHIVE
 		MOV	AH,4Eh
-		CALL	Intr21
+		CALL	Intr21			; FindFirst()
 		JNC	@@PathLength
 		PUSH	DS
 		PUSH	ES
@@ -326,14 +326,14 @@ ReadDir		PROC	FAR	USES	AX BX CX DX SI DI ES
 
   @@SaveEntry:	MOV	DS:BlocEr,0		; Save file entry
 		MOV	SI,OFFSET DTA.FilName
-		TEST	DS:DTA.FilAttr,10h
+		TEST	DS:DTA.FilAttr,fa_DIR
 		JZ	@@SaveName
 		CALL	ChkUpDir
 		JNE	@@SaveName
 		CMP	ES:WinShortPath[3],0
 		JE	@@FindNext
 		PUSH	DI
-		AND	DS:DTA.FilAttr,0F9h
+		AND	DS:DTA.FilAttr,NOT (fa_HIDDEN OR fa_SYSTEM)
 		MOV	DI,ES:DiskBuf
 IF	__TASMIDENT__
 		JMP	NEAR PTR @@SaveAttrib
@@ -400,12 +400,12 @@ ENDIF
   @@SaveAttrib:	MOV	ES:[DI].DescrF,0
 		ADD	DI,OFFSET AttrF
 		MOV	SI,OFFSET DTA.FilAttr
-		AND	BYTE PTR DS:[SI],3Fh
+		AND	BYTE PTR DS:[SI],fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_LABEL OR fa_DIR OR fa_ARCHIVE
 		MOV	CX,9
 		REP	MOVSB
 		POP	DI
-  @@FindNext:	MOV	AH,4Fh			; Find next file
-		CALL	Intr21
+  @@FindNext:	MOV	AH,4Fh
+		CALL	Intr21			; FindNext()
 		JNC	@@SaveEntry
 
   @@ExitSearch:	CALL	CloseFindFile		; Exit search
@@ -457,11 +457,11 @@ ENDIF
 		MOV	CX,BP
 		SUB	CX,DX
 		MOV	AH,3Fh
-		CALL	Intr21
+		CALL	Intr21			; read()
 		PUSHF
 		PUSH	AX
 		MOV	AH,3Eh
-		CALL	Intr21
+		CALL	Intr21			; close()
 		POP	BX
 		POP	SI
 		JC	@@ErrExt
@@ -641,7 +641,7 @@ DescrEnd	EQU	SizeWCB
 		MOV	DS:EndBuf,DI
 		MOV	DS:EndFul,DI
 		POP	DI
-		MOV	DS:[DI].AttrF,28h
+		MOV	DS:[DI].AttrF,fa_LABEL OR fa_ARCHIVE
 		MOV	CX,BX
 		SUB	CX,SI
 		INC	CX
@@ -736,7 +736,7 @@ DescrEnd	EQU	SizeWCB
   @@ChkEndOld:	CMP	DI,BX
 		JAE	@@RestCursor
 		MOV	AH,ES:[DI].AttrF
-		AND	AH,0C0h
+		AND	AH,fa_SELECTED OR 80h
 		JZ	@@NextOld
 		CMP	AL,0
 		JNZ	@@FindNew
@@ -916,9 +916,9 @@ ReadInfo	PROC	FAR
 		MOV	BYTE PTR DS:[SI],0
 		OR	BP,BP
 		JNE	@@FindInArc
-		MOV	CX,27h
+		MOV	CX,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_ARCHIVE
 		MOV	AH,4Eh
-		CALL	Intr21
+		CALL	Intr21			; FindFirst()
 		CALL	CloseFindFile
 		MOV	DS:[SI],DI
 		JNC	@@SetFile
@@ -942,7 +942,7 @@ ReadInfo	PROC	FAR
 		MOV	SI,DS:DiskBuf
   @@ChkArcFile:	CMP	SI,DS:EndBuf
 		JAE	@@ChkFound
-		TEST	DS:[SI].AttrF,10h
+		TEST	DS:[SI].AttrF,fa_DIR
 		JNZ	@@Next
 		PUSH	SI
 		ADD	SI,OFFSET NameF
@@ -1008,7 +1008,7 @@ ReadInfo	PROC	FAR
 		CALL	ViewInit
 		JC	@@Error
 		MOV	AH,3Eh
-		CALL	Intr21
+		CALL	Intr21			; close()
 		JC	@@Error
 		MOV	DS:VwHandle,0FFFEh
 		MOV	DX,DS:VwLen.Lo
@@ -1086,7 +1086,7 @@ ReadQuickView	PROC	FAR
 		JMP	@@DelTemp
   @@NewSeg:	PUSH	ES			; Create new segment
 		MOV	ES,CX
-		MOV	ES:ViewAttr,10h
+		MOV	ES:ViewAttr,fa_DIR
 		MOV	ES:ViewTempNumb,0FFFFh
 		MOV	DI,OFFSET ViewName2
 		CMP	AL,0
@@ -1139,11 +1139,11 @@ ReadQuickView	PROC	FAR
 		CALL	strcpy
   @@SetAttrib:	POP	SI
 		MOV	AL,DS:[SI].AttrF
-		TEST	AL,10h
+		TEST	AL,fa_DIR
 		JNZ	@@DelTemp
 		AND	AL,8
 		OR	ES:ViewAttr,AL
-		AND	ES:ViewAttr,0EFh
+		AND	ES:ViewAttr,NOT fa_DIR
 		JMP	@@DelTemp
   @@ViewTree:	MOV	SI,OFFSET CrnPath	; Tree panel
 		CALL	LongTreePath1
@@ -1177,7 +1177,7 @@ ReadQuickView	PROC	FAR
 		ADD	ES:WorkBuffer,(SIZE QuickViewData-1)/16+1
 		TEST	DS:ViewAttr,9
 		JNZ	@@Empty
-		TEST	DS:ViewAttr,10h
+		TEST	DS:ViewAttr,fa_DIR
 		JNZ	@@InitDir
 		TEST	DS:ViewAttr,2
 		JZ	@@InitFile
@@ -1234,7 +1234,7 @@ ReadQuickView	PROC	FAR
 		CALL	ViewInit
 		JC	@@FileError
 		MOV	AH,3Eh
-		CALL	Intr21
+		CALL	Intr21			; close()
 		JC	@@FileError
 		MOV	DS:VwHandle,0FFFFh
 		MOV	DX,DS:VwLen.Lo
@@ -1523,7 +1523,7 @@ PutFls		PROC	FAR	USES	AX BX CX DX SI DI BP DS
 		MOV	AH,Back_C
 		CMP	ES:ColorDirs,0
 		JE	@@DirColor
-		TEST	DS:[SI].AttrF,10h
+		TEST	DS:[SI].AttrF,fa_DIR
 		JE	@@DirColor
 		MOV	AH,Dirs_C
   @@DirColor:	POPF
@@ -1533,7 +1533,7 @@ PutFls		PROC	FAR	USES	AX BX CX DX SI DI BP DS
 		JNE	@@ChkSelect
 		MOV	AH,Cursr_C
 		MOV	AL,CurSl_C
-  @@ChkSelect:	TEST	DS:[SI].AttrF,40h
+  @@ChkSelect:	TEST	DS:[SI].AttrF,fa_SELECTED
 		JZ	@@SetColor
 		MOV	AH,AL
   @@SetColor:	PUSH	DI
@@ -1632,11 +1632,11 @@ PutFls		PROC	FAR	USES	AX BX CX DX SI DI BP DS
 		MOV	SI,DS:DiskBuf
 		CMP	SI,DS:EndBuf
 		JAE	ExitPutFls
-  @@CalcSize:	TEST	DS:[SI].AttrF,40h
+  @@CalcSize:	TEST	DS:[SI].AttrF,fa_SELECTED
 		JZ	@@Next
-		TEST	DS:[SI].AttrF,10h
+		TEST	DS:[SI].AttrF,fa_DIR
 		JZ	@@AddSize
-		TEST	DS:[SI].AttrF,8
+		TEST	DS:[SI].AttrF,fa_LABEL
 		JZ	@@Next
   @@AddSize:	ADD	CX,DS:[SI].SizeF.Lo
 		ADC	DI,DS:[SI].SizeF.Hi
@@ -1650,7 +1650,7 @@ PutFls		PROC	FAR	USES	AX BX CX DX SI DI BP DS
 		CALL	Numb2Addr
 		CMP	ES:ColorDirs,0
 		JE	@@DirStatus
-		TEST	DS:[SI].AttrF,10h
+		TEST	DS:[SI].AttrF,fa_DIR
 		JE	@@DirStatus
 		MOV	AH,Dirs_C
 		CALL	Color
@@ -2190,7 +2190,7 @@ PutInf		PROC	FAR
 		PUSH	ES
 		PUSH	BX
 		MOV	AH,52h
-		INT	21h
+		INT	21h			; GetSysVars()
 		MOV	AX,ES:[BX-2]
   @@NextBlk:	MOV	ES,AX
 		INC	AX
@@ -2241,7 +2241,7 @@ PutInf		PROC	FAR
 		MOV	SI,DS:DiskBuf
   @@NextFile:	CMP	SI,DS:EndBuf
 		JAE	@@OutOfFiles
-		TEST	DS:[SI].AttrF,10h
+		TEST	DS:[SI].AttrF,fa_DIR
 		JNZ	@@SkipEntry
 		INC	CX
 		MOV	AX,DS:[SI].SizeF.Lo
@@ -2421,7 +2421,7 @@ PutView		PROC	FAR
 		MOV	DS,AX
 		TEST	DS:ViewAttr,1
 		JNZ	@@Exit
-		TEST	DS:ViewAttr,10h
+		TEST	DS:ViewAttr,fa_DIR
 		JNZ	@@PutDir
 		TEST	DS:ViewAttr,8
 		JNZ	@@Absent
@@ -2646,7 +2646,7 @@ GetPath		PROC	FAR	USES	AX CX DX SI DI DS
 		PUSH	ES
 		POP	DS
 		MOV	AH,19h
-		INT	21h
+		INT	21h			; GetCurDrv()
 		MOV	DL,AL
 		MOV	DI,OFFSET DosPath
 		ADD	AL,'A'
@@ -2663,15 +2663,15 @@ GetPath		PROC	FAR	USES	AX CX DX SI DI DS
 		CALL	Phantom
 		JC	@@Error
 		MOV	AH,47h
-		CALL	Intr21
+		CALL	Intr21			; getcwd()
 		JC	@@Error
 		SUB	SI,3
 		CMP	BYTE PTR DS:[SI+3],0
 		JE	@@ShortPath
 		MOV	DX,SI
-		MOV	CX,37h
+		MOV	CX,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_DIR OR fa_ARCHIVE
 		MOV	AH,4Eh
-		CALL	Intr21
+		CALL	Intr21			; FindFirst()
 		CALL	CloseFindFile
 		JNC	@@ShortPath
   @@CutSubDir:	PUSH	SI
@@ -2720,24 +2720,24 @@ SaveSet		PROC	FAR	USES	BX CX DX SI DI DS
 		CALL	ChgDisk
 		JC	@@Err1
 		MOV	AX,4300h
-		CALL	Intr21
+		CALL	Intr21			; stat()
 		JNC	@@Open
 		CMP	AX,WORD PTR 2
 		JNE	@@Error
 		XOR	CX,CX
-  @@Open:	OR	CL,20h
+  @@Open:	OR	CL,fa_ARCHIVE
 		MOV	AH,3Ch
-		CALL	Intr21
+		CALL	Intr21			; creat()
 		JC	@@Exit
 		MOV	CX,BX
 		MOV	BX,AX
 		MOV	DX,OFFSET IniBuffer
 		MOV	AH,40h
-		CALL	Intr21
+		CALL	Intr21			; write()
 		PUSHF
 		PUSH	AX
 		MOV	AH,3Eh
-		CALL	Intr21
+		CALL	Intr21			; close()
 		POP	BX
 		POP	DX
 		JC	@@Exit
@@ -2830,9 +2830,9 @@ DirSize		PROC	FAR	USES	AX BX CX DX SI DI DS
 		JAE	@@Exit
 		OR	CL,CL
 		JZ	@@GetSum
-		TEST	DS:[SI].AttrF,40h
+		TEST	DS:[SI].AttrF,fa_SELECTED
 		JZ	@@Next
-  @@GetSum:	TEST	DS:[SI].AttrF,10h
+  @@GetSum:	TEST	DS:[SI].AttrF,fa_DIR
 		JZ	@@Next
 		PUSH	SI
 		ADD	SI,OFFSET NameF
@@ -2865,7 +2865,7 @@ DirSize		PROC	FAR	USES	AX BX CX DX SI DI DS
 		MOV	BX,ES:SumSize.Hi
 		MOV	DS:[SI].SizeF.Lo,AX
 		MOV	DS:[SI].SizeF.Hi,BX
-		OR	DS:[SI].AttrF,8
+		OR	DS:[SI].AttrF,fa_LABEL	; XXX hack
   @@Next:	CALL	NextFilEnt
 		JMP	@@ChkEnd
   @@Exit:	RET

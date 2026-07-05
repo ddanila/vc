@@ -970,16 +970,16 @@ FileSort	PROC	FAR	USES	AX BX CX DX SI DI BP
 		MOV	SI,ES:[SI]
 		POP	ES
 		MOV	AH,DS:[SI].AttrF
-		XOR	AH,20h
+		XOR	AH,fa_ARCHIVE
 		MOV	AL,DS:FiltAttr
 		NOT	AL
-		AND	AL,3Fh
-		TEST	AH,10h
+		AND	AL,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_LABEL OR fa_DIR OR fa_ARCHIVE
+		TEST	AH,fa_DIR
 		JZ	@@CmpAttr
-		AND	AL,17h
+		AND	AL,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_DIR
   @@CmpAttr:	TEST	AL,AH
 		JNZ	@@HideFile
-		TEST	DS:[SI].AttrF,10h
+		TEST	DS:[SI].AttrF,fa_DIR
 		JNZ	@@Next
 		CMP	BYTE PTR ES:[DI],0
 		JE	@@Next
@@ -1008,7 +1008,7 @@ FileSort	PROC	FAR	USES	AX BX CX DX SI DI BP
 		MOV	DI,ES:[BX]
 		XCHG	DI,ES:[SI]
 		MOV	ES:[BX],DI
-		AND	DS:[DI].AttrF,3Fh
+		AND	DS:[DI].AttrF,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_LABEL OR fa_DIR OR fa_ARCHIVE
 		POP	DI
 		POP	ES
 		JMP	@@SubEnd
@@ -1175,13 +1175,13 @@ CompEntries	PROC	NEAR	USES	AX CX
 		RET
   @@CmpDirAttr:	MOV	CL,DS:[SI].AttrF
 		MOV	CH,DS:[DI].AttrF
-		TEST	CL,10h
+		TEST	CL,fa_DIR
 		JNZ	@@ChkUpDir
-		TEST	CH,10h
+		TEST	CH,fa_DIR
 		JZ	@@ChkSystem
 		STC
 		RET
-  @@ChkUpDir:	TEST	CH,10h
+  @@ChkUpDir:	TEST	CH,fa_DIR
 		JZ	@@Exit
 		PUSH	SI
 		ADD	SI,OFFSET NameF
@@ -1195,13 +1195,13 @@ CompEntries	PROC	NEAR	USES	AX CX
 		JNE	@@ByName
 		STC
 		RET
-  @@ChkSystem:	TEST	CL,4
+  @@ChkSystem:	TEST	CL,fa_SYSTEM
 		JNZ	@@ChkSys2
-		TEST	CH,4
+		TEST	CH,fa_SYSTEM
 		JZ	@@ByName
 		STC
 		RET
-  @@ChkSys2:	TEST	CH,4
+  @@ChkSys2:	TEST	CH,fa_SYSTEM
 		JZ	@@Exit
   @@ByName:	CMP	AL,s_Ext
 		JAE	@@ByExt
@@ -1356,9 +1356,9 @@ FindFile	PROC	FAR	USES	AX
 		MOV	SI,DS:DiskBuf
   @@FindFile:	CALL	FindFileNext
 		JC	@@FindOffln1
-		TEST	DS:[SI].AttrF,10h
+		TEST	DS:[SI].AttrF,fa_DIR
 		JNZ	@@ChkNumb
-		TEST	DS:[SI].AttrF,8
+		TEST	DS:[SI].AttrF,fa_LABEL
 		JZ	@@ChkNumb
 		CALL	NextFilEnt
 		JMP	@@FindFile
@@ -1369,9 +1369,9 @@ FindFile	PROC	FAR	USES	AX
 		MOV	SI,DS:DiskBuf
   @@FindOffln2:	CALL	FindFileNext
 		JC	@@Exit
-		TEST	DS:[SI].AttrF,10h
+		TEST	DS:[SI].AttrF,fa_DIR
 		JNZ	@@Next
-		TEST	DS:[SI].AttrF,8
+		TEST	DS:[SI].AttrF,fa_LABEL
 		JZ	@@Next
 		DEC	AX
 		JE	@@Exit
@@ -1523,9 +1523,9 @@ FindFileNear	ENDP
 ;---------------------------------------------------------------
 FileNumb	PROC	FAR	USES	BX CX SI DI ES
 		XOR	AX,AX
-		TEST	DS:[SI].AttrF,10h
+		TEST	DS:[SI].AttrF,fa_DIR
 		JNZ	@@Exit
-		TEST	DS:[SI].AttrF,8
+		TEST	DS:[SI].AttrF,fa_LABEL
 		JZ	@@Exit
 		PUSH	DS
 		POP	ES
@@ -1536,9 +1536,9 @@ FileNumb	PROC	FAR	USES	BX CX SI DI ES
 		JC	@@Exit
 		MOV	BX,SI
 		CALL	NextFilEnt
-		TEST	DS:[BX].AttrF,10h
+		TEST	DS:[BX].AttrF,fa_DIR
 		JNZ	@@Next
-		TEST	DS:[BX].AttrF,8
+		TEST	DS:[BX].AttrF,fa_LABEL
 		JZ	@@Next
 		CMP	BX,CX
 		JAE	@@FindFile
@@ -1564,7 +1564,7 @@ SetParentDir	PROC	FAR
 		STOSB
 		STOSW
 		MOV	DS:[SI].LenShortNamF,3
-		MOV	DS:[SI].AttrF,10h
+		MOV	DS:[SI].AttrF,fa_DIR
 		RET
 SetParentDir	ENDP
 
@@ -1934,12 +1934,12 @@ Absent		DB	'  absent '
 		.CODE	Subs
 PutSize		PROC	NEAR	USES	AX BX CX SI DS
 		MOV	AL,DS:[SI].AttrF
-		AND	AL,18h
+		AND	AL,fa_LABEL OR fa_DIR
 		JZ	@@Size
-		CMP	AL,18h
+		CMP	AL,fa_LABEL OR fa_DIR
 		JZ	@@Size
 		MOV	BX,OFFSET Absent
-		CMP	AL,8
+		CMP	AL,fa_LABEL
 		JZ	@@DirType
 		MOV	BX,OFFSET UpDir
 		ADD	SI,OFFSET NameF
@@ -2269,7 +2269,7 @@ SetCur		PROC	FAR	USES	AX BX CX DX SI DI ES
 		JNE	@@ColorDir
 		CMP	ES:ColorDirs,0
 		JE	@@ColorDir
-		TEST	DS:[SI].AttrF,10h
+		TEST	DS:[SI].AttrF,fa_DIR
 		JE	@@ColorDir
 		MOV	AH,Dirs_C
   @@ColorDir:	PUSH	AX
@@ -2298,7 +2298,7 @@ SetCur		PROC	FAR	USES	AX BX CX DX SI DI ES
   @@SetXY:	ADD	BH,CL
 		POP	AX
 		CALL	BasAdr
-		TEST	DS:[SI].AttrF,40h
+		TEST	DS:[SI].AttrF,fa_SELECTED
 		JZ	@@WriteColor
 		JMP	@@SelColor
   @@TreeCur:	PUSH	DS			; Tree
@@ -2441,10 +2441,10 @@ TotSel		PROC	FAR	USES	SI
 		XOR	DX,DX
   @@ChkEnd:	CMP	SI,DS:EndBuf
 		JAE	@@Exit
-		TEST	DS:[SI].AttrF,40h
+		TEST	DS:[SI].AttrF,fa_SELECTED
 		JZ	@@Next
 		INC	DX
-		TEST	DS:[SI].AttrF,10h
+		TEST	DS:[SI].AttrF,fa_DIR
 		JZ	@@Next
 		DEC	DX
 		INC	BX
@@ -3254,10 +3254,10 @@ FindPath	PROC	FAR	USES	BX CX DX SI DI BP DS ES
 		PUSH	ES
 		POP	DS
 		MOV	AX,4300h
-		CALL	Intr21
+		CALL	Intr21			; stat()
 		POP	DS
 		JC	@@NotCom
-		TEST	CX,18h
+		TEST	CX,fa_LABEL OR fa_DIR
 		JZ	@@Exit
 		MOV	AL,0
   @@NotCom:	CMP	AX,WORD PTR ErrFail
@@ -3281,10 +3281,10 @@ FindPath	PROC	FAR	USES	BX CX DX SI DI BP DS ES
 		PUSH	ES
 		POP	DS
 		MOV	AX,4300h
-		CALL	Intr21
+		CALL	Intr21			; stat()
 		POP	DS
 		JC	@@NotExe
-		TEST	CX,18h
+		TEST	CX,fa_LABEL OR fa_DIR
 		JZ	@@Exit
 		MOV	AL,0
   @@NotExe:	MOV	BYTE PTR ES:[DI],0
@@ -3416,7 +3416,7 @@ GetDiskInfo	PROC	FAR	USES	BX CX DX SI DI DS
   @@Fat16:	MOV	DL,DiskBuffer[0]	; FAT 16
 		SUB	DL,'A'-1
 		MOV	AH,36h
-		CALL	Intr21
+		CALL	Intr21			; GetFreeSpace()
 		JC	@@Exit
 		MOV	ES:[SI+4].Lo,DX
 		MOV	ES:[SI+4].Hi,0
@@ -3430,11 +3430,11 @@ GetDiskInfo	PROC	FAR	USES	BX CX DX SI DI DS
 		MOV	CH,0
 		XOR	BX,BX
 		MOV	AX,150Bh
-		INT	2Fh
+		INT	2Fh			; MSCDEX drive check
 		CMP	BX,0ADADh
-		JNE	@@ChkCluster
+		JNE	@@ChkCluster		; MSCDEX not installed
 		OR	AX,AX
-		JE	@@ChkCluster
+		JE	@@ChkCluster		; not cdrom drive
 		PUSH	ES
 		PUSH	SS
 		POP	ES

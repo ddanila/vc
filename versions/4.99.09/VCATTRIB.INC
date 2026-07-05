@@ -195,7 +195,8 @@ SetCancel_D	DB	 7,  0
 		DB	 0
 
 		.CODE
-F87_00:		CMP	DS:Visible,0		; Attributes...
+F87_00		PROC	NEAR
+		CMP	DS:Visible,0		; Attributes...
 		JZ	Func04
 		CMP	DS:WinTyp,p_Tree
 		JA	Func04			; Info or QuickView panel
@@ -212,8 +213,8 @@ F87_00:		CMP	DS:Visible,0		; Attributes...
 		CALL	ChgDisk
 		JC	Func04
 		MOV	AX,4300h
-		CALL	Intr21
-		JC	F87_15
+		CALL	Intr21			; stat()
+		JC	@@Error
 		CALL	F87_ParseAttr
 		PUSH	CX
 		MOV	BX,OFFSET AttrDir_T
@@ -260,7 +261,7 @@ F87_03:		MOV	AX,DS:AttribTime
 F87_04:		MOV	SI,OFFSET AttrSet
 		CALL	F87_CombAttr
 		MOV	AH,CL
-		AND	AH,27h
+		AND	AH,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_ARCHIVE
 		MOV	DS:AttribOld,AH
 		CMP	AL,AH
 		JNE	F87_05
@@ -280,8 +281,8 @@ F87_05:		AND	CL,0C0h
 		CALL	ChgDisk
 		JC	FuncExit
 		MOV	AX,4301h
-		CALL	Intr21
-		JC	F87_15
+		CALL	Intr21			; chmod()
+		JC	@@Error
 		MOV	DS:GroupChg,1
 		MOV	AX,DS:AttribDate
 		AND	AX,DS:AttribTime
@@ -298,7 +299,7 @@ F87_06:		MOV	DI,DS:AttribDate
 		MOV	DI,DS:LineBuf2.DateF
 F87_07:		CALL	SetFileTime
 		POP	CX
-		JC	F87_15
+		JC	@@Error
 F87_08:		CALL	F87_DelEAs
 		JNC	F87_10
 		CMP	AX,WORD PTR ErrFail
@@ -310,7 +311,7 @@ F87_10:		XOR	AX,AX			; Update TREEINFO
 		JC	FuncExit
 		CALL	FindTreeEntry
 		JC	FuncExit
-		AND	CL,27h
+		AND	CL,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_ARCHIVE
 		MOV	BH,CL
 		MOV	BL,CL
 		XCHG	BL,DS:[SI].DirAttr
@@ -354,7 +355,9 @@ F87_12:		CMP	ES:HidDirs,0
 		DEC	SI
 F87_13:		MOV	BYTE PTR DS:[SI],0
 		JMP	FuncExit
-F87_15:		CMP	AX,WORD PTR ErrFail
+
+  @@Error:
+		CMP	AX,WORD PTR ErrFail
 		JE	FuncExit
 		MOV	DX,OFFSET AttrErr_T
 		CMP	AX,WORD PTR 3
@@ -378,9 +381,9 @@ F87_20:		CMP	DS:ArcPnt,0		; From file panel
 		POP	SI
 		JE	Func04
 		MOV	CL,DS:[SI].AttrF
-		TEST	CL,10h
+		TEST	CL,fa_DIR
 		JNZ	F87_24
-		TEST	CL,8
+		TEST	CL,fa_LABEL
 		JNZ	Func04
 		CALL	F87_ParseAttr
 		MOV	DI,OFFSET AttrDate
@@ -457,6 +460,7 @@ F87_25:		MOV	DX,OFFSET AttrFiles_T
 F87_26:		MOV	DS:AttribMask,AX
 		MOV	DS:FncAddr,OFFSET F87_50
 		JMP	FuncSelect
+F87_00		ENDP
 
 ;---------------------------------------------------------------
 ;	Setting attributes
@@ -464,7 +468,7 @@ F87_26:		MOV	DS:AttribMask,AX
 F87_50		PROC	NEAR	USES	BX CX DX SI DI BP DS
 		PUSH	ES
 		POP	DS
-		TEST	AL,10h
+		TEST	AL,fa_DIR
 		JZ	F87_51
 		CALL	DirFunc
 		CMP	AH,1
@@ -475,31 +479,31 @@ F87_51:		MOV	BX,500h
 		MOV	DX,OFFSET LineBufs_T
 		MOV	BP,OFFSET AttrSet_P
 		CALL	OncZoom
-		TEST	AL,8
-		JNZ	F87_57
+		TEST	AL,fa_LABEL
+		JNZ	@@Error
 		MOV	DX,OFFSET LineBuf1
 		CALL	ChgDisk
 		JC	F87_55
 		MOV	AX,4300h
-		CALL	Intr21
-		JC	F87_57
+		CALL	Intr21			; stat()
+		JC	@@Error
 		MOV	DI,CX
 		MOV	AX,DS:AttribDate
 		AND	AX,DS:AttribTime
 		INC	AX
 		JE	F87_54
-		AND	CL,0FEh
+		AND	CL,NOT fa_RO
 		MOV	AX,4301h
-		CALL	Intr21
-		JC	F87_57
+		CALL	Intr21			; chmod(.., ~fa_RO)
+		JC	@@Error
 		MOV	DS:GroupChg,1
 		MOV	AL,41h
 		CALL	OpenFil
-		JC	F87_57
+		JC	@@Error
 		MOV	BX,AX
 		PUSH	DX
 		MOV	AX,5700h
-		CALL	Intr21
+		CALL	Intr21			; GetFTime()
 		MOV	AX,DS:AttribDate
 		CMP	AX,WORD PTR 0FFFFh
 		JE	F87_52
@@ -509,18 +513,18 @@ F87_52:		MOV	AX,DS:AttribTime
 		JE	F87_53
 		MOV	CX,AX
 F87_53:		MOV	AX,5701h
-		CALL	Intr21
+		CALL	Intr21			; SetFTime()
 		POP	DX
 		MOV	AH,3Eh
-		CALL	Intr21
-		JC	F87_57
+		CALL	Intr21			; close()
+		JC	@@Error
 F87_54:		MOV	CX,DI
 		MOV	AX,DS:AttribMask
 		AND	CL,AL
 		OR	CL,AH
 		MOV	AX,4301h
-		CALL	Intr21
-		JC	F87_57
+		CALL	Intr21			; chmod()
+		JC	@@Error
 		CALL	F87_DelEAs
 		JC	F87_56
 		MOV	AX,1
@@ -532,7 +536,9 @@ F87_56:		CMP	AX,WORD PTR ErrFail
 		JE	F87_55
 		MOV	DX,OFFSET AttrErrEAs_T
 		JMP	F87_58
-F87_57:		CMP	AX,WORD PTR ErrFail
+
+  @@Error:
+		CMP	AX,WORD PTR ErrFail
 		JE	F87_55
 		MOV	DX,OFFSET AttrErrFnd_T
 		CMP	AX,WORD PTR 3
@@ -731,13 +737,13 @@ F87_60		ENDP
 		.CODE
 F87_ParseAttr	PROC	NEAR
 		MOV	DI,OFFSET AttrSet
-		MOV	AL,1
+		MOV	AL,fa_RO
 		CALL	F87_Parse1
-		MOV	AL,20h
+		MOV	AL,fa_ARCHIVE
 		CALL	F87_Parse1
-		MOV	AL,2
+		MOV	AL,fa_HIDDEN
 		CALL	F87_Parse1
-		MOV	AL,4
+		MOV	AL,fa_SYSTEM
 		CALL	F87_Parse1
 		RET
 F87_ParseAttr	ENDP
@@ -758,13 +764,13 @@ F87_Parse1	ENDP
 ;---------------------------------------------------------------
 F87_CombAttr	PROC	NEAR	USES	BX
 		MOV	AL,0
-		MOV	BL,1
+		MOV	BL,fa_RO
 		CALL	F87_Comb1
-		MOV	BL,20h
+		MOV	BL,fa_ARCHIVE
 		CALL	F87_Comb1
-		MOV	BL,2
+		MOV	BL,fa_HIDDEN
 		CALL	F87_Comb1
-		MOV	BL,4
+		MOV	BL,fa_SYSTEM
 		CALL	F87_Comb1
 		RET
 F87_CombAttr	ENDP
@@ -837,7 +843,7 @@ F87_DelEAs	PROC	NEAR	USES	BX CX DX SI DI DS
 		MOV	CX,12
 		MOV	BX,0FFFFh
 		MOV	AX,5702h
-		CALL	Intr21
+		CALL	Intr21			; DosQPathInfo() [OS/2]
 		JC	@@Exit
 		PUSH	ES
 		PUSH	DI
@@ -873,6 +879,6 @@ F87_DelEAs	PROC	NEAR	USES	BX CX DX SI DI DS
 		POP	DS
 		MOV	DX,2
 		MOV	AX,5703h
-		CALL	Intr21
+		CALL	Intr21			; DosSetPathInfo() [OS/2]
   @@Exit:	RET
 F87_DelEAs	ENDP

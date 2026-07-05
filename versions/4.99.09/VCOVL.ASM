@@ -2513,7 +2513,7 @@ Run_29		PROC	NEAR
 		JAE	@@Exit
 		TEST	DS:[SI].AttrF,80h
 		JZ	@@Next
-		OR	DS:[SI].AttrF,40h
+		OR	DS:[SI].AttrF,fa_SELECTED
   @@Next:	CALL	NextFilEnt
 		JMP	@@Restore
   @@Exit:	RET

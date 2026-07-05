@@ -2543,12 +2543,12 @@ T80_00	PROC	NEAR			; Save file
 	CALL	ChgDisk
 	JC	T80_06
 	MOV	AX,4300h
-	CALL	Intr21
+	CALL	Intr21				; stat()
 	JNC	T80_01
 	CMP	AX,2
 	JNE	T80_03
 	XOR	CX,CX
-T80_01:	OR	CL,20h
+T80_01:	OR	CL,fa_ARCHIVE
 	MOV	BX,CX
 	TEST	CL,1
 	JZ	T80_02
@@ -2566,13 +2566,13 @@ T80_01:	OR	CL,20h
 	POP	DX
 	JNE	T80_06
 	MOV	CX,BX
-	AND	CL,0FEh
+	AND	CL,NOT fa_RO
 	MOV	AX,4301h
-	CALL	Intr21
+	CALL	Intr21				; chmod()
 	JC	T80_03
 	MOV	DS:EdWrite,1
 T80_02:	MOV	AH,3Ch
-	CALL	Intr21
+	CALL	Intr21				; creat()
 	JNC	T80_07
 T80_03:	CMP	AX,0FFh
 	JNE	T80_04
@@ -2611,7 +2611,7 @@ T80_09:	MOV	CX,0FF00h
 	MOV	CX,SI
 T80_10:	XOR	DX,DX
 	MOV	AH,40h
-	CALL	Intr21
+	CALL	Intr21				; write()
 	JC	T80_11
 	CMP	AX,CX
 	MOV	AX,0FFh
@@ -2630,7 +2630,7 @@ T80_11:	PUSH	ES
 	PUSH	AX
 	PUSHF
 	MOV	AH,3Eh
-	CALL	Intr21
+	CALL	Intr21				; close()
 	POP	BX
 	POP	DI
 	JC	T80_12
@@ -2652,7 +2652,7 @@ T80_13:	POP	BX
 	PUSHF
 	CALL	ResWin
 	CALL	Window
-	MOV	SI,OFFSET SourceFile	; Save main extension file
+	MOV	SI,OFFSET SourceFile		; Save main extension file
 	LODSW
 	CMP	AH,':'
 	JE	T80_14
@@ -2669,7 +2669,7 @@ T80_14:	MOV	DI,OFFSET TmpBuf
 	STOSW
 	XCHG	SI,DI
 	MOV	AH,47h
-	CALL	Intr21
+	CALL	Intr21				; getcwd()
 	POP	DX
 	JC	T80_17
 	XCHG	DI,SI

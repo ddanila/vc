@@ -42,6 +42,15 @@ KbdAltMask	EQU	08h
 
 ErrFail		EQU	53h		; Fail action (on INT 0x24)
 
+; File attributes
+fa_RO		EQU	1
+fa_HIDDEN	EQU	2
+fa_SYSTEM	EQU	4
+fa_LABEL	EQU	8
+fa_DIR		EQU	10h
+fa_ARCHIVE	EQU	20h
+fa_SELECTED	EQU	40h		; selected file, private attribute
+
 ; Panel types
 p_Left		EQU	0		; Left panel
 p_Right	EQU	1		; Right panel

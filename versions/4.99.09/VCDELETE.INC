@@ -278,7 +278,7 @@ F38_12:		MOV	SI,DS:FileCur		; Delete file / directory
 		JE	Func04
 		MOV	DX,OFFSET DelFile_T
 		MOV	BP,OFFSET DelFile_B
-		TEST	DS:[BX].AttrF,10h
+		TEST	DS:[BX].AttrF,fa_DIR
 		JZ	F38_13
 		MOV	DX,OFFSET DelDir_T
 		MOV	BP,OFFSET DelDir_B
@@ -304,12 +304,12 @@ F38_14:		CALL	Dialog
 F38_15:		MOV	SI,BX
 		CALL	LongNameOffset
 		CALL	strcpy
-		TEST	DS:[BX].AttrF,10h
+		TEST	DS:[BX].AttrF,fa_DIR
 		PUSH	ES
 		POP	DS
 		POP	SI
 		JZ	F38_16
-		OR	DH,10h
+		OR	DH,fa_DIR
 F38_16:		POP	DI
 		MOV	AX,DX
 		MOV	BX,500h
@@ -443,15 +443,15 @@ F38_40		PROC	NEAR	USES	BX CX DX SI DI BP DS
 		CMP	AX,WORD PTR ErrFail
 		JE	F38_50
 		MOV	AX,4300h
-		CALL	Intr21
+		CALL	Intr21			; stat()
 		JNC	F38_41
 		CMP	AX,WORD PTR ErrFail
 		JNE	F38_43
 		JMP	F38_50
 F38_41:		MOV	AL,0
-		TEST	CL,10h
+		TEST	CL,fa_DIR
 		JNZ	F38_43
-		TEST	CL,1
+		TEST	CL,fa_RO
 		JZ	F38_43
 		MOV	AL,DS:GroupAllSrcRO
 		CMP	AL,1
@@ -469,9 +469,9 @@ F38_41:		MOV	AL,0
 		JAE	F38_50
 		CMP	AL,2
 		JAE	F38_45
-F38_42:		AND	CL,0FEh
+F38_42:		AND	CL,NOT fa_RO
 		MOV	AX,4301h
-		CALL	Intr21
+		CALL	Intr21			; chmod()
 		JC	F38_43
 		MOV	DS:GroupChg,1
 		MOV	AH,41h
@@ -479,9 +479,9 @@ F38_42:		AND	CL,0FEh
 		JNC	F38_54
 		CMP	AX,WORD PTR ErrFail
 		JE	F38_50
-		OR	CL,1
+		OR	CL,fa_RO
 		MOV	AX,4301h
-		CALL	Intr21
+		CALL	Intr21			; chmod()
 		JC	F38_43
 		MOV	AL,0
 F38_43:		MOV	DX,OFFSET DelFileErr_T
@@ -604,9 +604,9 @@ F38_56:		MOV	AX,ES:GroupFileNumb
 		JMP	F38_59
 F38_57:		CMP	AX,WORD PTR ErrFail
 		JE	F38_50
-F38_58:		TEST	ES:GroupAttr,10h
+F38_58:		TEST	ES:GroupAttr,fa_DIR
 		JNZ	F38_59
-		TEST	ES:GroupAttr,8
+		TEST	ES:GroupAttr,fa_LABEL
 		JNZ	F38_43
 F38_59:		MOV	AX,1
 F38_60:		OR	ES:GroupChg,AL
@@ -623,7 +623,7 @@ F38_Empty	ENDP
 ;---------------------------------------------------------------
 F38_65		PROC	NEAR
 		MOV	AX,4300h
-		CALL	Intr21
+		CALL	Intr21			; stat()
 		JC	F38_76
 		MOV	SI,DX
 		MOV	DI,OFFSET LineBuf3
@@ -634,13 +634,13 @@ F38_65		PROC	NEAR
 		JNE	F38_76
 		CALL	NormPath
 		JC	F38_76
-F38_66:		AND	CL,0EFh
-		TEST	CL,1
+F38_66:		AND	CL,NOT fa_DIR
+		TEST	CL,fa_RO
 		JZ	F38_67
 		PUSH	CX
-		AND	CL,0FEh
+		AND	CL,NOT fa_RO
 		MOV	AX,4301h
-		CALL	Intr21
+		CALL	Intr21			; chmod()
 		POP	CX
 		JNC	F38_67
 		CMP	AX,WORD PTR ErrFail
@@ -664,7 +664,7 @@ F38_68:		MOV	AX,10h
 		PUSH	AX
 		JMP	F38_70
 F38_69:		MOV	AH,3Ah
-		CALL	Intr21
+		CALL	Intr21			; rmdir()
 		JNC	F38_76
 		PUSHF
 		PUSH	AX
@@ -683,7 +683,7 @@ F38_70:		PUSH	DX
 		STOSB
 		STOSW
 		MOV	AH,3Bh
-		CALL	Intr21
+		CALL	Intr21			; chdir()
 		POP	DX
 		JC	F38_71
 		PUSH	DX
@@ -692,7 +692,7 @@ F38_70:		PUSH	DX
 		MOV	DX,DI
 		CALL	NormPath
 		MOV	AH,3Ah
-		CALL	Intr21
+		CALL	Intr21			; rmdir()
 		POP	DX
 		POP	SI
 		POP	DI
@@ -708,10 +708,10 @@ F38_70:		PUSH	DX
 		JMP	F38_73
 F38_71:		CMP	AX,WORD PTR ErrFail
 		JE	F38_74
-F38_72:		TEST	CL,1
+F38_72:		TEST	CL,fa_RO
 		JZ	F38_75
 		MOV	AX,4301h
-		CALL	Intr21
+		CALL	Intr21			; chmod()
 		JNC	F38_75
 F38_73:		CMP	AX,WORD PTR ErrFail
 		JNE	F38_75
@@ -755,7 +755,7 @@ F38_81:		PUSH	DI
 		MOV	AL,0FFh
 		STOSB
 		ADD	DI,5
-		MOV	AL,26h			; FA_HIDDEN | FA_SYSTEM | FA_ARCHIVE
+		MOV	AL,fa_HIDDEN OR fa_SYSTEM OR fa_ARCHIVE
 		STOSB
 		MOV	AL,0
 		STOSB				; default drive

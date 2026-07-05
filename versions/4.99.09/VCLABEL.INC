@@ -192,10 +192,10 @@ F54_10:		MOV	AX,DS:LabelSerNum.Lo	; Update TREEINFO in home dir
 		STOSB
 		MOV	AX,'*'
 		STOSW
-		MOV	CX,27h
+		MOV	CX,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_ARCHIVE
 		MOV	AH,4Eh
 F54_11:		MOV	DX,OFFSET LineBuf2
-		CALL	Intr21			; FindFirst()/FindNext()
+		CALL	Intr21			; FindFirst() / FindNext()
 		JC	F54_17
 		MOV	SI,OFFSET DTA.FilName
 F54_12:		LODSB
@@ -351,9 +351,9 @@ GetVol		PROC	FAR	USES	DX SI DI DS ES
 		PUSH	CS
 		POP	DS
 		MOV	DX,OFFSET Mask_S
-		MOV	CX,8
+		MOV	CX,fa_LABEL
 		MOV	AH,4Eh
-		CALL	Intr21			; FindNext()
+		CALL	Intr21			; FindFirst()
 		POP	DS
 		POP	ES
 		JNC	@@Found
