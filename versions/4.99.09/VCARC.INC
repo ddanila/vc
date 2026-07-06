@@ -905,7 +905,7 @@ ReadArcDir	PROC	NEAR
 		MOV	DI,OFFSET LineBuf1
   @@Script01:	XOR	DX,DX
 		XOR	BP,BP
-  @@Script02:	CALL	FndLet
+  @@Script02:	CALL	SkipSpace
 		LODSB
 		CMP	AL,13
 		JE	@@Script08
@@ -986,7 +986,7 @@ ReadArcDir	PROC	NEAR
 		STOSB
 		MOV	BX,DI
 		INC	DI
-		CALL	FndLet
+		CALL	SkipSpace
   @@Script05:	LODSB
 		CMP	AL,13
 		JE	@@Script12

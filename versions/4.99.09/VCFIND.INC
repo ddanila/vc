@@ -159,7 +159,7 @@ F67_02:		MOV	AL,LenStr		; First dialog
 		CALL	Dialog
 		JNE	F67_07
 		MOV	SI,OFFSET FindStr
-		CALL	FndLet
+		CALL	SkipSpace
 		CMP	AL,0
 		JE	F67_07
 		SUB	DX,80Ch			; Second dialog
@@ -359,7 +359,7 @@ F67_21:		MOV	SI,DS:FndSrcPoint	; Parse one mask
 		MOV	AH,1
 F67_22:		MOV	CX,SI
 		MOV	BX,DI
-		CALL	FndLet
+		CALL	SkipSpace
 F67_23:		MOV	DX,DI
 F67_24:		LODSB
 		CMP	AL,';'

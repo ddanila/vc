@@ -2326,7 +2326,7 @@ Run_04:		LODSB				; Skip line
 		CMP	AL,1Ah
 		JNE	Run_04
 		JMP	Run_72
-Run_05:		CALL	FndLet			; Find begin of command
+Run_05:		CALL	SkipSpace		; Find begin of command
 		CMP	AL,13
 		JE	Run_04
 		CMP	AL,10
@@ -2337,7 +2337,7 @@ Run_05:		CALL	FndLet			; Find begin of command
 		CMP	AL,'@'
 		JNE	Run_07
 		INC	SI
-		CALL	FndLet
+		CALL	SkipSpace
 		CMP	AL,13
 		JE	Run_04
 		CMP	AL,10

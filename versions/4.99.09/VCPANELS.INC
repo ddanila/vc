@@ -894,7 +894,7 @@ ReadInfo	PROC	FAR
 		MOV	BP,DS
   @@Parse:	PUSH	ES			; Find file in current dir
 		POP	DS
-  @@NextFile:	CALL	FndLet
+  @@NextFile:	CALL	SkipSpace
 		LODSB
 		CMP	AL,0
 		JE	@@Done

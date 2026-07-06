@@ -576,29 +576,29 @@ F87_63:		PUSH	SS
 		POP	DS
 		SUB	DI,11
 		MOV	SI,DI
-		CALL	FndLet
+		CALL	SkipSpace
 		CMP	AL,0
 		JE	F87_68
 		CALL	TxtNum
 		JC	F87_74
 		MOV	CX,AX
-		CALL	FndLet
+		CALL	SkipSpace
 		CMP	AL,ES:Country.DateSep
 		JNE	F87_74
 		INC	SI
-		CALL	FndLet
+		CALL	SkipSpace
 		CALL	TxtNum
 		JC	F87_74
 		MOV	DX,AX
-		CALL	FndLet
+		CALL	SkipSpace
 		CMP	AL,ES:Country.DateSep
 		JNE	F87_74
 		INC	SI
-		CALL	FndLet
+		CALL	SkipSpace
 		CALL	TxtNum
 		JC	F87_74
 		MOV	BX,AX
-		CALL	FndLet
+		CALL	SkipSpace
 		CMP	AL,0
 		JNE	F87_74
 		CMP	ES:Country.DateFmt,1
@@ -647,7 +647,7 @@ F87_67:		CMP	DL,AL
 		ADD	AH,BL
 		MOV	ES:AttribDate,AX
 F87_68:		LEA	SI,[DI-17]
-		CALL	FndLet
+		CALL	SkipSpace
 		CMP	AL,0
 		JE	F87_73
 		XOR	CX,CX
@@ -657,11 +657,11 @@ F87_68:		LEA	SI,[DI-17]
 		OR	AH,AH
 		JNE	F87_74
 		MOV	CL,AL
-		CALL	FndLet
+		CALL	SkipSpace
 		CMP	AL,ES:Country.TimeSep
 		JNE	F87_69
 		INC	SI
-		CALL	FndLet
+		CALL	SkipSpace
 		CALL	TxtNum
 		JC	F87_74
 		OR	AH,AH
@@ -673,22 +673,22 @@ ELSE
 		JNE	F87_74
 ENDIF
 		MOV	CH,AL
-		CALL	FndLet
+		CALL	SkipSpace
 		CMP	AL,ES:Country.TimeSep
 		JNE	F87_69
 		INC	SI
-		CALL	FndLet
+		CALL	SkipSpace
 		CALL	TxtNum
 		JC	F87_74
 		OR	AH,AH
 		JNE	F87_74
 		MOV	BL,AL
-		CALL	FndLet
+		CALL	SkipSpace
 F87_69:		CMP	AL,0
 		JE	F87_70
 		MOV	BH,AL
 		INC	SI
-		CALL	FndLet
+		CALL	SkipSpace
 		CMP	AL,0
 		JNE	F87_74
 F87_70:		CMP	CH,60

@@ -902,7 +902,7 @@ FileSort	PROC	FAR	USES	AX BX CX DX SI DI BP
   @@NextMask:	MOV	CX,DI
 		OR	DL,DL
 		JNZ	@@FndMask
-		CALL	FndLet
+		CALL	SkipSpace
 		CMP	AL,0
 		JNE	@@GetChar
 		JMP	@@EndMask
@@ -2539,7 +2539,7 @@ ENDIF
 		CMP	BYTE PTR DS:[SI],'|'
 		JNE	@@SkipInv
 		INC	SI
-		CALL	FndLet
+		CALL	SkipSpace
 		OR	DH,1
   @@SkipInv:	MOV	BX,SI
   @@ChkMask:	LODSB
@@ -2602,7 +2602,7 @@ ENDIF
 		JE	@@Next
 		CMP	AL,';'
 		JNE	@@CrLf
-  @@Next:	CALL	FndLet
+  @@Next:	CALL	SkipSpace
 		LODSB
   @@CrLf:	CMP	AL,13
 		JE	@@FindItem
@@ -2677,7 +2677,7 @@ FindExt		ENDP
 ;		   CY - not found, ZR - EOF
 ;---------------------------------------------------------------
 FindCommand	PROC	FAR
-  @@ChkCommand:	CALL	FndLet
+  @@ChkCommand:	CALL	SkipSpace
 		LODSB
 		CMP	AL,13
 		JE	@@ChkLine
@@ -3197,7 +3197,7 @@ FindPath	PROC	FAR	USES	BX CX DX SI DI BP DS ES
 
   @@Find:	MOV	SI,OFFSET VcSet		; Find in PATH
 		XOR	BP,BP
-  @@AddPath:	CALL	FndLet
+  @@AddPath:	CALL	SkipSpace
 		LODSB
 		CMP	AL,';'
 		JE	@@AddPath

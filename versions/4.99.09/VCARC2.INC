@@ -185,7 +185,7 @@ ExecArcCmd	PROC	FAR	USES	BX CX DX SI DI BP DS
   @@EndPrgName:	MOV	AL,0
 		STOSB
 		DEC	SI
-		CALL	FndLet
+		CALL	SkipSpace
 		MOV	BP,SI
 		POP	SI
 		MOV	DI,OFFSET ExecArcProgram
@@ -1773,7 +1773,7 @@ ExecArcChar	PROC	NEAR	USES	AX BX CX DX SI DI BP DS
 		MOV	DS:ExecArcPathBeg,AX
 		MOV	DS:ExecArcStatus,AL
 		MOV	BX,DS:ExecArcScript
-  @@CheckItem:	CALL	FndLet
+  @@CheckItem:	CALL	SkipSpace
 		MOV	AL,DS:[BX]
 		INC	BX
 		CMP	AL,2			; Check end of line

@@ -961,7 +961,7 @@ V25_30		PROC	NEAR			; Test offset
   @@ChkNumb:	PUSH	SS
 		POP	DS
 		LEA	SI,[DI-9]
-		CALL	FndLet
+		CALL	SkipSpace
 		MOV	ES:VwGotoFlag,AL
 		CMP	AL,0
 		JE	@@Enter
@@ -991,7 +991,7 @@ V25_30		PROC	NEAR			; Test offset
 		OR	DL,AH
 		OR	BL,AL
 		JMP	@@Char
-  @@Space:	CALL	FndLet
+  @@Space:	CALL	SkipSpace
 		CMP	AL,0
 		JNE	@@Error
   @@Offset:	MOV	ES:VwGotoOffs.Lo,BX

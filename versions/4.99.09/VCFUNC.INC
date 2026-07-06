@@ -2628,7 +2628,7 @@ SpeedSearch	PROC	FAR	USES	DI
 		CMP	CX,OFFSET SearchBuf2
 		JBE	@@MoveLine3
 		MOV	SI,CX
-		CALL	FndLet
+		CALL	SkipSpace
 		CMP	AL,0
 		JE	@@MoveLine4
   @@MoveLine3:	DEC	DI

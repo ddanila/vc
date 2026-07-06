@@ -1280,7 +1280,7 @@ FilterSub	PROC	NEAR
 		JE	@@MoveName
 		CMP	AL,':'
 		JNE	@@Colon
-		CALL	FndLet
+		CALL	SkipSpace
 		MOV	DI,SI
   @@MoveName:	MOV	SI,DI
 		MOV	DI,OFFSET TmpErr
@@ -2271,7 +2271,7 @@ M62_10		PROC	NEAR			; Test zoom stages
 		PUSH	SS
 		POP	DS
 		LEA	SI,[DI-21]
-		CALL	FndLet
+		CALL	SkipSpace
 		CMP	AL,0
 		JE	@@Enter
 		CALL	TxtNum
@@ -2281,7 +2281,7 @@ M62_10		PROC	NEAR			; Test zoom stages
 		CMP	AL,2
 		JB	@@Error
 		PUSH	AX
-		CALL	FndLet
+		CALL	SkipSpace
 		CMP	AL,0
 		POP	AX
 		JNE	@@Error
@@ -2613,7 +2613,7 @@ M64_10		PROC	NEAR			; Test delay time
 		PUSH	SS
 		POP	DS
 		LEA	SI,[DI-15]
-		CALL	FndLet
+		CALL	SkipSpace
 		CMP	AL,0
 		JE	@@Enter
 		XOR	CX,CX
@@ -2625,7 +2625,7 @@ M64_10		PROC	NEAR			; Test delay time
 		JA	@@Error
 		MOV	CH,AL
 		PUSH	SI
-		CALL	FndLet
+		CALL	SkipSpace
 		POP	SI
 		CMP	AL,0
 		JE	@@SaveTime1
@@ -2634,7 +2634,7 @@ M64_10		PROC	NEAR			; Test delay time
 		JNE	@@Error
 		PUSH	SI
 		INC	SI
-		CALL	FndLet
+		CALL	SkipSpace
 		POP	SI
 		CMP	AL,0
 		JE	@@SaveTime1
@@ -2649,7 +2649,7 @@ M64_10		PROC	NEAR			; Test delay time
 		CALL	TxtNum
 		JC	@@Error
 		PUSH	AX
-		CALL	FndLet
+		CALL	SkipSpace
 		CMP	AL,0
 		POP	AX
 		JNE	@@Error

@@ -317,15 +317,15 @@ LowCase		ENDP
 ;	Find text
 ;		DS:SI - string
 ;---------------------------------------------------------------
-FndLet		PROC	FAR
+SkipSpace	PROC	FAR
 		LODSB
 		CMP	AL,' '
-		JE	FndLet
+		JE	SkipSpace
 		CMP	AL,9
-		JE	FndLet
+		JE	SkipSpace
 		DEC	SI
 		RET
-FndLet		ENDP
+SkipSpace	ENDP
 
 ;---------------------------------------------------------------
 ;	Check long name
@@ -521,7 +521,7 @@ NormName	ENDP
 ;---------------------------------------------------------------
 NormPath	PROC	FAR	USES	BX CX DX SI DI
 		LEA	BX,[DI+2]
-		CALL	FndLet
+		CALL	SkipSpace
 		LODSW
 		CMP	AX,'\\'
 		JNE	@@GetDisk
@@ -1098,12 +1098,12 @@ TestMask	PROC	FAR	USES	AX BX DX SI DI DS ES
 		POP	SI
 		MOV	DL,1
 		XCHG	SI,DI
-  @@ParseMask:	CALL	FndLet			; Parse one mask
+  @@ParseMask:	CALL	SkipSpace		; Parse one mask
 		MOV	DH,0
 		CMP	AL,'|'
 		JNE	@@CutEndSpc0
 		INC	SI
-		CALL	FndLet
+		CALL	SkipSpace
 		MOV	DH,1
   @@CutEndSpc0:	PUSH	SI
   @@CutEndSpc1:	MOV	BX,SI
@@ -1135,7 +1135,7 @@ TestMask	PROC	FAR	USES	AX BX DX SI DI DS ES
 		JNE	@@SkipEndSpc
 		OR	DL,2
   @@SkipEndSpc:	MOV	SI,BX			; Skip end spaces
-		CALL	FndLet
+		CALL	SkipSpace
 		INC	SI
 		CMP	AL,';'
 		JE	@@ParseMask

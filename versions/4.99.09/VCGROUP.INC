@@ -352,13 +352,13 @@ FuncMask:	PUSH	ES			; Masked files
 		MOV	AL,DS:DescrProcess
 		MOV	DS:DescrUpdate,AL
 		MOV	SI,OFFSET SourceFile
-		CALL	FndLet
+		CALL	SkipSpace
 		CMP	AL,0
 		JE	Func04
 FuncMsk01:	MOV	DS:GroupMask[0],0
 FuncMsk02:	MOV	DI,OFFSET LineBuf1	; Move one part
 		MOV	CX,SI
-FuncMsk03:	CALL	FndLet
+FuncMsk03:	CALL	SkipSpace
 		LODSB
 		CMP	AL,0
 		JE	FuncMsk29
@@ -387,7 +387,7 @@ FuncMsk05:	MOV	AL,0
 		JE	FuncMsk09
 		MOV	BX,DI
 		XCHG	SI,DI
-		CALL	FndLet
+		CALL	SkipSpace
 		MOV	SI,DI
 		CMP	AL,0
 		JNE	FuncMsk09
@@ -404,7 +404,7 @@ FuncMsk07:	MOV	DI,OFFSET LineBuf1
 		INC	DI
 		INC	DI
 		XCHG	SI,DI
-		CALL	FndLet
+		CALL	SkipSpace
 		XCHG	SI,DI
 FuncMsk08:	CMP	BX,DI
 		JE	FuncMsk06
@@ -449,7 +449,7 @@ FuncMsk11:	MOV	BX,SI			; File or mask
 		INC	DI
 		INC	DI
 		XCHG	DI,SI
-		CALL	FndLet
+		CALL	SkipSpace
 		XCHG	DI,SI
 FuncMsk12:	CMP	BX,DI
 		JNE	FuncMsk13
@@ -475,7 +475,7 @@ FuncMsk16:	MOV	SI,CX			; File or mask
 FuncMsk17:	PUSH	SI			; Test *.*
 		MOV	SI,OFFSET GroupMask
 FuncMsk18:	MOV	CX,100h
-		CALL	FndLet
+		CALL	SkipSpace
 FuncMsk19:	LODSB
 		CMP	AL,'?'
 		JE	FuncMsk19
@@ -494,7 +494,7 @@ FuncMsk20:	LODSB
 		JE	FuncMsk20
 		DEC	CH
 FuncMsk21:	DEC	SI
-		CALL	FndLet
+		CALL	SkipSpace
 		CMP	AL,0
 		JE	FuncMsk23
 		CMP	AL,';'
@@ -543,7 +543,7 @@ FuncMsk26:	CMP	DS:GroupMask[0],0	; Directory
 		MOV	DI,SI
 		MOV	SI,OFFSET LineBuf1
 		CALL	CutPath
-		CALL	FndLet
+		CALL	SkipSpace
 		CALL	NormStr
 		CALL	ChkUpDir
 		MOV	SI,DI

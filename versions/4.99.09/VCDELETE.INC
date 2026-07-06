@@ -362,7 +362,7 @@ F48_10		PROC	NEAR
 		CALL	strcpy
 		POP	SI
 		CALL	CutPath
-		CALL	FndLet
+		CALL	SkipSpace
 		POP	DS
 		MOV	SI,OFFSET Mask_S
 		CMP	AL,0
@@ -735,7 +735,7 @@ F38_80		PROC	NEAR	USES	BX CX DX SI DI BP DS
 		REPNE	SCASB
 		DEC	DI
 		CALL	CutPath
-		CALL	FndLet
+		CALL	SkipSpace
 		PUSH	DS
 		MOV	DS,CS:SubsSeg
 		MOV	SI,OFFSET Mask_S

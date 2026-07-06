@@ -185,7 +185,7 @@ F34_10:		MOV	BX,ES:DirinfoSeg	; Create dirinfo
 F34_11:		PUSH	ES
 		POP	DS
 		MOV	SI,OFFSET DirInfoFiles
-		CALL	FndLet
+		CALL	SkipSpace
 		MOV	DI,SI
 F34_12:		MOV	CX,SI
 F34_13:		LODSB
