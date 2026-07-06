@@ -276,7 +276,7 @@ F87_05:		AND	CL,0C0h
 		MOV	BX,500h
 		MOV	DX,OFFSET LineBufs_T
 		MOV	BP,OFFSET AttrSet_P
-		CALL	OncZoom
+		CALL	ZoomOnce
 		MOV	DX,OFFSET LineBuf1
 		CALL	ChgDisk
 		JC	FuncExit
@@ -478,7 +478,7 @@ F87_50		PROC	NEAR	USES	BX CX DX SI DI BP DS
 F87_51:		MOV	BX,500h
 		MOV	DX,OFFSET LineBufs_T
 		MOV	BP,OFFSET AttrSet_P
-		CALL	OncZoom
+		CALL	ZoomOnce
 		TEST	AL,fa_LABEL
 		JNZ	@@Error
 		MOV	DX,OFFSET LineBuf1

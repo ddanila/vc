@@ -316,7 +316,7 @@ F38_16:		POP	DI
 		MOV	DX,OFFSET DelArc_T
 		MOV	BP,OFFSET DeletingArc_P
 		PUSH	DX
-		CALL	OncZoom
+		CALL	ZoomOnce
 		POP	DX
 		XOR	BX,BX
 		XOR	BP,BP
@@ -431,7 +431,7 @@ F38_40		PROC	NEAR	USES	BX CX DX SI DI BP DS
 		MOV	BX,500h
 		MOV	DX,OFFSET DeletingFile_T
 		MOV	BP,OFFSET DeletingFile_P
-		CALL	OncZoom
+		CALL	ZoomOnce
 		TEST	AL,8
 		JNZ	F38_55
 		MOV	DX,OFFSET LineBuf1
@@ -498,7 +498,7 @@ F38_46:		CMP	DS:GroupMask,0		; Deleting subdirectory
 		MOV	BX,500h
 		MOV	DX,OFFSET LineBufs_T
 		MOV	BP,OFFSET DeletingDir_P
-		CALL	OncZoom
+		CALL	ZoomOnce
 		MOV	DX,OFFSET LineBuf1
 		CALL	ChgDisk
 		JC	F38_50
@@ -548,7 +548,7 @@ F38_48:		CALL	DirFunc			; Delete files in subdirectory
 		MOV	BX,500h			; Delete subdirectory
 		MOV	DX,OFFSET LineBufs_T
 		MOV	BP,OFFSET DeletingDir_P
-		CALL	OncZoom
+		CALL	ZoomOnce
 		MOV	DX,OFFSET LineBuf1
 		CALL	F38_65
 		JNC	F38_51
@@ -749,7 +749,7 @@ F38_81:		PUSH	DI
 		MOV	BX,500h
 		MOV	DX,OFFSET DeletingFiles_T
 		MOV	BP,OFFSET DeletingFile_P
-		CALL	OncZoom
+		CALL	ZoomOnce
 		MOV	BYTE PTR DS:[DI],0
 		MOV	DI,OFFSET DeleteFCB	; Prepare FCB
 		MOV	AL,0FFh

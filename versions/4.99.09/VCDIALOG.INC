@@ -219,7 +219,7 @@ BoxLn0		ENDP
 ;		DH,DL - size
 ;---------------------------------------------------------------
 		.CODE	Subs
-OncZoom		PROC	FAR	USES	AX
+ZoomOnce		PROC	FAR	USES	AX
 		MOV	AL,ES:ZoomWin
 		CMP	ES:ZoomOne,0
 		JZ	@@DialBox
@@ -234,7 +234,7 @@ OncZoom		PROC	FAR	USES	AX
 		MOV	ES:ZoomWin,AL
 		MOV	ES:ZoomOne,1
 		RET
-OncZoom		ENDP
+ZoomOnce		ENDP
 
 ;---------------------------------------------------------------
 ;	Put window

@@ -589,7 +589,7 @@ F35_17:		PUSH	BP
 		PUSH	DX
 		MOV	BP,OFFSET CompressArc_P
 		MOV	BX,500h
-		CALL	OncZoom
+		CALL	ZoomOnce
 		POP	DX
 		POP	BP
 		XOR	BX,BX
@@ -774,7 +774,7 @@ F35_37:		PUSH	BP
 		PUSH	DX
 		MOV	BP,OFFSET ExtractArc_P
 		MOV	BX,500h
-		CALL	OncZoom
+		CALL	ZoomOnce
 		POP	DX
 		POP	BP
 		MOV	BL,ES:CopyMove
@@ -1346,7 +1346,7 @@ C00_42:		RET
 C10_00:		MOV	BX,500h			; Renaming file
 		MOV	DX,OFFSET RenMove_T
 		MOV	BP,OFFSET CopyMoveFile_P
-		CALL	OncZoom
+		CALL	ZoomOnce
 		MOV	AL,0
 		OR	CX,CX
 		JE	C10_09
@@ -1633,7 +1633,7 @@ C10_28:		MOV	DS:[SI].LenShortNamF,CX
 C20_00:		MOV	BX,500h			; Copy / Move file
 		MOV	BP,OFFSET CopyMoveFile_P
 		CALL	F35_Table
-		CALL	OncZoom
+		CALL	ZoomOnce
 C20_01:		MOV	BL,DS:Columns
 		SHR	BL,1
 		SUB	BL,16
@@ -2342,7 +2342,7 @@ C30_00:		CMP	DS:CopyTargetDev,0	; Copy or move directory
 		MOV	BP,OFFSET CopyMoveDir_P
 		MOV	BX,500h
 		CALL	F35_Table
-		CALL	OncZoom
+		CALL	ZoomOnce
 		MOV	BL,AL
 		MOV	BP,OFFSET CopyMkDirErr_B
 		OR	CX,CX
@@ -2742,7 +2742,7 @@ C30_41:		MOV	DI,OFFSET LineBuf2	; Copy / move files in directory
 		MOV	BP,OFFSET CopyMoveDir_P	; Delete source directory
 		MOV	BX,500h
 		CALL	F35_Table
-		CALL	OncZoom
+		CALL	ZoomOnce
 		MOV	DX,OFFSET LineBuf1
 		CALL	ChgDisk
 		JC	C00_72

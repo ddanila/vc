@@ -154,7 +154,7 @@ F67_02:		MOV	AL,LenStr		; First dialog
 		MOV	BX,8500h
 		MOV	DX,OFFSET FindFile1_T
 		MOV	BP,OFFSET FindFile1_P
-		CALL	OncZoom
+		CALL	ZoomOnce
 		MOV	BP,OFFSET FindFile1_B
 		CALL	Dialog
 		JNE	F67_07
@@ -167,7 +167,7 @@ F67_02:		MOV	AL,LenStr		; First dialog
 		MOV	BX,8500h
 		MOV	DX,OFFSET FindFile2_T
 		MOV	BP,OFFSET FindFile2_P
-		CALL	OncZoom
+		CALL	ZoomOnce
 		XOR	AX,AX			; Init variables
 		MOV	DS:ListCursor,AX
 		MOV	DS:ListFirst,AX
@@ -275,7 +275,7 @@ F67_06:		PUSH	ES
 		MOV	BX,8500h
 		MOV	DX,OFFSET FindFile1_T
 		MOV	BP,OFFSET FindFile3_P
-		CALL	OncZoom
+		CALL	ZoomOnce
 		MOV	BP,OFFSET FindFile3_B
 		CALL	Dialog
 		JZ	F67_02
