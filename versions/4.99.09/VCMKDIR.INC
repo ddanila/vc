@@ -49,7 +49,6 @@ F37_00		ENDP
 ; Shift F7 - make directory (raw path), default when panels are off
 ;---------------------------------------------------------------
 ;
-;
 ; // helper function
 ; Error() {
 ;   if (errno != CRITERR_FAIL) {

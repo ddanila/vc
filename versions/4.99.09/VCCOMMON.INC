@@ -317,6 +317,10 @@ LowCase		ENDP
 ;	Find text
 ;		DS:SI - string
 ;---------------------------------------------------------------
+;
+; for (i = 0; str[i] == ' ' || str[i] == '\t'; i++) ;
+; return &str[i]
+;
 SkipSpace	PROC	FAR
 		LODSB
 		CMP	AL,' '
@@ -359,10 +363,16 @@ ChkLongName	PROC	NEAR	USES	AX CX
 ChkLongName	ENDP
 
 ;---------------------------------------------------------------
-;	Cut path
+;	Return the last path element
 ;		DS:SI - pathname
 ;	Return:	DS:SI - end of path
 ;---------------------------------------------------------------
+;
+; for (i = p = 0; path[i] != '\0'; i++)
+;      if (path[i] == ':' || path[i] == '\\' || path[i] == '/')
+;          p = i + 1
+; return &path[p]
+;
 CutPath		PROC	FAR	USES	AX BX
   @@Point:	MOV	BX,SI
   @@Next:	LODSB
