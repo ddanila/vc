@@ -548,9 +548,9 @@ ENDIF
 		LEA	SI,StringBuf
 		CMP	AL,'N'
 		JE	@@LetLin
-		CALL	PathLin
+		CALL	UpCaseStr
 		JMP	@@ExPathLin
-  @@LetLin:	CALL	LetLin
+  @@LetLin:	CALL	UpPathLowFname
   @@ExPathLin:	POP	SI
 		POP	ES
 		INC	SI

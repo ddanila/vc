@@ -307,7 +307,7 @@ T99_03:	MOV	SI,OFFSET SourceFile	; Extension or menu file ?
 	CALL	strcpy
 	STOSB
 	POP	SI
-	CALL	PathLin
+	CALL	UpCaseStr
 	MOV	CX,DI
 	SUB	CX,SI
 	MOV	DI,SI
@@ -2487,7 +2487,7 @@ T74_00	PROC	NEAR			; Put file name to status line
 	MOV	AX,31
 	MOV	CX,AX
 	CALL	ShrtLin
-	CALL	LetLin
+	CALL	UpPathLowFname
 	MOV	DI,OFFSET ScrBuf+2*6
 	PUSH	DI
 	MOV	AH,DS:[DI+1]
@@ -2558,7 +2558,7 @@ T80_01:	OR	CL,fa_ARCHIVE
 	PUSH	DI
 	REP	MOVSB
 	POP	SI
-	CALL	LetLin
+	CALL	UpPathLowFname
 	PUSH	DX
 	MOV	DX,OFFSET EdFl_S
 	MOV	BP,OFFSET Prot_B
@@ -2689,7 +2689,7 @@ T80_15:	ADD	CX,DX
 	REP	MOVSB
 	MOV	DI,DX
 	MOV	SI,DI
-	CALL	PathLin
+	CALL	UpCaseStr
 	CALL	CutPath
 	MOV	CX,SI
 	SUB	CX,DI

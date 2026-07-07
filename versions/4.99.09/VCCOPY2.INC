@@ -673,7 +673,7 @@ F35_FuncShort	PROC	NEAR	USES	SI
 		PUSH	SI
 		CALL	strcpy
 		POP	SI
-		CALL	PathLin
+		CALL	UpCaseStr
   @@Func:	POP	AX
 		POP	DI
 		CALL	Intr21

@@ -314,7 +314,7 @@ LowCase		PROC	FAR
 LowCase		ENDP
 
 ;---------------------------------------------------------------
-;	Find text
+;	Skip leading spaces
 ;		DS:SI - string
 ;---------------------------------------------------------------
 ;
@@ -469,7 +469,7 @@ ShortName	PROC	FAR	USES	CX DX SI DI DS
 		PUSH	ES
 		POP	DS
 		MOV	SI,DI
-		CALL	LetLin
+		CALL	UpPathLowFname
 		CLC
 		JMP	@@Exit
   @@Error:	PUSH	AX
@@ -682,33 +682,47 @@ NormStr		ENDP
 ;	Uppercase whole string
 ;		ES:SI - address of string
 ;---------------------------------------------------------------
-PathLin		PROC	FAR	USES	AX DI
+;
+; for (i = 0; str[i] != '\0'; i++)
+;      str[i] = UpCase(str[i])
+;
+UpCaseStr	PROC	FAR	USES	AX DI
 		MOV	DI,SI
-  @@Next:	MOV	AL,ES:[DI]
+
+  @@Next:
+		MOV	AL,ES:[DI]
 		CALL	UpCase
 		STOSB
 		CMP	AL,0
 		JNE	@@Next
 		RET
-PathLin		ENDP
+UpCaseStr	ENDP
 
 ;---------------------------------------------------------------
 ;	Uppercase path & lowercase filename
 ;		ES:SI - address of string
 ;---------------------------------------------------------------
-LetLin		PROC	FAR	USES	AX SI DI DS
-		CALL	PathLin
+;
+; UpCaseStr(&path)
+; fname = CutPath(path)
+; for (i = 0; fname[i] != '\0'; i++)
+;      fname[i] = LowCase(fname[i])
+;
+UpPathLowFname	PROC	FAR	USES	AX SI DI DS
+		CALL	UpCaseStr
 		PUSH	ES
 		POP	DS
 		CALL	CutPath
 		MOV	DI,SI
-  @@NextChar:	LODSB
+
+  @@Next:
+		LODSB
 		CALL	LowCase
 		STOSB
 		CMP	AL,0
-		JNE	@@NextChar
+		JNE	@@Next
 		RET
-LetLin		ENDP
+UpPathLowFname	ENDP
 
 ;---------------------------------------------------------------
 ;	Shorter string
@@ -1528,7 +1542,7 @@ ENDIF
 		JNZ	@@SkipConv
 		CMP	DS:ConvCase,0
 		JE	@@SkipConv
-		CALL	LetLin
+		CALL	UpPathLowFname
   @@SkipConv:	POP	SI
 		POP	AX
 		POP	DS

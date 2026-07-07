@@ -1539,7 +1539,7 @@ C10_21:		MOV	AL,DS:DosPath[0]
 C10_22:		CMP	DS:ConvCase,0
 		JE	C10_23
 		MOV	SI,DX
-		CALL	LetLin
+		CALL	UpPathLowFname
 C10_23:		POP	DI
 		POP	SI
 		POP	DS
@@ -2984,7 +2984,7 @@ C40_26:		PUSH	DI
 		CALL	CutPath
 		CALL	NormName
 		POP	SI
-		CALL	PathLin
+		CALL	UpCaseStr
 		MOV	DI,OFFSET FileSymb2_S
 		CALL	ChkForSymb
 		MOV	DI,SI

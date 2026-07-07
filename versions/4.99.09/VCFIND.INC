@@ -1312,7 +1312,7 @@ PrepareSearch	PROC	NEAR	USES	AX BX CX SI DI DS
 		POP	SI
 		CMP	DS:SrchCase,0
 		JNZ	@@LenText
-		CALL	PathLin
+		CALL	UpCaseStr
   @@LenText:	SUB	DI,SI
 		MOV	DS:Search.SrLenText,DI
 		MOV	CX,OFFSET TransNone
