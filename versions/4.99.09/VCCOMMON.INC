@@ -447,7 +447,9 @@ ShortName	PROC	FAR	USES	CX DX SI DI DS
 		CMP	AH,':'
 		JE	@@Phantom
 		MOV	AL,ES:DosPath[0]
-  @@Phantom:	CALL	Phantom
+
+  @@Phantom:
+		CALL	Phantom
 		MOV	AX,ErrFail
 		POP	ES
 		JC	@@Error
@@ -472,11 +474,15 @@ ShortName	PROC	FAR	USES	CX DX SI DI DS
 		CALL	UpPathLowFname
 		CLC
 		JMP	@@Exit
-  @@Error:	PUSH	AX
+
+  @@Error:
+		PUSH	AX
 		CALL	strcpy
 		POP	AX
 		STC
-  @@Exit:	RET
+
+  @@Exit:
+		RET
 ShortName	ENDP
 
 ;---------------------------------------------------------------

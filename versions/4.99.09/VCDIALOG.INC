@@ -206,7 +206,7 @@ BoxLn0		ENDP
 ;---------------------------------------------------------------
 ;	Zoom box only once
 ;		BH,BL - begin-center
-;			(BL = 0 - cnt of scr, 1 - cnt of panel)
+;			(BL = 0 - center of scr, 1 - center of panel)
 ;			(BH > 127 - center of screen)
 ;		CS:DX - table of pointers
 ;		CS:BP - pointer:

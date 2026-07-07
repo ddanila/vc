@@ -169,7 +169,11 @@ DelAllSkip_D	DB	8, 0
 		DB	0
 
 		.CODE
-F38_00:		MOV	ES:FncAddr,OFFSET F38_40 ; F8 - delete
+;---------------------------------------------------------------
+; F8 - delete
+;---------------------------------------------------------------
+F38_00		PROC	NEAR
+		MOV	ES:FncAddr,OFFSET F38_40
 		CMP	DS:Visible,0
 		JZ	F48_00
 		CMP	DS:WinTyp,p_Tree
@@ -323,6 +327,7 @@ F38_16:		POP	DI
 		CALL	ExecArcCmd
 		MOV	ES:GroupChg,1
 		JMP	FuncExit0
+F38_00		ENDP
 
 ;---------------------------------------------------------------
 ; Shift F8 - delete files with mask
@@ -378,7 +383,7 @@ F48_12:		POP	DS
 		CALL	Dialog
 		MOV	AX,100h
 		JNZ	@@Exit
-		CALL	F38_80
+		CALL	DelAllFiles
 		OR	DS:GroupFound,AL
 
   @@Exit:
@@ -533,7 +538,7 @@ F38_46:		CMP	DS:GroupMask,0		; Deleting subdirectory
 		JAE	F38_50
 		CMP	AL,2
 		JAE	F38_45
-F38_47:		CALL	F38_80			; Delete *.* in subdirectory
+F38_47:		CALL	DelAllFiles		; Delete *.* in subdirectory
 		OR	DS:GroupFound,AL
 		OR	AH,AH
 		JNZ	F38_60
@@ -619,24 +624,28 @@ F38_Empty	PROC	NEAR
 F38_Empty	ENDP
 
 ;---------------------------------------------------------------
-;	Deleting empty subdirectory
+;	Delete empty directory
 ;---------------------------------------------------------------
 F38_65		PROC	NEAR
 		MOV	AX,4300h
 		CALL	Intr21			; stat()
-		JC	F38_76
+		JC	@@Exit
 		MOV	SI,DX
 		MOV	DI,OFFSET LineBuf3
 		CALL	ShortName
 		JNC	F38_66
 		CMP	AX,7100h
 		STC
-		JNE	F38_76
+		JNE	@@Exit
 		CALL	NormPath
-		JC	F38_76
-F38_66:		AND	CL,NOT fa_DIR
+		JC	@@Exit
+
+F38_66:
+		AND	CL,NOT fa_DIR
 		TEST	CL,fa_RO
 		JZ	F38_67
+
+  @@Remove_RO:
 		PUSH	CX
 		AND	CL,NOT fa_RO
 		MOV	AX,4301h
@@ -645,7 +654,8 @@ F38_66:		AND	CL,NOT fa_DIR
 		JNC	F38_67
 		CMP	AX,WORD PTR ErrFail
 		STC
-		JE	F38_76
+		JE	@@Exit
+
 F38_67:		PUSH	CX
 		MOV	SI,OFFSET DosShortPath
 		CALL	StrLen
@@ -665,7 +675,7 @@ F38_68:		MOV	AX,10h
 		JMP	F38_70
 F38_69:		MOV	AH,3Ah
 		CALL	Intr21			; rmdir()
-		JNC	F38_76
+		JNC	@@Exit
 		PUSHF
 		PUSH	AX
 		CMP	AX,WORD PTR 10h
@@ -696,7 +706,7 @@ F38_70:		PUSH	DX
 		POP	DX
 		POP	SI
 		POP	DI
-		JNC	F38_76
+		JNC	@@Exit
 		PUSH	DI
 		PUSH	SI
 		PUSH	DX
@@ -719,13 +729,62 @@ F38_74:		POP	DI
 		PUSH	AX
 F38_75:		POP	AX
 		POPF
-F38_76:		RET
+
+  @@Exit:
+		RET
 F38_65		ENDP
 
 ;---------------------------------------------------------------
-;	Deleting files by mask *.*
+;	Delete all files in the specified directory
+;		DS:SI - pathname
+;	Return:	AX - retcode
 ;---------------------------------------------------------------
-F38_80		PROC	NEAR	USES	BX CX DX SI DI BP DS
+;
+; pathlen = strlen(LineBuf1)
+; p = SkipSpace(CutPath(LineBuf1)) // get the last element of path
+; if (*p == '\0') strcat(LineBuf1, "*.*") // pathsep at the end of path or path is empty
+; else strcat(LineBuf1, "\*.*")
+;
+; ZoomOnce(5, 0, DeletingFiles_T, DeletingFile_P)
+;
+; LineBuf1[pathlen] = '\0' // restore specified path
+; DeleteFCB.esig = 0xff
+; DeleteFCB.FAttr = fa_HIDDEN | fa_SYSTEM | fa_ARCHIVE
+; DeleteFCB.drv = 0 // current drive by default
+; memcpy(DeleteFCB.nameext, "???????????", 11) // '*.*'
+;
+; // deal with single floppy PC
+; if (ChgDisk() == -1) return 0x100 // CRITERR_FAIL
+;
+; LineBuf2[0] = '\0'
+; if (LineBuf1[0] != '\0') { // may need to change drive / path
+;     if (LineBuf1[1] == ':') { // drive in path
+;         sprintf(LineBuf2, "%c:", LineBuf1[0]) // save drive
+;         DeleteFCB.drv = UpCase(LineBuf1[0]) - ('A' - 1)) // update FCB drive
+;     }
+;     if (LineBuf1[1] != ':') || // path without drive
+;          (LineBuf1[1] == ':' && LineBuf1[2] != '\0')) { // drive + path
+;         strcat(LineBuf2, '\\')
+;         if (getcwd(DeleteFCB.drv, &LineBuf2[strlen(LineBuf2)]) == -1)
+;             return (errno == CRITERR_FAIL) ? 0x100 : 0
+;         if (chdir(LineBuf1) == -1)
+;             return (errno == CRITERR_FAIL) ? 0x100 : 0
+;     }
+; }
+;
+; GroupChg = true
+; retcode = 1 // success by default
+; if (FCB_unlink(&DeleteFCB) == -1) {
+;     if (errno == CRITERR_FAIL) return 0x100
+;     else retcode = errorclass << 8 // see RBIL 21/59/BH
+; }
+;
+; if (LineBuf2[0] != '\0') // restore old path
+;     if (chdir(LineBuf2) == -1) return 0x100 // CRITERR_FAIL
+;
+; return retcode
+;
+DelAllFiles	PROC	NEAR	USES	BX CX DX SI DI BP DS
 		PUSH	ES
 		POP	DS
 		MOV	SI,OFFSET LineBuf1	; Put box
@@ -740,9 +799,11 @@ F38_80		PROC	NEAR	USES	BX CX DX SI DI BP DS
 		MOV	DS,CS:SubsSeg
 		MOV	SI,OFFSET Mask_S
 		CMP	AL,0
-		JNE	F38_81
+		JNE	@@AppendMask
 		INC	SI
-F38_81:		PUSH	DI
+
+  @@AppendMask:
+		PUSH	DI
 		CALL	strcpy
 		POP	DI
 		POP	DS
@@ -750,39 +811,46 @@ F38_81:		PUSH	DI
 		MOV	DX,OFFSET DeletingFiles_T
 		MOV	BP,OFFSET DeletingFile_P
 		CALL	ZoomOnce
+
+  @@PrepareFCB:
 		MOV	BYTE PTR DS:[DI],0
-		MOV	DI,OFFSET DeleteFCB	; Prepare FCB
+		MOV	DI,OFFSET DeleteFCB
 		MOV	AL,0FFh
 		STOSB
 		ADD	DI,5
 		MOV	AL,fa_HIDDEN OR fa_SYSTEM OR fa_ARCHIVE
 		STOSB
 		MOV	AL,0
-		STOSB				; default drive
+		STOSB				; curent drive by default
 		MOV	AL,'?'
 		MOV	CX,8+3
 		REP	STOSB			; '????????.???' = '*.*'
-		MOV	DX,OFFSET LineBuf1	; Save current path
-		CALL	ChgDisk
+
+		MOV	DX,OFFSET LineBuf1
+		CALL	ChgDisk			; deal with single floppy PC
 		JC	@@ErrorFail
 		MOV	DI,OFFSET LineBuf2
 		MOV	BYTE PTR DS:[DI],0
 		MOV	SI,DX
 		LODSW
 		CMP	AL,0
-		JE	@@DelAllFiles
+		JE	@@DelAllFiles		; delete files in the current dir
 		CMP	AH,':'
-		JNE	F38_82
-		STOSW
+		JNE	@@SaveCurDir
+		STOSW				; copy drive letter
+
+  @@UpdateFCBdrive:
 		CALL	UpCase
-		SUB	AL,'A'-1
+		SUB	AL,'A'-1		; 'A' -> 1
 		MOV	DS:DeleteFCB[7],AL	; FCB.drv
 		LODSB
 		STOSB
 		CMP	AL,0
 		JE	@@DelAllFiles
 		DEC	DI
-F38_82:		MOV	AL,'\'
+
+  @@SaveCurDir:
+		MOV	AL,'\'
 		STOSB
 		PUSH	DX
 		MOV	SI,DI
@@ -828,4 +896,4 @@ F38_82:		MOV	AL,'\'
 
   @@Exit:
 		RET
-F38_80		ENDP
+DelAllFiles	ENDP
