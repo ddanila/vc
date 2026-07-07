@@ -882,7 +882,7 @@ DelAllFiles	PROC	NEAR	USES	BX CX DX SI DI BP DS
 		JNC	@@RestoreCurDir
 		CMP	AX,WORD PTR ErrFail
 		JE	@@ErrorFail		; CritError: disk RO, no disk in drive, HW error, ...
-		MOV	BL,0			; return error
+		MOV	BL,0			; return error, keep errorclass from Intr21() in BH
 
   @@RestoreCurDir:
 		MOV	AX,BX
