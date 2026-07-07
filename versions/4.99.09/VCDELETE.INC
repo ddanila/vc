@@ -760,9 +760,9 @@ F38_65		ENDP
 ; if (LineBuf1[0] != '\0') { // may need to change drive / path
 ;     if (LineBuf1[1] == ':') { // drive in path
 ;         sprintf(LineBuf2, "%c:", LineBuf1[0]) // save drive
-;         DeleteFCB.drv = UpCase(LineBuf1[0]) - ('A' - 1)) // update FCB drive
+;         DeleteFCB.drv = UpCase(LineBuf1[0]) - ('A' - 1) // update FCB drive
 ;     }
-;     if (LineBuf1[1] != ':') || // path without drive
+;     if ((LineBuf1[1] != ':') || // path without drive
 ;          (LineBuf1[1] == ':' && LineBuf1[2] != '\0')) { // drive + path
 ;         strcat(LineBuf2, '\\')
 ;         if (getcwd(DeleteFCB.drv, &LineBuf2[strlen(LineBuf2)]) == -1)
@@ -821,7 +821,7 @@ DelAllFiles	PROC	NEAR	USES	BX CX DX SI DI BP DS
 		MOV	AL,fa_HIDDEN OR fa_SYSTEM OR fa_ARCHIVE
 		STOSB
 		MOV	AL,0
-		STOSB				; curent drive by default
+		STOSB				; current drive by default
 		MOV	AL,'?'
 		MOV	CX,8+3
 		REP	STOSB			; '????????.???' = '*.*'
