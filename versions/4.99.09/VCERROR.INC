@@ -312,6 +312,42 @@ OkCan_D		DB	4, 0
 		DB	0
 
 		.CODE	Subs
+;---------------------------------------------------------------
+;	Make logical drive current
+;		AL - drive
+;	Return:
+;		NC - no errors
+;		CY - error
+;---------------------------------------------------------------
+;
+;#define SUCCESS 0
+;#define FAIL -1
+;
+; drv = Upcase(Drive) - ('A' - 1)
+;
+; CurLogicDrv = GetLogicalDrv(drv)
+; // IOCTL not supported (DRDOS 3.x, etc) or no logical drives
+; if (CurLogicDrv == -1 || CurLogicDrv == 0 ||
+; // requested drive already current
+;      CurLogicDrv == drv) return SUCCESS
+;
+; NewLogicDrv = SetLogicalDrv(drv)
+; // IOCTL not supported (DRDOS 3.x, etc) or drive not changed
+; if (NewLogicDrv == -1 || NewLogicDrv == CurLogicDrv) return SUCCESS
+;
+; // restore old logical drive
+; if (SetLogicalDrv(CurLogicDrv) == -1) return SUCCESS
+;
+; TmpErr = (short)(NewLogicDrv + ('A' - 1)) // drive letter for error box
+; origHlpPage = HlpPage // preserve current Help topic
+; f_abort = Dialog(Phant_B, Error_T/*args*/) // Change drive error box
+; HlpPage = origHlpPage
+;
+; if (f_abort) return FAIL // User canceled operation
+; SetLogicalDrv(NewLogicDrv)
+;
+; return SUCCESS
+;
 Phantom		PROC	FAR	USES	AX BX DX BP
 		CALL	UpCase
 		SUB	AL,'A'-1
@@ -323,13 +359,13 @@ Phantom		PROC	FAR	USES	AX BX DX BP
 		JE	@@Skip
 		CMP	AL,BL
 		JE	@@Skip
-		MOV	BH,AL
+		MOV	BH,AL			; CurLogicDrv
 		MOV	AX,440Fh
 		INT	21h
 		JC	@@Skip
 		CMP	AL,BH
 		JE	@@Skip
-		XCHG	BL,BH
+		XCHG	BL,BH			; NewLogicDrv
 		MOV	AX,440Fh
 		INT	21h
 		JC	@@Skip
@@ -347,12 +383,16 @@ Phantom		PROC	FAR	USES	AX BX DX BP
 		JNE	@@Exit
 		MOV	AX,440Fh
 		INT	21h
-  @@Skip:	CLC
-  @@Exit:	RET
+
+  @@Skip:
+		CLC
+
+  @@Exit:
+		RET
 Phantom		ENDP
 
 ;---------------------------------------------------------------
-;	Change logical drive map
+;	Make specified (or default) logical drive current
 ;		ES:DX - path
 ;	Return:    CY - can not change
 ;		   NC - Ok
@@ -362,7 +402,9 @@ ChgDisk		PROC	FAR	USES	AX BX
 		MOV	AX,ES:[BX]
 		CMP	AH,':'
 		JE	@@Phantom
-		MOV	AL,ES:DosPath[0]
-  @@Phantom:	CALL	Phantom
+		MOV	AL,ES:DosPath[0]	; use current drive
+
+  @@Phantom:
+		CALL	Phantom
 		RET
 ChgDisk		ENDP
