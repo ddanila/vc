@@ -740,6 +740,10 @@ F38_65		ENDP
 ;	Return:	AX - retcode
 ;---------------------------------------------------------------
 ;
+;#define FAIL 0
+;#define SUCCESS 1
+;#define CRITFAIL 0x100
+;
 ; pathlen = strlen(LineBuf1)
 ; p = SkipSpace(CutPath(LineBuf1)) // get the last element of path
 ; if (*p == '\0') strcat(LineBuf1, "*.*") // pathsep at the end of path or path is empty
@@ -754,7 +758,7 @@ F38_65		ENDP
 ; memcpy(DeleteFCB.nameext, "???????????", 11) // '*.*'
 ;
 ; // deal with single floppy PC
-; if (ChgDisk() == -1) return 0x100 // CRITERR_FAIL
+; if (ChgDisk() == -1) return CRITFAIL
 ;
 ; LineBuf2[0] = '\0'
 ; if (LineBuf1[0] != '\0') { // may need to change drive / path
@@ -766,23 +770,20 @@ F38_65		ENDP
 ;          (LineBuf1[1] == ':' && LineBuf1[2] != '\0')) { // drive + path
 ;         strcat(LineBuf2, '\\')
 ;         if (getcwd(DeleteFCB.drv, &LineBuf2[strlen(LineBuf2)]) == -1)
-;             return (errno == CRITERR_FAIL) ? 0x100 : 0
+;             return (errno == CRITERR_FAIL) ? CRITFAIL : FAIL
 ;         if (chdir(LineBuf1) == -1)
-;             return (errno == CRITERR_FAIL) ? 0x100 : 0
+;             return (errno == CRITERR_FAIL) ? CRITFAIL : FAIL
 ;     }
 ; }
 ;
 ; GroupChg = true
-; retcode = 1 // success by default
-; if (FCB_unlink(&DeleteFCB) == -1) {
-;     if (errno == CRITERR_FAIL) return 0x100
-;     else retcode = errorclass << 8 // see RBIL 21/59/BH
-; }
+; if (FCB_unlink(&DeleteFCB) == -1)
+;     return (errno == CRITERR_FAIL) ? CRITFAIL : FAIL
 ;
 ; if (LineBuf2[0] != '\0') // restore old path
-;     if (chdir(LineBuf2) == -1) return 0x100 // CRITERR_FAIL
+;     if (chdir(LineBuf2) == -1) return CRITFAIL
 ;
-; return retcode
+; return SUCCESS
 ;
 DelAllFiles	PROC	NEAR	USES	BX CX DX SI DI BP DS
 		PUSH	ES
@@ -866,11 +867,11 @@ DelAllFiles	PROC	NEAR	USES	BX CX DX SI DI BP DS
   @@ErrorGetSetDir:
 		CMP	AX,WORD PTR ErrFail
 		JE	@@ErrorFail
-		XOR	AX,AX
+		XOR	AX,AX			; FAIL
 		JMP	@@Exit
 
   @@ErrorFail:
-		MOV	AX,100h
+		MOV	AX,100h			; CRITFAIL
 		JMP	@@Exit
 
   @@DelAllFiles:
@@ -878,11 +879,11 @@ DelAllFiles	PROC	NEAR	USES	BX CX DX SI DI BP DS
 		MOV	DX,OFFSET DeleteFCB
 		MOV	AH,13h
 		CALL	Intr21			; FCB_unlink()
-		MOV	BX,1			; success by default
+		MOV	BX,1			; SUCCESS by default
 		JNC	@@RestoreCurDir
 		CMP	AX,WORD PTR ErrFail
 		JE	@@ErrorFail		; CritError: disk RO, no disk in drive, HW error, ...
-		MOV	BL,0			; return error, keep errorclass from Intr21() in BH
+		MOV	BL,0			; FAIL
 
   @@RestoreCurDir:
 		MOV	AX,BX
