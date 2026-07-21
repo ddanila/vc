@@ -1335,10 +1335,16 @@ GetFS		ENDP
 ;
 ; if (func < 0x36) { // DOS 1.x error reporting
 ;     intdos(&regs, &regs)
-;     if (regs.AL == 0xff) err = -1
+;     if (regs.AL == 0xff) {
+;         regs.FLAGS |= F_CARRY
+;         err = -1
+;     }
 ; } else if (func == 0x36) {
 ;     intdos(&regs, &regs)
-;     if (regs.AX == 0xffff) err = -1
+;     if (regs.AX == 0xffff) {
+;         regs.FLAGS |= F_CARRY
+;	      err = -1
+;     }
 ; } else { // DOS 2.x+ error reporting (Carry flag set)
 ;     switch (func) { // try LFN variant for file functions first
 ;       case 0x39: // mkdir()
@@ -1388,7 +1394,7 @@ GetFS		ENDP
 ;         } else if (func == 0x60) { // truename()
 ;             regs.CX = 0 // truename subfunc
 ;         }
-;         regs.FLAGS &= F_CARRY // error by default
+;         regs.FLAGS |= F_CARRY // error by default
 ;         if (intdos(&regs, &regs) != -1 || regs.AX != 0x7100) { // success
 ;             if (func == 0x43) { // stat()/chmod()
 ;                 saveregs.SI = regs.SI
@@ -1399,7 +1405,7 @@ GetFS		ENDP
 ;                 DTA.FilDate = FindData.WinTime.Hi
 ;                 FilSize.Lo = FindData.WinSize.Lo
 ;                 FilSize.Hi = FindData.WinSize.Hi
-;                 // clear Temporary file(0x80) bit
+;                 // clear Temporary file(0x80) bit and reserved bit 6
 ;                 DTA.FilAttr = FindData.WinAttr.Lo &
 ;                   (fa_RO | fa_HIDDEN | fa_SYSTEM | fa_LABEL | fa_DIR | fa_ARCHIVE)
 ;
@@ -1439,6 +1445,7 @@ GetFS		ENDP
 ;         if (func == 0x4e || func == 0x4f) { // FindFirst/Next
 ;             f_label = (func == 0x4e && regs.CL & fa_LABEL) ? true : false
 ;             SetDTA(DTA)
+;             regs.FLAGS |= F_CARRY // error by default
 ;             err = intdos(&regs, &regs)
 ;             FindData.WinLongName[0] = '\0'
 ;             if (ConvCase && !f_label && // don't lowercase volume label
@@ -1447,6 +1454,7 @@ GetFS		ENDP
 ;                 for(i = 0; i < 14; i++) DTA.FilName[i] = LowCase(DTA.FilName[i])
 ;             }
 ;         } else { // other DOS functions
+;             regs.FLAGS |= F_CARRY // error by default
 ;             err = intdos(&regs, &regs)
 ;         }
 ;     }
@@ -1454,10 +1462,9 @@ GetFS		ENDP
 ;
 ; if (ErrDat) {
 ;     err = ErrFail
-;     regs.FLAGS &= F_CARRY
+;     regs.FLAGS |= F_CARRY
 ; } else if (regs.FLAGS & F_CARRY && err != 0) {
 ;     err = GetExtendedError()
-;     regs.FLAGS &= F_CARRY
 ; }
 ;
 ; return err
