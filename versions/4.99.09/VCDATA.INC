@@ -164,7 +164,7 @@ FDR		STRUC
   WinSize	DD	?		; Size (low 32 bits)
 		DB	  8 DUP(?)	; Reserved
   WinLongName	DB	260 DUP(?)	; Full name
-  WinName	DB	 14 DUP(?)	; Short name
+  WinShortName	DB	 14 DUP(?)	; Short name
 FDR		ENDS
 
 ; Execute program block structure definition.

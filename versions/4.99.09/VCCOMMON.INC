@@ -1325,8 +1325,143 @@ GetFS		PROC	FAR	USES	BX CX DX SI DI DS
 GetFS		ENDP
 
 ;---------------------------------------------------------------
-;	Int 21h with fatal error
+;	Int 21h with extended error
 ;---------------------------------------------------------------
+;
+; func = regs.AH
+; subfunc = regs.AL
+; saveregs = regs
+; ErrDat = 0
+;
+; if (func < 0x36) { // DOS 1.x error reporting
+;     intdos(&regs, &regs)
+;     if (regs.AL == 0xff) err = -1
+; } else if (func == 0x36) {
+;     intdos(&regs, &regs)
+;     if (regs.AX == 0xffff) err = -1
+; } else { // DOS 2.x+ error reporting (Carry flag set)
+;     switch (func) { // try LFN variant for file functions first
+;       case 0x39: // mkdir()
+;       case 0x3a: // rmdir()
+;       case 0x3b: // chdir()
+;       case 0x3c: // creat()
+;       case 0x3d: // open()
+;       case 0x41: // unlink()
+;       case 0x43: // stat()/chmod()
+;       case 0x47: // getcwd()
+;       case 0x4e: // FindFirst()
+;       case 0x4f: // FindNext()
+;       case 0x56: // rename()
+;       case 0x5b: // CreatNew()
+;       case 0x60: // truename()
+;       case 0x6c: // xcreat()
+;         regs.AH = 0x71
+;         regs.AL = func
+;
+;         // replace creat(), open(), CreatNew() with LFN_xcreat()
+;         if (func == 0x3c) { // creat()
+;             regs.SI = regs.DX // MK_FP(DS,SI) - asciiz filename
+;             regs.DX = 0x12 // flags = O_CREAT | O_TRUNC
+;             regs.BX = 2 // mode = RW
+;             regs.AL = 0x6c // LFN_xcreat()
+;         } else if (func == 0x3d) { // open()
+;             regs.SI = regs.DX // MK_FP(DS,SI) - asciiz filename
+;             regs.DX = 1 // open file
+;             regs.BX = regs.AL // mode
+;             regs.AL = 0x6c // LFN_xcreat()
+;         } else if (func == 0x5b) { // CreatNew()
+;             regs.SI = regs.DX // MK_FP(DS,SI) - asciiz filename
+;             regs.DX = 0x10 // flags = O_CREAT
+;             regs.BX = 2 // mode = RW
+;             regs.AL = 0x6c // LFN_xcreat()
+;         } else if (func == 0x41) { // unlink()
+;             regs.SI = 0 // no wildcards allowed
+;         } else if (func == 0x43) { // stat()/chmod()
+;             regs.BL = subfunc
+;         } else if (func == 0x4e) { // FindFirst()
+;             CloseFindFile()
+;         } else if (func == 0x4f) { // FindNext()
+;             regs.ES = MK_SEG(FindData)
+;             regs.DI = MK_OFF(FindData)
+;             regs.BX = FindHandle
+;             regs.SI = 1 // use MS-DOS (old) date/time format
+;         } else if (func == 0x60) { // truename()
+;             regs.CX = 0 // truename subfunc
+;         }
+;         regs.FLAGS &= F_CARRY // error by default
+;         if (intdos(&regs, &regs) != -1 || regs.AX != 0x7100) { // success
+;             if (func == 0x43) { // stat()/chmod()
+;                 saveregs.SI = regs.SI
+;                 saveregs.DI = regs.DI
+;             } else if (func == 0x4e || func == 0x4f) { // FindFirst/Next
+;                 if (func == 0x4e) FindHandle = regs.AX
+;                 DTA.FilTime = FindData.WinTime.Lo
+;                 DTA.FilDate = FindData.WinTime.Hi
+;                 FilSize.Lo = FindData.WinSize.Lo
+;                 FilSize.Hi = FindData.WinSize.Hi
+;                 // clear Temporary file(0x80) bit
+;                 DTA.FilAttr = FindData.WinAttr.Lo &
+;                   (fa_RO | fa_HIDDEN | fa_SYSTEM | fa_LABEL | fa_DIR | fa_ARCHIVE)
+;
+;                 // no LFN for this entry, use WinLongName
+;                 // (see RBIL 21/714E, 'Under Windows95B' note)
+;                 if (FindData.WinShortName[0] == '\0') {
+;                     for (i = 0; FindData.WinLongName[i] != '\0'; i++)
+;                          // don't upcase volume label
+;                          FindData.WinShortName[i] = (DTA.FilAttr & fa_LABEL) ?
+;                           FindData.WinLongName[i] : UpCase(FindData.WinLongName[i])
+;                 }
+;
+;                 // use LFN only if LFN != SFN
+;                 if (strncmp(FindData.WinLongName, FindData.WinShortName,
+;                       StrLen(FindData.WinShortName))) {
+;                     strcpy(DTA.FilName, FindData.WinLongName)
+;                     FindData.WinLongName[0] = '\0'
+;                 } else {
+;                     strcpy(DTA.FilName, FindData.WinShortName)
+;                 }
+;
+;                 if (ConvCase &&
+;                      // don't lowercase volume label
+;                      // ignore Find calls used to calculate directory size
+;                      (DTA.FilAttr & (fa_LABEL | fa_DIR)) == 0)
+;                     UpPathLowFname(DTA.FilName)
+;             }
+;             saveregs.FLAGS = regs.FLAGS
+;             saveregs.AX = regs.AX
+;             saveregs.CX = regs.CX
+;             regs = saveregs
+;             break
+;         }
+;
+;       default: // fallback to SFN functions
+;         regs = saveregs
+;         if (func == 0x4e || func == 0x4f) { // FindFirst/Next
+;             f_label = (func == 0x4e && regs.CL & fa_LABEL) ? true : false
+;             SetDTA(DTA)
+;             err = intdos(&regs, &regs)
+;             FindData.WinLongName[0] = '\0'
+;             if (ConvCase && !f_label && // don't lowercase volume label
+;                  // ignore Find calls used to calculate directory size
+;                  (DTA.FilAttr & (fa_LABEL | fa_DIR)) == 0) {
+;                 for(i = 0; i < 14; i++) DTA.FilName[i] = LowCase(DTA.FilName[i])
+;             }
+;         } else { // other DOS functions
+;             err = intdos(&regs, &regs)
+;         }
+;     }
+; }
+;
+; if (ErrDat) {
+;     err = ErrFail
+;     regs.FLAGS &= F_CARRY
+; } else if (regs.FLAGS & F_CARRY && err != 0) {
+;     err = GetExtendedError()
+;     regs.FLAGS &= F_CARRY
+; }
+;
+; return err
+;
 		.DATA
 FuncVFAT_T	DB	39h, 3Ah, 3Bh, 3Ch, 3Dh, 41h, 43h
 		DB	47h, 4Eh, 4Fh, 56h, 5Bh, 60h, 6Ch
@@ -1341,14 +1476,18 @@ Intr21		PROC	FAR
 		JE	@@Func36
 		JA	@@NewFunc
 		INT	21h
-		CMP	AL,0FFh
-		CMC
+		CMP	AL,0FFh			; DOS 1.X style error
+		CMC				; set CARRY flag
 		JMP	@@CheckErr
-  @@Func36:	INT	21h
-		CMP	AX,WORD PTR 0FFFFh
-		CMC
+
+  @@Func36:
+		INT	21h			; GetFreeSpace()
+		CMP	AX,WORD PTR 0FFFFh	; invalid drive error
+		CMC				; set CARRY flag
 		JMP	@@CheckErr
-  @@NewFunc:	PUSH	ES			; DOS 7.0 style functions
+
+  @@NewFunc:
+		PUSH	ES			; LFN functions
 		PUSH	DI
 		PUSH	CX
 		PUSH	AX
@@ -1370,84 +1509,110 @@ Intr21		PROC	FAR
 		PUSH	DX
 		PUSH	BX
 		PUSH	AX
-		CMP	AH,3Ch			; DOS 7.0 create file
+		CMP	AH,3Ch			; creat()
 		JNE	@@Func3D
 		MOV	AX,1202h
-		JMP	@@NewOpen
-  @@Func3D:	CMP	AH,3Dh			; DOS 7.0 open file
+		JMP	@@LFN_xcreat
+
+  @@Func3D:
+		CMP	AH,3Dh			; open()
 		JNE	@@Func41
 		MOV	AH,1
-		JMP	@@NewOpen
-  @@Func41:	CMP	AH,41h			; DOS 7.0 delete file
+		JMP	@@LFN_xcreat
+
+  @@Func41:
+		CMP	AH,41h			; unlink()
 		JNE	@@Func43
 		XOR	SI,SI
-  @@Func43:	CMP	AH,43h			; DOS 7.0 attributes
+
+  @@Func43:
+		CMP	AH,43h			; stat()/chmod()
 		JNE	@@Func4E
 		MOV	BL,AL
-  @@Func4E:	CMP	AH,4Eh			; DOS 7.0 find first
+
+  @@Func4E:
+		CMP	AH,4Eh			; FindFirst()
 		JNE	@@Func4F
 		CALL	CloseFindFile
 		JMP	@@FuncFind
-  @@Func4F:	CMP	AH,4Fh			; DOS 7.0 find next
+
+  @@Func4F:
+		CMP	AH,4Fh			; FindNext()
 		JNE	@@Func60
-  @@FuncFind:	MOV	ES,CS:DataSegment
+
+  @@FuncFind:
+		MOV	ES,CS:DataSegment
 		MOV	DI,OFFSET FindData
 		MOV	BX,ES:FindHandle
 		MOV	SI,1
-  @@Func60:	CMP	AH,60h			; DOS 7.0 canonize name
+
+  @@Func60:
+		CMP	AH,60h			; truename()
 		JNE	@@Func5B
 		XOR	CX,CX
-  @@Func5B:	CMP	AH,5Bh			; DOS 7.0 create new file
-		JNE	@@NewStyle
-		MOV	AX,1002h
-  @@NewOpen:	MOV	SI,DX
+
+  @@Func5B:
+		CMP	AH,5Bh			; CreatNew()
+		JNE	@@LFN
+		MOV	AX,1002h		; flags = O_CREAT, mode = RW
+
+  @@LFN_xcreat:
+		MOV	SI,DX
 		MOV	DL,AH
-		MOV	DH,0
+		MOV	DH,0			; flags
 		MOV	BL,AL
-		MOV	BH,0
+		MOV	BH,0			; mode
 		MOV	AH,6Ch
-  @@NewStyle:	MOV	AL,AH			; DOS 7.0 call
+
+  @@LFN:
+		MOV	AL,AH			; LFN call
 		MOV	AH,71h
 		STC
 		INT	21h
 		PUSHF
 IF	__TASMIDENT__
 		JC	@F
-		JMP	NEAR PTR @@NewFuncOk
+		JMP	NEAR PTR @@LFNOk
   @@:
 ELSE
-		JNC	@@NewFuncOk
+		JNC	@@LFNOk
 ENDIF
 		CMP	AX,7100h
-		JNE	@@NewFuncOk
-		POPF	
+		JNE	@@LFNOk
+		POPF
 		POP	AX
 		POP	BX
 		POP	DX
 		POP	SI
 		POP	DI
 		POP	ES
-  @@OldStyle:	CMP	AH,4Eh			; DOS 3.X style function
+
+  @@OldStyle:
+		CMP	AH,4Eh			; DOS 3.X style function
 		JE	@@OldFind
 		CMP	AH,4Fh
 		JE	@@OldFind
 		STC
 		INT	21h
 		JMP	@@CheckErr
-  @@OldFind:	PUSH	DS			; DOS 3.X find
+
+  @@OldFind:
+		PUSH	DS			; DOS 3.X find
 		PUSH	DX
 		PUSH	AX
 		MOV	DS,CS:DataSegment
 		MOV	AL,0
 		CMP	AH,4Eh
 		JNE	@@LabelFlag
-		TEST	CL,8
+		TEST	CL,fa_LABEL
 		JZ	@@LabelFlag
 		MOV	AL,1
-  @@LabelFlag:	MOV	BYTE PTR DS:FindData[0],AL
+
+  @@LabelFlag:
+		MOV	BYTE PTR DS:FindData[0],AL
 		MOV	DX,OFFSET DTA
 		MOV	AH,1Ah
-		INT	21h
+		INT	21h			; SetDTA()
 		POP	AX
 		POP	DX
 		POP	DS
@@ -1461,43 +1626,53 @@ ENDIF
 		MOV	DS,CS:DataSegment
 		MOV	DS:FindData.WinLongName,0
 		CMP	BYTE PTR DS:FindData[0],0
-		JNZ	@@OldFindEx
-		TEST	DS:DTA.FilAttr,18h
-		JNZ	@@OldFindEx
+		JNZ	@@OldFindExit
+		TEST	DS:DTA.FilAttr,fa_LABEL OR fa_DIR
+		JNZ	@@OldFindExit
 		CMP	DS:ConvCase,0
-		JE	@@OldFindEx
+		JE	@@OldFindExit
 		MOV	SI,OFFSET DTA.FilName
 		MOV	CX,13
-  @@OldFindCnv:	MOV	AL,DS:[SI]
+
+  @@OldFindCnv:
+		MOV	AL,DS:[SI]
 		CALL	LowCase
 		MOV	DS:[SI],AL
 		INC	SI
 		LOOP	@@OldFindCnv
-  @@OldFindEx:	POP	AX
+
+  @@OldFindExit:
+		POP	AX
 		POP	CX
 		POP	SI
 		POP	DS
 		POPF
 		JMP	@@CheckErr
-  @@NewFuncOk:	POPF				; DOS 7.0 analyse results
-		POP	BX
+
+  @@LFNOk:
+		POPF				; LFN analyse results
+		POP	BX			; regs.AX
 		PUSHF
-		JC	@@ExitFunc
-		CMP	BH,43h			; DOS 7.0 get/set attr/date/time
-		JNE	@@ChkNewFind
+		JC	@@LFNEpilogue
+		CMP	BH,43h			; LFN get/set attr/date/time
+		JNE	@@ChkLFNFind
 		POPF
 		POP	BX
 		POP	DX
-		POP	ES
+		POP	ES			; keep regs.SI, regs.DI
 		POP	ES
 		POP	ES
 		JMP	@@CheckErr
-  @@ChkNewFind:	CMP	BH,4Fh			; DOS 7.0 find convert
+
+  @@ChkLFNFind:
+		CMP	BH,4Fh			; LFN find convert
 		JE	@@FindResult
 		CMP	BH,4Eh
-		JNE	@@ExitFunc
+		JNE	@@LFNEpilogue
 		MOV	ES:FindHandle,AX
-  @@FindResult:	PUSH	DS
+
+  @@FindResult:
+		PUSH	DS
 		PUSH	AX
 		PUSH	ES
 		POP	DS
@@ -1511,25 +1686,31 @@ ENDIF
 		MOV	AX,DS:FindData.WinSize.Hi
 		MOV	DS:DTA.FilSize.Hi,AX
 		MOV	AX,DS:FindData.WinAttr.Lo
-		AND	AL,3Fh
+		AND	AL,fa_RO OR fa_HIDDEN OR fa_SYSTEM OR fa_LABEL OR fa_DIR OR fa_ARCHIVE
 		MOV	DS:DTA.FilAttr,AL
 		MOV	BL,AL
 		MOV	SI,OFFSET FindData.WinLongName
-		MOV	DI,OFFSET FindData.WinName
+		MOV	DI,OFFSET FindData.WinShortName
 		CMP	BYTE PTR DS:[DI],0
 		JNE	@@CompNames
 		PUSH	SI
 		PUSH	DI
-  @@MoveShort:	LODSB
-		TEST	BL,8
+
+  @@MoveShort:
+		LODSB
+		TEST	BL,fa_LABEL
 		JNZ	@@SaveChar
 		CALL	UpCase
-  @@SaveChar:	STOSB
+
+  @@SaveChar:
+		STOSB
 		CMP	AL,0
 		JNE	@@MoveShort
 		POP	DI
 		POP	SI
-  @@CompNames:	PUSH	DI
+
+  @@CompNames:
+		PUSH	DI
 		PUSH	SI
 		PUSH	CX
 		CALL	StrLen
@@ -1539,34 +1720,42 @@ ENDIF
 		POP	DI
 		JE	@@MoveName
 		MOV	SI,DI
-  @@MoveName:	MOV	DI,OFFSET DTA.FilName
+
+  @@MoveName:
+		MOV	DI,OFFSET DTA.FilName
 		PUSH	SI
 		PUSH	DI
 		CALL	strcpy
 		POP	SI
-		TEST	BL,18h
+		TEST	BL,fa_LABEL OR fa_DIR
 		JNZ	@@SkipConv
 		CMP	DS:ConvCase,0
 		JE	@@SkipConv
 		CALL	UpPathLowFname
-  @@SkipConv:	POP	SI
+
+  @@SkipConv:
+		POP	SI
 		POP	AX
 		POP	DS
 		CMP	SI,OFFSET FindData.WinLongName
-		JNE	@@ExitFunc
+		JNE	@@LFNEpilogue
 		MOV	BYTE PTR ES:[SI],0
-  @@ExitFunc:	POPF
+
+  @@LFNEpilogue:
+		POPF
 		POP	BX
 		POP	DX
 		POP	SI
 		POP	DI
 		POP	ES
-  @@CheckErr:	PUSHF				; Get error code
+
+  @@CheckErr:
+		PUSHF				; Get error code
 		PUSH	DS
 		MOV	DS,CS:DataSegment
 		CMP	DS:ErrDat,0
 		POP	DS
-		JNE	@@Error
+		JNE	@@CritError
 		POPF
 		JNC	@@Exit
 		CMP	AL,1
@@ -1581,7 +1770,7 @@ ENDIF
 		PUSH	BX
 		XOR	BX,BX
 		MOV	AH,59h
-		INT	21h
+		INT	21h			; GetExtendedError()
 		POP	BX
 		POP	CX
 		POP	DX
@@ -1592,7 +1781,9 @@ ENDIF
 		POP	DS
 		STC
 		RET
-  @@Error:	POPF
+
+  @@CritError:
+		POPF
 		MOV	AX,ErrFail
 		STC
   @@Exit:	RET
