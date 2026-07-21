@@ -529,7 +529,7 @@ Quote		DB	?			; Quote next character
 BarPrev		DB	?			; Previous Key Bar
 OldCurDrv	DB	?			; Current drive when enter
 SftErr		DB	?			; Shift error boxes down
-BlocEr		DB	?			; Disable critical error messages
+BlockCritErrBox	DB	?			; Disable critical error messages
 PathEr		DB	?			; Error when reading current path
 RescanTree	DB	?			; Rescan tree
 MoveCurFlag	DB	?			; Cursor moved (Auto CD, Quick View)

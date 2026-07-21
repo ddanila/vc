@@ -1811,10 +1811,10 @@ F62_20:		CMP	AL,0
 		MOV	AX,440Fh
 		INT	21h
 		MOV	SI,OFFSET WinShortPath[3]
-		MOV	ES:BlocEr,1
+		MOV	ES:BlockCritErrBox,1
 		MOV	AH,47h
 		CALL	Intr21			; getcwd()
-		MOV	ES:BlocEr,0
+		MOV	ES:BlockCritErrBox,0
 		JNC	F62_21
 		MOV	AL,DL
 		ADD	AL,'A'-1
@@ -1843,7 +1843,7 @@ F62_23:		MOV	AH,0Eh
 F62_24:		POP	DS
 		MOV	DS:WinTyp,p_File
 		MOV	DS:ChgFlg,1
-		MOV	ES:BlocEr,1
+		MOV	ES:BlockCritErrBox,1
 		MOV	AX,DS:DiskBuf
 		MOV	DS:EndBuf,AX
 		MOV	DS:FileCur,0

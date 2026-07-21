@@ -680,10 +680,10 @@ FindProc	ENDP
 ;---------------------------------------------------------------
 		.CODE
 FindString	PROC	NEAR
-		MOV	DS:BlocEr,2
+		MOV	DS:BlockCritErrBox,2
 		MOV	AL,40h
 		CALL	OpenFil
-		MOV	DS:BlocEr,0
+		MOV	DS:BlockCritErrBox,0
 		JNC	@@BufSize
 		CMP	DS:ErrDat,2
 		JNE	@@Error

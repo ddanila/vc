@@ -1019,7 +1019,7 @@ InitVars	PROC	NEAR
 		MOV	DS:ModeFlag,AL		; ModeFlag
 		MOV	DS:Quote,AL		; Quote
 		MOV	DS:SftErr,AL		; SftErr
-		MOV	DS:BlocEr,AL		; BlocEr
+		MOV	DS:BlockCritErrBox,AL	; BlocEr
 		MOV	DS:RescanTree,AL	; RescanTree
 		MOV	DS:WinLeave,AL		; WinLeave
 		MOV	DS:PanelSize1,AL	; PanelSize1
@@ -1354,9 +1354,9 @@ Panels06:	CALL	BegBX			; Active panel
 		MOV	CL,0
 		CMP	DS:ChgFlg,CL
 		JE	Panels08
-Panels07:	MOV	ES:BlocEr,1
+Panels07:	MOV	ES:BlockCritErrBox,1
 		CALL	GetPath
-		MOV	ES:BlocEr,0
+		MOV	ES:BlockCritErrBox,0
 Panels08:	CALL	PutPrompt
 		XOR	AX,AX
 		CMP	DS:Visible,AL
@@ -1409,9 +1409,9 @@ Panels10:	OR	CL,CL
 		MOV	AL,1
 Panels11:	CMP	DS:WinTyp,p_File
 		JNE	Panels12
-		MOV	ES:BlocEr,1
+		MOV	ES:BlockCritErrBox,1
 Panels12:	CALL	ReadDir
-		MOV	ES:BlocEr,0
+		MOV	ES:BlockCritErrBox,0
 		JNC	Panels14
 Panels13:	MOV	AH,1
 		OR	CL,CL
@@ -1453,9 +1453,9 @@ Panels21:	CALL	Panel
 		JE	Panels24
 Panels22:	CALL	Panels40
 		JMP	Panels25
-Panels23:	MOV	ES:BlocEr,1
+Panels23:	MOV	ES:BlockCritErrBox,1
 Panels24:	CALL	ReadDir
-		MOV	ES:BlocEr,0
+		MOV	ES:BlockCritErrBox,0
 		JNC	Panels26
 Panels25:	MOV	AH,1
 Panels26:	CALL	PutPath
@@ -1477,9 +1477,9 @@ Panels26:	CALL	PutPath
 		SUB	AL,'A'-1
 		MOV	DL,AL
 		MOV	AH,47h
-		MOV	ES:BlocEr,1
+		MOV	ES:BlockCritErrBox,1
 		CALL	Intr21
-		MOV	ES:BlocEr,0
+		MOV	ES:BlockCritErrBox,0
 		JC	Panels27
 		MOV	CL,0
 Panels27:	MOV	AL,0
@@ -1649,10 +1649,10 @@ Func06:		ADD	SI,AX
 		REPE	CMPSB
 		JE	Func10
 		CALL	HidCur
-		MOV	ES:BlocEr,1
+		MOV	ES:BlockCritErrBox,1
 		MOV	DX,OFFSET IniFile
 		CALL	SaveSet
-		MOV	ES:BlocEr,0
+		MOV	ES:BlockCritErrBox,0
 Func10:		CALL	Cursor1			; Set cursor
 		MOV	DS,ES:WCBcrn
 		CMP	ES:MoveCurFlag,0	; Auto CD / Quick View

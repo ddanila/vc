@@ -134,10 +134,10 @@ F35_ChkTarget	PROC	NEAR	USES	CX DX
 		XOR	DI,DI
 		CMP	AL,0
 		JE	@@SetDrive
-		MOV	DS:BlocEr,2
+		MOV	DS:BlockCritErrBox,2
 		MOV	AL,40h
 		CALL	OpenFil
-		MOV	DS:BlocEr,0
+		MOV	DS:BlockCritErrBox,0
 		JNC	@@GetSize
 		CMP	AX,WORD PTR ErrFail
 		JNE	@@SetDrive
@@ -742,11 +742,11 @@ F35_MoveDir	PROC	NEAR	USES	DX DI
 		OR	CL,CL
 		JE	@@Error
 		PUSH	AX
-		MOV	DS:BlocEr,1
+		MOV	DS:BlockCritErrBox,1
 		MOV	DX,OFFSET DosShortPath
 		MOV	AH,3Bh
 		CALL	Intr21			; chdir()
-		MOV	DS:BlocEr,0
+		MOV	DS:BlockCritErrBox,0
 		POP	AX
   @@Error:	STC
   @@Exit:	RET

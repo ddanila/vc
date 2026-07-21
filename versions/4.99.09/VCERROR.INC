@@ -77,7 +77,7 @@ CriticalError	PROC	FAR
 		MOV	ES,DS:DataSegment
 		CMP	ES:ErrDat,0
 		JNZ	@@Abort1
-		CMP	ES:BlocEr,1
+		CMP	ES:BlockCritErrBox,1
 		JZ	@@Abort
 		MOV	DS,BP
 		MOV	BX,SI
@@ -156,7 +156,7 @@ CriticalError	PROC	FAR
 		MOV	BX,OFFSET RtAb_S
 		MOV	DX,OFFSET RtAb_D
 		MOV	CL,-8
-		CMP	DS:BlocEr,1
+		CMP	DS:BlockCritErrBox,1
 		JBE	@@Dialog
 		MOV	BX,OFFSET RtSkAb_S
 		MOV	DX,OFFSET RtSkAb_D
@@ -197,7 +197,7 @@ CriticalError	PROC	FAR
 		JNE	@@Abort
 		MOV	AH,0
 		JMP	@@Exit
-  @@Skip:	CMP	DS:BlocEr,1
+  @@Skip:	CMP	DS:BlockCritErrBox,1
 		JBE	@@Abort
 		MOV	DS:ErrDat,2
 		CMP	AL,1

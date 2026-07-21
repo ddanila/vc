@@ -1651,7 +1651,7 @@ ELSE
 ENDIF
 		MOV	ES:[DI].Lo,AX
 		MOV	ES:[DI].Hi,0
-		MOV	DS:BlocEr,1
+		MOV	DS:BlockCritErrBox,1
 		PUSH	DS
 		PUSH	ES
 		PUSH	DI
@@ -1667,7 +1667,7 @@ ENDIF
 		POP	DI
 		POP	ES
 		POP	DS
-		MOV	DS:BlocEr,0
+		MOV	DS:BlockCritErrBox,0
 		JC	@@Exit
 		CMP	ES:[DI].Lo,4
 		JBE	@@Error

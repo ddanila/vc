@@ -240,9 +240,9 @@ F87_00		PROC	NEAR
 		MOV	SI,OFFSET AttrFile_B
 		MOV	BP,OFFSET AttrFileEA_B
 F87_01:		POP	CX
-		MOV	DS:BlocEr,1
+		MOV	DS:BlockCritErrBox,1
 		CALL	F87_ChkEAs
-		MOV	DS:BlocEr,0
+		MOV	DS:BlockCritErrBox,0
 		JNC	F87_02
 		MOV	BP,SI
 F87_02:		MOV	DX,BX

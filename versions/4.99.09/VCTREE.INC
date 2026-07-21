@@ -388,10 +388,10 @@ AddTreeEntry	PROC	FAR	USES	AX BX CX DX
 		DEC	SI
 		MOV	BL,0
 		XCHG	BL,ES:[SI]
-		MOV	ES:BlocEr,1
+		MOV	ES:BlockCritErrBox,1
 		MOV	AX,4300h
 		CALL	Intr21			; stat()
-		MOV	ES:BlocEr,0
+		MOV	ES:BlockCritErrBox,0
 		MOV	ES:[SI],BL
 		JNC	@@Attrib
 		MOV	CL,0
@@ -1633,10 +1633,10 @@ SaveTreeFile	PROC	NEAR
 		JNE	@@Error
 		MOV	CX,BX
   @@OpenFile:	OR	CL,fa_ARCHIVE
-		MOV	ES:BlocEr,1
+		MOV	ES:BlockCritErrBox,1
 		MOV	AH,3Ch
 		CALL	Intr21			; creat()
-		MOV	ES:BlocEr,0
+		MOV	ES:BlockCritErrBox,0
 		JNC	@@WriteFile
 		CMP	AX,WORD PTR ErrFail
 		JNE	@@Error

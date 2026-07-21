@@ -324,7 +324,7 @@ ReadDir		PROC	FAR	USES	AX BX CX DX SI DI ES
 		CALL	CutPath
 		MOV	DS:EAPathOffset,SI
 
-  @@SaveEntry:	MOV	DS:BlocEr,0		; Save file entry
+  @@SaveEntry:	MOV	DS:BlockCritErrBox,0		; Save file entry
 		MOV	SI,OFFSET DTA.FilName
 		TEST	DS:DTA.FilAttr,fa_DIR
 		JZ	@@SaveName
@@ -422,7 +422,7 @@ ENDIF
 		XOR	AX,AX
 		MOV	DS:FileCur,AX
 		MOV	DS:FileFirst,AX
-		MOV	ES:BlocEr,AL
+		MOV	ES:BlockCritErrBox,AL
 
 		MOV	DS:ExtFile,0		; Read local extension file
 		CMP	DS:ArcPnt,0

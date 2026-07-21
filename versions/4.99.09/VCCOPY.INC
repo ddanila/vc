@@ -1166,10 +1166,10 @@ C00_07:		LODSB				; Check mask
 		JNE	C00_07
 		CALL	ChgDisk			; Check device
 		JC	C00_72
-		MOV	DS:BlocEr,1
+		MOV	DS:BlockCritErrBox,1
 		MOV	AL,40h
 		CALL	OpenFil
-		MOV	DS:BlocEr,0
+		MOV	DS:BlockCritErrBox,0
 		JC	C00_09
 		PUSH	DX
 		MOV	BX,AX
@@ -1679,10 +1679,10 @@ C20_03:		CMP	DS:CopySplit,0
 		MOV	DX,OFFSET LineBuf1
 		CALL	ChgDisk
 		JC	C00_72
-		MOV	DS:BlocEr,2
+		MOV	DS:BlockCritErrBox,2
 		MOV	AL,40h
 		CALL	OpenFil
-		MOV	DS:BlocEr,0
+		MOV	DS:BlockCritErrBox,0
 		JNC	C20_04
 		CMP	DS:ErrDat,2
 		JE	C00_70
@@ -1932,10 +1932,10 @@ C20_24:		AND	CX,fa_HIDDEN OR fa_SYSTEM OR fa_ARCHIVE
 		JC	C20_29
 		MOV	DS:GroupChg,1
 C20_25:		MOV	DI,DX
-		MOV	DS:BlocEr,2
+		MOV	DS:BlockCritErrBox,2
 		MOV	AH,3Ch
 		CALL	F35_FuncShort
-		MOV	DS:BlocEr,0
+		MOV	DS:BlockCritErrBox,0
 		JNC	C20_26
 		CMP	DS:ErrDat,2
 		JE	C20_81
@@ -2017,10 +2017,10 @@ C20_32:		AND	CL,NOT fa_RO
 		CALL	Intr21
 		JC	C20_29
 		MOV	DS:GroupChg,1
-C20_33:		MOV	DS:BlocEr,2
+C20_33:		MOV	DS:BlockCritErrBox,2
 		MOV	AL,12h
 		CALL	OpenFil
-		MOV	DS:BlocEr,0
+		MOV	DS:BlockCritErrBox,0
 		JNC	C20_34
 		CMP	DS:ErrDat,2
 		JNE	C20_29
@@ -2316,7 +2316,7 @@ C20_82:		MOV	AX,100h			; Terminate
 C20_83:		PUSH	AX
 		PUSH	ES
 		POP	DS
-		MOV	DS:BlocEr,1
+		MOV	DS:BlockCritErrBox,1
 		MOV	BX,DS:CopyHandle2
 		OR	BX,BX
 		JE	C20_84
@@ -2331,7 +2331,7 @@ C20_84:		MOV	BX,DS:CopyHandle1
 		JE	C20_85
 		MOV	AH,3Eh
 		CALL	Intr21			; close()
-C20_85:		MOV	DS:BlocEr,0
+C20_85:		MOV	DS:BlockCritErrBox,0
 		POP	AX
 		JMP	C00_81
 
@@ -2672,7 +2672,7 @@ C30_28:		MOV	DS,DS:WorkBuffer
 		PUSH	ES
 		POP	DS
 		JBE	C30_30
-		MOV	DS:BlocEr,1
+		MOV	DS:BlockCritErrBox,1
 		MOV	DI,OFFSET CopyBufEAs
 		MOV	SI,DX
 		MOV	DX,2
@@ -2680,7 +2680,7 @@ C30_28:		MOV	DS,DS:WorkBuffer
 		MOV	BX,0FFFFh
 		MOV	AX,5703h
 		CALL	Intr21			; DosSetPathInfo() [OS/2]
-		MOV	DS:BlocEr,0
+		MOV	DS:BlockCritErrBox,0
 C30_30:		CALL	F35_SaveTarget
 		JC	C00_72
 		MOV	BX,DS:GroupTree2	; Update target TREEINFO
