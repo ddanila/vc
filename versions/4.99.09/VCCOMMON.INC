@@ -1328,6 +1328,8 @@ GetFS		ENDP
 ;	Int 21h with extended error
 ;---------------------------------------------------------------
 ;
+;#define ERR -1
+;
 ; func = regs.AH
 ; subfunc = regs.AL
 ; saveregs = regs
@@ -1335,16 +1337,10 @@ GetFS		ENDP
 ;
 ; if (func < 0x36) { // DOS 1.x error reporting
 ;     intdos(&regs, &regs)
-;     if (regs.AL == 0xff) {
-;         regs.FLAGS |= F_CARRY
-;         err = -1
-;     }
+;     if (regs.AL == 0xff) err = ERR
 ; } else if (func == 0x36) {
 ;     intdos(&regs, &regs)
-;     if (regs.AX == 0xffff) {
-;         regs.FLAGS |= F_CARRY
-;	      err = -1
-;     }
+;     if (regs.AX == 0xffff) err = ERR
 ; } else { // DOS 2.x+ error reporting (Carry flag set)
 ;     switch (func) { // try LFN variant for file functions first
 ;       case 0x39: // mkdir()
@@ -1394,8 +1390,7 @@ GetFS		ENDP
 ;         } else if (func == 0x60) { // truename()
 ;             regs.CX = 0 // truename subfunc
 ;         }
-;         regs.FLAGS |= F_CARRY // error by default
-;         if (intdos(&regs, &regs) != -1 || regs.AX != 0x7100) { // success
+;         if ((err = intdos(&regs, &regs)) != ERR && regs.AX != 0x7100) { // success
 ;             if (func == 0x43) { // stat()/chmod()
 ;                 saveregs.SI = regs.SI
 ;                 saveregs.DI = regs.DI
@@ -1445,7 +1440,6 @@ GetFS		ENDP
 ;         if (func == 0x4e || func == 0x4f) { // FindFirst/Next
 ;             f_label = (func == 0x4e && regs.CL & fa_LABEL) ? true : false
 ;             SetDTA(DTA)
-;             regs.FLAGS |= F_CARRY // error by default
 ;             err = intdos(&regs, &regs)
 ;             FindData.WinLongName[0] = '\0'
 ;             if (ConvCase && !f_label && // don't lowercase volume label
@@ -1454,17 +1448,17 @@ GetFS		ENDP
 ;                 for(i = 0; i < 14; i++) DTA.FilName[i] = LowCase(DTA.FilName[i])
 ;             }
 ;         } else { // other DOS functions
-;             regs.FLAGS |= F_CARRY // error by default
 ;             err = intdos(&regs, &regs)
 ;         }
 ;     }
 ; }
 ;
 ; if (ErrDat) {
-;     err = ErrFail
+;     err = CRITERR_FAIL
 ;     regs.FLAGS |= F_CARRY
-; } else if (regs.FLAGS & F_CARRY && err != 0) {
+; } else if (err == ERR) {
 ;     err = GetExtendedError()
+;     regs.FLAGS |= F_CARRY
 ; }
 ;
 ; return err
