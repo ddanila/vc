@@ -1328,18 +1328,20 @@ GetFS		ENDP
 ;	Int 21h with extended error
 ;---------------------------------------------------------------
 ;
+;#define SUCCESS 0
 ;#define ERR -1
 ;
 ; func = regs.AH
 ; subfunc = regs.AL
 ; saveregs = regs
+; err = SUCCESS
 ; ErrDat = 0
 ;
-; if (func < 0x36) { // DOS 1.x error reporting
-;     intdos(&regs, &regs)
+; if (func < 0x36) { // DOS 1.x error reporting (no Carry flag on error)
+;     (void)intdos(&regs, &regs)
 ;     if (regs.AL == 0xff) err = ERR
 ; } else if (func == 0x36) {
-;     intdos(&regs, &regs)
+;     (void)intdos(&regs, &regs)
 ;     if (regs.AX == 0xffff) err = ERR
 ; } else { // DOS 2.x+ error reporting (Carry flag set)
 ;     switch (func) { // try LFN variant for file functions first
@@ -1390,7 +1392,7 @@ GetFS		ENDP
 ;         } else if (func == 0x60) { // truename()
 ;             regs.CX = 0 // truename subfunc
 ;         }
-;         if ((err = intdos(&regs, &regs)) != ERR && regs.AX != 0x7100) { // success
+;         if ((err = intdos(&regs, &regs)) != ERR || regs.AX != 0x7100) { // success
 ;             if (func == 0x43) { // stat()/chmod()
 ;                 saveregs.SI = regs.SI
 ;                 saveregs.DI = regs.DI
@@ -1445,7 +1447,7 @@ GetFS		ENDP
 ;             if (ConvCase && !f_label && // don't lowercase volume label
 ;                  // ignore Find calls used to calculate directory size
 ;                  (DTA.FilAttr & (fa_LABEL | fa_DIR)) == 0) {
-;                 for(i = 0; i < 14; i++) DTA.FilName[i] = LowCase(DTA.FilName[i])
+;                 for(i = 0; i < 13; i++) DTA.FilName[i] = LowCase(DTA.FilName[i])
 ;             }
 ;         } else { // other DOS functions
 ;             err = intdos(&regs, &regs)

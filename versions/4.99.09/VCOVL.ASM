@@ -1019,7 +1019,7 @@ InitVars	PROC	NEAR
 		MOV	DS:ModeFlag,AL		; ModeFlag
 		MOV	DS:Quote,AL		; Quote
 		MOV	DS:SftErr,AL		; SftErr
-		MOV	DS:BlockCritErrBox,AL	; BlocEr
+		MOV	DS:BlockCritErrBox,AL	; BlockCritErrBox
 		MOV	DS:RescanTree,AL	; RescanTree
 		MOV	DS:WinLeave,AL		; WinLeave
 		MOV	DS:PanelSize1,AL	; PanelSize1
