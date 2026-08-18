@@ -135,6 +135,29 @@ static int region_chars_equal(const struct screen_snapshot *a,
   return 1;
 }
 
+static int region_cells_equal(const struct screen_snapshot *a,
+                              const struct screen_snapshot *b,
+                              int first_row, int last_row,
+                              int first_col, int last_col) {
+  int row, col;
+  for (row = first_row; row <= last_row; ++row)
+    for (col = first_col; col <= last_col; ++col) {
+      int index = row * SCREEN_COLS + col;
+      if (index >= a->count || index >= b->count ||
+          a->cells[index] != b->cells[index])
+        return 0;
+    }
+  return 1;
+}
+
+static int row_attrs_are(const struct screen_snapshot *screen, int row,
+                         int first_col, int last_col, unsigned char attr) {
+  int col;
+  for (col = first_col; col <= last_col; ++col)
+    if (cell_attr(screen, row, col) != attr) return 0;
+  return 1;
+}
+
 static int hidden_panel_is_dos_blank(const struct screen_snapshot *screen) {
   int row, col;
   for (row = 0; row <= 22; ++row)
@@ -146,7 +169,8 @@ static int hidden_panel_is_dos_blank(const struct screen_snapshot *screen) {
 }
 
 static void run_tests(void) {
-  struct screen_snapshot initial, both, hidden, restored, switched, typed;
+  struct screen_snapshot initial, both, moved, moved_back;
+  struct screen_snapshot hidden, restored, switched, typed;
 
   capture(&initial);
   check(initial.count == 25 * SCREEN_COLS, "captured all 25 text rows");
@@ -165,6 +189,26 @@ static void run_tests(void) {
   check(panel_attributes_are_exact(&both, 0, 0) &&
         panel_attributes_are_exact(&both, 40, 1),
         "inactive and active panel attributes are distinct and exact");
+
+  kviktest_send_key(KEY_DOWN);
+  usleep(300000);
+  capture(&moved);
+  check(region_cells_equal(&both, &moved, 1, 22, 0, 39),
+        "in-page Down leaves every inactive-panel cell untouched");
+  check(region_chars_equal(&both, &moved, 0, 20),
+        "in-page Down leaves frames, headings, and file characters intact");
+  check(row_attrs_are(&moved, 2, 41, 52, ATTR_PANEL) &&
+        row_attrs_are(&moved, 3, 41, 52, ATTR_CURSOR),
+        "in-page Down moves cursor attributes from old to new file");
+
+  kviktest_send_key(KEY_UP);
+  usleep(300000);
+  capture(&moved_back);
+  check(region_cells_equal(&both, &moved_back, 1, 22, 0, 79),
+        "in-page Up restores all non-clock panel cells exactly");
+  check(panel_attributes_are_exact(&moved_back, 0, 0) &&
+        panel_attributes_are_exact(&moved_back, 40, 1),
+        "in-page Up restores the original active cursor attributes");
 
   kviktest_send_key(0x180f);  /* Ctrl+O: temporarily hide both panels. */
   usleep(700000);
@@ -200,6 +244,8 @@ static void run_tests(void) {
         "command entry appears at the exact prompt position");
   check(panel_frame_is_exact(&typed, 0) && panel_frame_is_exact(&typed, 40),
         "command entry preserves both exact panel frames");
+  check(region_cells_equal(&switched, &typed, 1, 22, 0, 79),
+        "command entry leaves every non-clock panel cell untouched");
 
   kviktest_send_key(KEY_ESC);
   check(kviktest_wait_for_text(23, 0, "C:\\>", 2000),
