@@ -186,6 +186,17 @@ static int panel_frame_cells_equal(const struct screen_snapshot *a,
            b->cells[21 * SCREEN_COLS + base + 39];
 }
 
+static int region_has_text(const struct screen_snapshot *screen,
+                           int first_row, int last_row,
+                           int first_col, int last_col, const char *text) {
+  int row, col;
+  size_t length = strlen(text);
+  for (row = first_row; row <= last_row; ++row)
+    for (col = first_col; col + (int)length - 1 <= last_col; ++col)
+      if (row_text_is(screen, row, col, text)) return 1;
+  return 0;
+}
+
 static int cursor_slot(const struct screen_snapshot *screen, int base) {
   int slot;
   for (slot = 0; slot < 54; ++slot) {
@@ -211,6 +222,7 @@ static void run_tests(void) {
   struct screen_snapshot hidden, restored, switched, typed;
   struct screen_snapshot before_scroll, scrolled;
   struct screen_snapshot home, page_down, page_up, end, home_again;
+  struct screen_snapshot refreshed;
 
   capture(&initial);
   check(initial.count == 25 * SCREEN_COLS, "captured all 25 text rows");
@@ -353,6 +365,41 @@ static void run_tests(void) {
     capture(&home_again);
     check(region_cells_equal(&home, &home_again, 1, 24, 0, 79),
           "Home restores the exact non-clock screen from End");
+
+    {
+      char path[1024];
+      FILE *file;
+      snprintf(path, sizeof(path), "%s/AAREFRSH.TXT", g_mount_dir);
+      file = fopen(path, "wb");
+      if (file) {
+        fputs("refresh", file);
+        fclose(file);
+      }
+      check(file != NULL, "Ctrl-R fixture file created while VC is running");
+      kviktest_send_key(0x1312);  /* Ctrl+R */
+      usleep(700000);
+      capture(&refreshed);
+      check(region_has_text(&refreshed, 2, 19, 1, 38, "aarefrsh txt"),
+            "Ctrl-R displays a file added while VC is running");
+      check(panel_frame_cells_equal(&home_again, &refreshed, 0) &&
+            region_cells_equal(&home_again, &refreshed, 1, 22, 40, 79) &&
+            region_cells_equal(&home_again, &refreshed, 23, 23, 0, 79),
+            "Ctrl-R preserves frames, inactive panel, and command row");
+      check(cursor_slot(&refreshed, 0) == 0 &&
+            row_text_is(&refreshed, 21, 1, "aarefrsh.txt"),
+            "Ctrl-R selects the first entry of the rebuilt active list");
+      check(unlink(path) == 0, "Ctrl-R fixture file removed while VC is running");
+      kviktest_send_key(0x1312);  /* Ctrl+R */
+      usleep(700000);
+      capture(&home_again);
+      check(!region_has_text(&home_again, 2, 19, 1, 38, "aarefrsh txt") &&
+            cursor_slot(&home_again, 0) == 0,
+            "Ctrl-R removes a vanished file and keeps a valid first cursor");
+      check(panel_frame_cells_equal(&refreshed, &home_again, 0) &&
+            region_cells_equal(&refreshed, &home_again, 1, 22, 40, 79) &&
+            region_cells_equal(&refreshed, &home_again, 23, 23, 0, 79),
+            "second Ctrl-R preserves frames, inactive panel, and command row");
+    }
   } else {
     check(1, "page-boundary contract skipped for caller-supplied fixture");
   }
