@@ -322,6 +322,36 @@ static int drive_dialog_is_exact(const struct screen_snapshot *screen,
   return 1;
 }
 
+static int filter_dialog_is_exact(const struct screen_snapshot *screen) {
+  static const unsigned char *rows[] = {
+    (const unsigned char *)
+      "\xc9\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd Filter "
+      "\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xbb",
+    (const unsigned char *)"\xba Select files to display \xba",
+    (const unsigned char *)"\xba  Custom:                \xba",
+    (const unsigned char *)"\xba  [x] Hidden files       \xba",
+    (const unsigned char *)"\xba  [ ] Executable files   \xba",
+    (const unsigned char *)
+      "\xc7\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc4"
+      "\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xb6",
+    (const unsigned char *)"\xba   [ Ok ]   [ Cancel ]   \xba",
+    (const unsigned char *)
+      "\xc8\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd"
+      "\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xbc",
+  };
+  int row, col;
+  for (row = 0; row < 8; ++row)
+    for (col = 0; col < 27; ++col) {
+      unsigned char expected_attr = ATTR_DIALOG;
+      if (row == 2 && col >= 11 && col <= 22)
+        expected_attr = ATTR_CURSOR;
+      if (cell_char(screen, 6 + row, 6 + col) != rows[row][col] ||
+          cell_attr(screen, 6 + row, 6 + col) != expected_attr)
+        return 0;
+    }
+  return 1;
+}
+
 static void run_tests(void) {
   struct screen_snapshot initial, both, idle, moved, moved_back;
   struct screen_snapshot hidden, restored, switched, typed;
@@ -331,6 +361,7 @@ static void run_tests(void) {
   struct screen_snapshot left_drive, left_drive_restored;
   struct screen_snapshot right_drive, right_drive_restored;
   struct screen_snapshot before_swap, swapped, swapped_back, both_again;
+  struct screen_snapshot filter, filter_restored;
 
   capture(&initial);
   check(initial.count == 25 * SCREEN_COLS, "captured all 25 text rows");
@@ -563,6 +594,16 @@ static void run_tests(void) {
           panel_attributes_are_exact(&both_again, 0, 1) &&
           panel_attributes_are_exact(&both_again, 40, 0),
           "Ctrl-P restores both panels after swap oracle");
+    kviktest_send_key(0x2106);  /* Ctrl+F: active-panel filter. */
+    usleep(500000);
+    capture(&filter);
+    check(filter_dialog_is_exact(&filter),
+          "Ctrl-F has exact VC 4.05 filter cells and attributes");
+    kviktest_send_key(KEY_ESC);
+    usleep(500000);
+    capture(&filter_restored);
+    check(region_cells_equal(&both_again, &filter_restored, 1, 24, 0, 79),
+          "Escape from Ctrl-F restores every non-clock screen cell");
   } else {
     check(1, "page-boundary contract skipped for caller-supplied fixture");
   }
