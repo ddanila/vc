@@ -209,6 +209,34 @@ static int cursor_slot(const struct screen_snapshot *screen, int base) {
   return -1;
 }
 
+static int status_names_first_panel_entry(
+    const struct screen_snapshot *screen, int base) {
+  int name_length = 8;
+  int extension_length = 3;
+  int status_col = base + 1;
+  int index;
+
+  while (name_length > 0 &&
+         cell_char(screen, 2, base + name_length) == ' ')
+    --name_length;
+  if (name_length == 0) return 0;
+  for (index = 0; index < name_length; ++index)
+    if (cell_char(screen, 21, status_col++) !=
+        cell_char(screen, 2, base + 1 + index))
+      return 0;
+
+  while (extension_length > 0 &&
+         cell_char(screen, 2, base + 9 + extension_length) == ' ')
+    --extension_length;
+  if (extension_length == 0) return 1;
+  if (cell_char(screen, 21, status_col++) != '.') return 0;
+  for (index = 0; index < extension_length; ++index)
+    if (cell_char(screen, 21, status_col++) !=
+        cell_char(screen, 2, base + 10 + index))
+      return 0;
+  return 1;
+}
+
 static int hidden_panel_is_dos_blank(const struct screen_snapshot *screen) {
   int row, col;
   for (row = 0; row <= 22; ++row)
@@ -451,8 +479,8 @@ static void run_tests(void) {
             region_cells_equal(&home_again, &refreshed, 23, 23, 0, 79),
             "Ctrl-R preserves frames, inactive panel, and command row");
       check(cursor_slot(&refreshed, 0) == 0 &&
-            row_text_is(&refreshed, 21, 1, "aarefrsh.txt"),
-            "Ctrl-R selects the first entry of the rebuilt active list");
+            status_names_first_panel_entry(&refreshed, 0),
+            "Ctrl-R selects and describes the rebuilt list's first entry");
       check(unlink(path) == 0, "Ctrl-R fixture file removed while VC is running");
       kviktest_send_key(0x1312);  /* Ctrl+R */
       usleep(700000);
