@@ -13,6 +13,8 @@
 #define ATTR_HEADING 0x1e
 #define ATTR_CURSOR 0x30
 #define ATTR_DOS 0x07
+#define ATTR_DIALOG 0x70
+#define ATTR_DIALOG_HOTKEY 0x7e
 #define KEY_HOME 0x4700
 
 static int have_scroll_fixture;
@@ -217,12 +219,75 @@ static int hidden_panel_is_dos_blank(const struct screen_snapshot *screen) {
   return 1;
 }
 
+static int drive_dialog_is_exact(const struct screen_snapshot *screen,
+                                 int right) {
+  int base = right ? 48 : 9;
+  int width = right ? 23 : 22;
+  int inner = width - 2;
+  int title_at = right ? 5 : 4;
+  int selected_at = right ? 11 : 10;
+  int hotkey_at = 9;
+  int hotkey_length = right ? 5 : 4;
+  int row, col;
+  const char *side = right ? "right" : "left";
+
+  for (row = 6; row <= 9; ++row) {
+    for (col = base; col < base + width; ++col) {
+      unsigned char expected = ATTR_DIALOG;
+      if (row == 7 && col >= base + hotkey_at &&
+          col < base + hotkey_at + hotkey_length)
+        expected = ATTR_DIALOG_HOTKEY;
+      if (row == 8 && col >= base + selected_at - 1 &&
+          col <= base + selected_at + 1)
+        expected = ATTR_CURSOR;
+      if (cell_attr(screen, row, col) != expected) return 0;
+    }
+  }
+  if (cell_char(screen, 6, base) != 0xc9 ||
+      cell_char(screen, 6, base + width - 1) != 0xbb ||
+      cell_char(screen, 7, base) != 0xba ||
+      cell_char(screen, 7, base + width - 1) != 0xba ||
+      cell_char(screen, 8, base) != 0xba ||
+      cell_char(screen, 8, base + width - 1) != 0xba ||
+      cell_char(screen, 9, base) != 0xc8 ||
+      cell_char(screen, 9, base + width - 1) != 0xbc)
+    return 0;
+  for (col = 1; col <= inner; ++col) {
+    unsigned char top = 0xcd;
+    if (col >= title_at && col < title_at + 14)
+      top = (unsigned char)" Drive letter "[col - title_at];
+    if (cell_char(screen, 6, base + col) != top ||
+        cell_char(screen, 9, base + col) != 0xcd)
+      return 0;
+  }
+  for (col = 1; col <= inner; ++col) {
+    unsigned char middle = ' ';
+    int text_at = 2;
+    int text_length = right ? 19 : 18;
+    if (col >= text_at && col < text_at + text_length) {
+      if (col - text_at < 7)
+        middle = (unsigned char)"Choose "[col - text_at];
+      else if (col - text_at < 7 + hotkey_length)
+        middle = (unsigned char)side[col - text_at - 7];
+      else
+        middle = (unsigned char)" drive:"[col - text_at - 7 - hotkey_length];
+    }
+    if (cell_char(screen, 7, base + col) != middle) return 0;
+    if (cell_char(screen, 8, base + col) !=
+        (col == selected_at ? 'C' : ' '))
+      return 0;
+  }
+  return 1;
+}
+
 static void run_tests(void) {
   struct screen_snapshot initial, both, idle, moved, moved_back;
   struct screen_snapshot hidden, restored, switched, typed;
   struct screen_snapshot before_scroll, scrolled;
   struct screen_snapshot home, page_down, page_up, end, home_again;
   struct screen_snapshot refreshed;
+  struct screen_snapshot left_drive, left_drive_restored;
+  struct screen_snapshot right_drive, right_drive_restored;
 
   capture(&initial);
   check(initial.count == 25 * SCREEN_COLS, "captured all 25 text rows");
@@ -400,6 +465,30 @@ static void run_tests(void) {
             region_cells_equal(&refreshed, &home_again, 23, 23, 0, 79),
             "second Ctrl-R preserves frames, inactive panel, and command row");
     }
+
+    kviktest_send_key(0x6800);  /* Alt+F1: left drive chooser. */
+    usleep(500000);
+    capture(&left_drive);
+    check(drive_dialog_is_exact(&left_drive, 0),
+          "Alt-F1 has exact VC 4.05 left drive chooser cells and attributes");
+    kviktest_send_key(KEY_ESC);
+    usleep(500000);
+    capture(&left_drive_restored);
+    check(region_cells_equal(&home_again, &left_drive_restored,
+                             1, 24, 0, 79),
+          "Escape from Alt-F1 restores every non-clock screen cell");
+
+    kviktest_send_key(0x6900);  /* Alt+F2: right drive chooser. */
+    usleep(500000);
+    capture(&right_drive);
+    check(drive_dialog_is_exact(&right_drive, 1),
+          "Alt-F2 has exact VC 4.05 right drive chooser cells and attributes");
+    kviktest_send_key(KEY_ESC);
+    usleep(500000);
+    capture(&right_drive_restored);
+    check(region_cells_equal(&left_drive_restored, &right_drive_restored,
+                             1, 24, 0, 79),
+          "Escape from Alt-F2 restores every non-clock screen cell");
   } else {
     check(1, "page-boundary contract skipped for caller-supplied fixture");
   }
