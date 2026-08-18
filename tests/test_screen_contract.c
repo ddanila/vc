@@ -13,6 +13,9 @@
 #define ATTR_HEADING 0x1e
 #define ATTR_CURSOR 0x30
 #define ATTR_DOS 0x07
+#define KEY_HOME 0x4700
+
+static int have_scroll_fixture;
 
 struct screen_snapshot {
   unsigned short cells[SCREEN_CELLS];
@@ -158,6 +161,31 @@ static int row_attrs_are(const struct screen_snapshot *screen, int row,
   return 1;
 }
 
+static int panel_frame_cells_equal(const struct screen_snapshot *a,
+                                   const struct screen_snapshot *b,
+                                   int base) {
+  int row, col;
+  for (col = base; col < base + 40; ++col)
+    if (a->cells[col] != b->cells[col] ||
+        a->cells[SCREEN_COLS + col] != b->cells[SCREEN_COLS + col] ||
+        a->cells[20 * SCREEN_COLS + col] !=
+          b->cells[20 * SCREEN_COLS + col] ||
+        a->cells[22 * SCREEN_COLS + col] !=
+          b->cells[22 * SCREEN_COLS + col])
+      return 0;
+  for (row = 2; row <= 19; ++row)
+    for (col = 0; col < 4; ++col) {
+      int frame_col = base + col * 13;
+      if (a->cells[row * SCREEN_COLS + frame_col] !=
+          b->cells[row * SCREEN_COLS + frame_col])
+        return 0;
+    }
+  return a->cells[21 * SCREEN_COLS + base] ==
+           b->cells[21 * SCREEN_COLS + base] &&
+         a->cells[21 * SCREEN_COLS + base + 39] ==
+           b->cells[21 * SCREEN_COLS + base + 39];
+}
+
 static int hidden_panel_is_dos_blank(const struct screen_snapshot *screen) {
   int row, col;
   for (row = 0; row <= 22; ++row)
@@ -169,8 +197,9 @@ static int hidden_panel_is_dos_blank(const struct screen_snapshot *screen) {
 }
 
 static void run_tests(void) {
-  struct screen_snapshot initial, both, moved, moved_back;
+  struct screen_snapshot initial, both, idle, moved, moved_back;
   struct screen_snapshot hidden, restored, switched, typed;
+  struct screen_snapshot before_scroll, scrolled;
 
   capture(&initial);
   check(initial.count == 25 * SCREEN_COLS, "captured all 25 text rows");
@@ -189,6 +218,11 @@ static void run_tests(void) {
   check(panel_attributes_are_exact(&both, 0, 0) &&
         panel_attributes_are_exact(&both, 40, 1),
         "inactive and active panel attributes are distinct and exact");
+
+  usleep(1200000);
+  capture(&idle);
+  check(region_cells_equal(&both, &idle, 1, 24, 0, 79),
+        "idle cursor/clock activity leaves all non-clock cells untouched");
 
   kviktest_send_key(KEY_DOWN);
   usleep(300000);
@@ -250,6 +284,86 @@ static void run_tests(void) {
   kviktest_send_key(KEY_ESC);
   check(kviktest_wait_for_text(23, 0, "C:\\>", 2000),
         "Escape clears command entry back to the exact prompt");
+
+  if (have_scroll_fixture) {
+    kviktest_send_key(KEY_HOME);
+    kviktest_send_key(KEY_RIGHT);
+    kviktest_send_key(KEY_RIGHT);
+    usleep(500000);
+    capture(&before_scroll);
+    kviktest_send_key(KEY_RIGHT);
+    usleep(500000);
+    capture(&scrolled);
+    check(panel_frame_cells_equal(&before_scroll, &scrolled, 0),
+          "page-boundary move leaves every active-panel frame cell intact");
+    check(region_cells_equal(&before_scroll, &scrolled, 1, 22, 40, 79),
+          "page-boundary move leaves inactive-panel cells untouched");
+    check(region_cells_equal(&before_scroll, &scrolled, 23, 23, 0, 79),
+          "page-boundary move leaves the command row untouched");
+    check(!region_cells_equal(&before_scroll, &scrolled, 2, 21, 1, 38),
+          "page-boundary move changes the active file/status interior");
+  } else {
+    check(1, "page-boundary contract skipped for caller-supplied fixture");
+  }
 }
 
-TEST_MAIN("test_screen_contract", "coverage_screen_contract.bin")
+static int add_scroll_files(const char *directory) {
+  int index;
+  char path[1024];
+  for (index = 0; index < 60; ++index) {
+    FILE *file;
+    snprintf(path, sizeof(path), "%s/PF%02d.DAT", directory, index);
+    file = fopen(path, "wb");
+    if (!file) return -1;
+    fputc('x', file);
+    fclose(file);
+  }
+  return 0;
+}
+
+int main(int argc, char **argv) {
+  char *fixture_dir = NULL;
+  const char *mount_dir;
+  if (!find_vc_com()) {
+    fprintf(stderr, "SKIP: VC.COM not found\n"); return 0;
+  }
+  if (argc > 1) {
+    mount_dir = argv[1];
+  } else {
+    if (setup_fixtures("tests/fixtures", &fixture_dir) != 0) {
+      fprintf(stderr, "FAIL: could not create fixture dir\n"); return 1;
+    }
+    mount_dir = fixture_dir;
+    if (add_scroll_files(mount_dir) != 0) {
+      fprintf(stderr, "FAIL: could not create scroll fixtures\n");
+      cleanup_fixtures(fixture_dir); return 1;
+    }
+    have_scroll_fixture = 1;
+  }
+  strncpy(g_mount_dir, mount_dir, sizeof(g_mount_dir) - 1);
+  printf("=== test_screen_contract ===\n");
+  printf("VC.COM: %s\n", vc_path);
+  printf("mount:  %s\n", mount_dir);
+  signal(SIGALRM, watchdog_handler);
+  alarm(180);
+  kviktest_coverage_enable();
+  if (kviktest_start(vc_path, mount_dir) != 0) {
+    fprintf(stderr, "FAIL: could not start kvikdos\n");
+    cleanup_fixtures(fixture_dir); return 1;
+  }
+  if (!kviktest_wait_for_text(23, 0, "C:\\>", 15000)) {
+    fprintf(stderr, "FAIL: VC.COM did not render prompt\n");
+    kviktest_stop(); cleanup_fixtures(fixture_dir); return 1;
+  }
+  run_tests();
+  alarm(0);
+  kviktest_coverage_report(vc_path, 55296);
+  kviktest_coverage_dump("coverage_screen_contract.bin");
+  printf("\nStopping emulator...\n"); fflush(stdout);
+  kviktest_stop();
+  cleanup_fixtures(fixture_dir);
+  printf("\n=== test_screen_contract: %d passed, %d failed ===\n",
+         g_pass, g_fail);
+  fflush(stdout);
+  _exit(g_fail > 0 ? 1 : 0);
+}
