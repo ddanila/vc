@@ -34,17 +34,22 @@ TEST_GROUPS_BASE = \
     test_panel_adv test_panel_keys \
     test_coverage_deep test_coverage_gaps test_coverage_gaps2 \
     test_error_inject test_error_access \
-    test_render_panel test_cmdline_edit test_select_filter \
+    test_render_panel test_cmdline_edit \
     test_nav_edges test_recovery
 
 # Editor (F4) is not present in 4.99.09; these only run against 4.05.
 TEST_GROUPS_EDITOR = test_editor test_deep_editors test_gaps_editors
+
+# Selection/filter key routing and dialogs differ in the overlay-based 4.99
+# alpha. Keep the source-build behavior oracle with the 4.05 suite.
+TEST_GROUPS_BEHAVIOR_4_05 = test_select_filter
 
 # Exact source-build UI contract. 4.99.09 has a different implementation and
 # is deliberately not covered by the 4.05-specific character/attribute oracle.
 TEST_GROUPS_CONTRACT_4_05 = test_screen_contract
 
 TEST_GROUPS_4_05    = $(TEST_GROUPS_BASE) $(TEST_GROUPS_EDITOR) \
+                      $(TEST_GROUPS_BEHAVIOR_4_05) \
                       $(TEST_GROUPS_CONTRACT_4_05)
 TEST_GROUPS_4_99_09 = $(TEST_GROUPS_BASE)
 
