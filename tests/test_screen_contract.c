@@ -186,6 +186,16 @@ static int panel_frame_cells_equal(const struct screen_snapshot *a,
            b->cells[21 * SCREEN_COLS + base + 39];
 }
 
+static int cursor_slot(const struct screen_snapshot *screen, int base) {
+  int slot;
+  for (slot = 0; slot < 54; ++slot) {
+    int row = 2 + slot % 18;
+    int col = base + 1 + (slot / 18) * 13;
+    if (cell_attr(screen, row, col) == ATTR_CURSOR) return slot;
+  }
+  return -1;
+}
+
 static int hidden_panel_is_dos_blank(const struct screen_snapshot *screen) {
   int row, col;
   for (row = 0; row <= 22; ++row)
@@ -200,6 +210,7 @@ static void run_tests(void) {
   struct screen_snapshot initial, both, idle, moved, moved_back;
   struct screen_snapshot hidden, restored, switched, typed;
   struct screen_snapshot before_scroll, scrolled;
+  struct screen_snapshot home, page_down, page_up, end, home_again;
 
   capture(&initial);
   check(initial.count == 25 * SCREEN_COLS, "captured all 25 text rows");
@@ -302,6 +313,46 @@ static void run_tests(void) {
           "page-boundary move leaves the command row untouched");
     check(!region_cells_equal(&before_scroll, &scrolled, 2, 21, 1, 38),
           "page-boundary move changes the active file/status interior");
+
+    kviktest_send_key(KEY_HOME);
+    usleep(300000);
+    capture(&home);
+    check(cursor_slot(&home, 0) == 0,
+          "Home places the active cursor in the first visible slot");
+    kviktest_send_key(0x5100);  /* PgDn */
+    usleep(300000);
+    capture(&page_down);
+    check(cursor_slot(&page_down, 0) == 0 &&
+          !region_cells_equal(&home, &page_down, 2, 21, 1, 38),
+          "PgDn advances a full view and keeps the cursor at its first slot");
+    check(panel_frame_cells_equal(&home, &page_down, 0) &&
+          region_cells_equal(&home, &page_down, 1, 22, 40, 79) &&
+          region_cells_equal(&home, &page_down, 23, 23, 0, 79),
+          "PgDn preserves frames, inactive panel, and command row");
+    kviktest_send_key(0x4900);  /* PgUp */
+    usleep(300000);
+    capture(&page_up);
+    check(!region_cells_equal(&page_down, &page_up, 2, 19, 1, 38) &&
+          region_cells_equal(&page_down, &page_up, 21, 21, 0, 39),
+          "PgUp moves the view while retaining the selected-file status");
+    check(panel_frame_cells_equal(&page_down, &page_up, 0) &&
+          region_cells_equal(&page_down, &page_up, 1, 22, 40, 79) &&
+          region_cells_equal(&page_down, &page_up, 23, 23, 0, 79),
+          "PgUp preserves frames, inactive panel, and command row");
+    kviktest_send_key(0x4f00);  /* End */
+    usleep(300000);
+    capture(&end);
+    check(cursor_slot(&end, 0) == 53,
+          "End places the active cursor in the final visible slot");
+    check(panel_frame_cells_equal(&page_up, &end, 0) &&
+          region_cells_equal(&page_up, &end, 1, 22, 40, 79) &&
+          region_cells_equal(&page_up, &end, 23, 23, 0, 79),
+          "End preserves frames, inactive panel, and command row");
+    kviktest_send_key(KEY_HOME);
+    usleep(300000);
+    capture(&home_again);
+    check(region_cells_equal(&home, &home_again, 1, 24, 0, 79),
+          "Home restores the exact non-clock screen from End");
   } else {
     check(1, "page-boundary contract skipped for caller-supplied fixture");
   }
