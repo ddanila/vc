@@ -237,12 +237,26 @@ static int status_names_first_panel_entry(
   return 1;
 }
 
-static int hidden_panel_is_dos_blank(const struct screen_snapshot *screen) {
+static int hidden_panel_is_dos_blank(const struct screen_snapshot *screen,
+                                     int base) {
   int row, col;
   for (row = 0; row <= 22; ++row)
-    for (col = 0; col < 40; ++col)
+    for (col = base; col < base + 40; ++col)
       if (cell_char(screen, row, col) != ' ' ||
           cell_attr(screen, row, col) != ATTR_DOS)
+        return 0;
+  return 1;
+}
+
+static int panel_cells_relocated(const struct screen_snapshot *before,
+                                 int before_base,
+                                 const struct screen_snapshot *after,
+                                 int after_base) {
+  int row, col;
+  for (row = 1; row <= 22; ++row)
+    for (col = 0; col < 40; ++col)
+      if (before->cells[row * SCREEN_COLS + before_base + col] !=
+          after->cells[row * SCREEN_COLS + after_base + col])
         return 0;
   return 1;
 }
@@ -316,10 +330,11 @@ static void run_tests(void) {
   struct screen_snapshot refreshed;
   struct screen_snapshot left_drive, left_drive_restored;
   struct screen_snapshot right_drive, right_drive_restored;
+  struct screen_snapshot before_swap, swapped, swapped_back, both_again;
 
   capture(&initial);
   check(initial.count == 25 * SCREEN_COLS, "captured all 25 text rows");
-  check(hidden_panel_is_dos_blank(&initial),
+  check(hidden_panel_is_dos_blank(&initial, 0),
         "initial inactive left panel is blank DOS text");
   check(panel_frame_is_exact(&initial, 40),
         "initial right panel has exact VC 4.05 frame and titles");
@@ -517,6 +532,37 @@ static void run_tests(void) {
     check(region_cells_equal(&left_drive_restored, &right_drive_restored,
                              1, 24, 0, 79),
           "Escape from Alt-F2 restores every non-clock screen cell");
+
+    kviktest_send_key(0x1910);  /* Ctrl+P: hide inactive right panel. */
+    usleep(500000);
+    capture(&before_swap);
+    check(panel_frame_is_exact(&before_swap, 0) &&
+          panel_attributes_are_exact(&before_swap, 0, 1) &&
+          hidden_panel_is_dos_blank(&before_swap, 40),
+          "Ctrl-P prepares one visible active panel for swap");
+    kviktest_send_key(0x1615);  /* Ctrl+U: swap WCB roles. */
+    usleep(500000);
+    capture(&swapped);
+    check(hidden_panel_is_dos_blank(&swapped, 0) &&
+          panel_frame_is_exact(&swapped, 40) &&
+          panel_attributes_are_exact(&swapped, 40, 1),
+          "Ctrl-U moves visibility and active panel to the other side");
+    check(panel_cells_relocated(&before_swap, 0, &swapped, 40) &&
+          region_cells_equal(&before_swap, &swapped, 23, 23, 0, 79),
+          "Ctrl-U relocates the WCB screen state and preserves command row");
+    kviktest_send_key(0x1615);  /* Ctrl+U: swap back. */
+    usleep(500000);
+    capture(&swapped_back);
+    check(region_cells_equal(&before_swap, &swapped_back, 1, 24, 0, 79),
+          "second Ctrl-U restores the exact non-clock screen state");
+    kviktest_send_key(0x1910);  /* Ctrl+P: restore inactive right panel. */
+    usleep(500000);
+    capture(&both_again);
+    check(panel_frame_is_exact(&both_again, 0) &&
+          panel_frame_is_exact(&both_again, 40) &&
+          panel_attributes_are_exact(&both_again, 0, 1) &&
+          panel_attributes_are_exact(&both_again, 40, 0),
+          "Ctrl-P restores both panels after swap oracle");
   } else {
     check(1, "page-boundary contract skipped for caller-supplied fixture");
   }
