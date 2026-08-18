@@ -299,6 +299,15 @@ static void test_editor_open_error(void) {
 static void test_disk_full_abort(void) {
   printf("\n--- Disk full → Abort ---\n");
 
+  /* This is a source-level 4.05 recovery contract.  The 4.99.09 alpha
+   * presents a different copy dialog under the captured test setup and
+   * never reaches this path, so pretending that its still-open prompt is
+   * an error/recovery success would be a false positive. */
+  if (test_is_vc_499()) {
+    printf("  SKIP: 4.05-specific abort-cleanup contract\n");
+    return;
+  }
+
   navigate_to("hello", "HELLO");
   kviktest_send_key(KEY_F5);
   usleep(500000);
@@ -312,9 +321,10 @@ static void test_disk_full_abort(void) {
   kviktest_send_key(KEY_ENTER);
   usleep(3000000);
 
-  /* VC shows "There isn't enough room to copy" dialog. */
-  check(kviktest_wait_for_text_anywhere("Abort", 5000, NULL, NULL) ||
-        kviktest_wait_for_text_anywhere("enough", 1000, NULL, NULL),
+  /* Require the distinctive error text.  Searching for "Abort" is not
+   * sufficient because the destination filename itself is ABORT.TXT. */
+  check(kviktest_wait_for_text_anywhere("enough room to copy", 5000,
+                                        NULL, NULL),
         "disk full dialog shown");
 
   /* Press Enter on [Abort] (default/first button). */
@@ -323,15 +333,14 @@ static void test_disk_full_abort(void) {
 
   kviktest_clear_dos_error();
 
-  check(kviktest_wait_for_text(23, 0, "C:\\>", 3000) ||
-        kviktest_wait_for_text_anywhere("Help", 2000, NULL, NULL),
-        "back to panels after abort");
+  check(!kviktest_find_text("enough room to copy", NULL, NULL) &&
+        !kviktest_find_text("Continue copying to", NULL, NULL),
+        "copy/error dialog closed after abort");
 
-  /* ABORT.TXT should have been deleted by the abort cleanup. */
-  { int gone = !kviktest_find_text("abort", NULL, NULL) &&
-               !kviktest_find_text("ABORT", NULL, NULL);
-    check(gone, "ABORT.TXT cleaned up by VC");
-  }
+  /* Verify cleanup on the mounted filesystem, not via potentially stale
+   * panel text. */
+  check(!host_path_exists("ABORT.TXT") && !host_path_exists("abort.txt"),
+        "ABORT.TXT cleaned up by VC");
 }
 
 
