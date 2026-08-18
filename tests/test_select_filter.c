@@ -59,6 +59,10 @@ static void test_restore_selection(void) {
   /* Invert with Gray* (this saves previous selection). */
   kviktest_send_key(0x372A);
   usleep(500000);
+  check(kviktest_find_text("Invert the files", NULL, NULL),
+        "invert-selection dialog opened");
+  kviktest_send_key(KEY_ENTER);
+  usleep(500000);
   check(kviktest_is_running(), "selection inverted");
 
   /* Ctrl+M — restore the previous selection. */
@@ -69,7 +73,11 @@ static void test_restore_selection(void) {
   /* Deselect all. */
   kviktest_send_key(0x372A);
   usleep(300000);
+  kviktest_send_key(KEY_ENTER);
+  usleep(300000);
   kviktest_send_key(0x372A);
+  usleep(300000);
+  kviktest_send_key(KEY_ENTER);
   usleep(300000);
 }
 
@@ -82,9 +90,7 @@ static void test_file_filter(void) {
   usleep(500000);
 
   /* Should see "Filter" dialog. Type *.TXT. */
-  check(kviktest_find_text("Filter", NULL, NULL) ||
-        kviktest_find_text("filter", NULL, NULL) ||
-        kviktest_is_running(),
+  check(kviktest_find_text("Select files to display", NULL, NULL),
         "filter dialog appeared");
 
   /* Clear and type *.TXT filter. */
@@ -100,7 +106,9 @@ static void test_file_filter(void) {
 
   /* Panel should now show only .TXT files. Check that some .TXT
      file is visible and a non-.TXT file might not be. */
-  check(kviktest_is_running(), "filter applied");
+  check(kviktest_find_text("gamma    txt", NULL, NULL) &&
+        !kviktest_find_text("beta     doc", NULL, NULL),
+        "filter displays TXT files and hides non-matches");
 
   /* Now restore default filter *.* */
   kviktest_send_key(CTRL_F);
@@ -112,7 +120,8 @@ static void test_file_filter(void) {
   usleep(1000000);
 
   /* Verify files are back. */
-  check(kviktest_is_running(), "filter restored to *.*");
+  check(kviktest_find_text("beta     doc", NULL, NULL),
+        "filter restored to *.*");
 }
 
 static void run_tests(void) {
