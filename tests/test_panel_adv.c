@@ -10,6 +10,20 @@
  */
 #include "test_common.h"
 
+static void create_destination_dir(void) {
+  printf("\n--- Create isolated destination directory ---\n");
+
+  kviktest_send_key(KEY_F7);
+  check(kviktest_wait_for_text_anywhere("Create the directory", 2000,
+                                        NULL, NULL),
+        "F7 destination directory dialog opened");
+  type_string("SUBDIR2");
+  kviktest_send_key(KEY_ENTER);
+  usleep(1000000);
+  check(host_is_dir("SUBDIR2") || host_is_dir("subdir2"),
+        "SUBDIR2 exists in this test's isolated fixture");
+}
+
 /* ---- Copy to existing file (overwrite dialog) ---- */
 static void test_copy_overwrite(void) {
   printf("\n--- Copy to existing file (overwrite dialog) ---\n");
@@ -51,7 +65,7 @@ static void test_copy_to_subdir(void) {
   /* Navigate to HELLO.TXT. */
   navigate_to("hello", "HELLO");
 
-  /* F5 = Copy. Type destination: SUBDIR2\ (existing subdir from fixtures). */
+  /* F5 = Copy. Type destination: SUBDIR2\ (created in this fixture). */
   kviktest_send_key(KEY_F5);
   usleep(500000);
 
@@ -59,7 +73,9 @@ static void test_copy_to_subdir(void) {
   kviktest_send_key(KEY_ENTER);
   usleep(2000000);
 
-  check(kviktest_is_running(), "alive after copy to subdir");
+  check(host_path_exists("SUBDIR2/HELLO.TXT") ||
+        host_path_exists("subdir2/hello.txt"),
+        "HELLO.TXT copied into SUBDIR2");
 }
 
 /* ---- F6 move to subdirectory ---- */
@@ -80,8 +96,12 @@ static void test_move_to_subdir(void) {
   /* DELTA.BIN should disappear from the root panel. */
   { int gone = !kviktest_find_text("delta", NULL, NULL) &&
                !kviktest_find_text("DELTA", NULL, NULL);
-    check(gone || kviktest_is_running(), "DELTA.BIN moved to subdir");
+    check(gone, "DELTA.BIN removed from root panel after move");
   }
+  check(!host_path_exists("DELTA.BIN") &&
+        (host_path_exists("SUBDIR2/DELTA.BIN") ||
+         host_path_exists("subdir2/delta.bin")),
+        "DELTA.BIN moved into SUBDIR2 on the host filesystem");
 
   /* Move it back: enter SUBDIR2, find DELTA.BIN, F6 move to C:\ */
   navigate_to("subdir2", "SUBDIR2");
@@ -113,6 +133,7 @@ static void test_move_to_subdir(void) {
 /* ---- Help system deep navigation ---- */
 static void run_tests(void) {
   test_copy_overwrite();
+  create_destination_dir();
   test_copy_to_subdir();
   test_move_to_subdir();
 }

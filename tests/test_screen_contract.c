@@ -1,0 +1,209 @@
+/*
+ * test_screen_contract.c: exact VC 4.05 text-mode screen contract.
+ *
+ * Character-only substring checks cannot distinguish a correctly rendered
+ * commander from a damaged frame or a cursor highlight on the wrong panel.
+ * This test therefore checks both CP437 frame cells and VGA attributes.
+ */
+#include "test_common.h"
+
+#define SCREEN_COLS 80
+#define SCREEN_CELLS (SCREEN_COLS * 50)
+#define ATTR_PANEL 0x1b
+#define ATTR_HEADING 0x1e
+#define ATTR_CURSOR 0x30
+#define ATTR_DOS 0x07
+
+struct screen_snapshot {
+  unsigned short cells[SCREEN_CELLS];
+  int count;
+};
+
+static void capture(struct screen_snapshot *screen) {
+  screen->count = kviktest_read_screen(screen->cells, SCREEN_CELLS);
+}
+
+static unsigned char cell_char(const struct screen_snapshot *screen,
+                               int row, int col) {
+  int index = row * SCREEN_COLS + col;
+  if (index < 0 || index >= screen->count) return 0;
+  return (unsigned char)(screen->cells[index] & 0xff);
+}
+
+static unsigned char cell_attr(const struct screen_snapshot *screen,
+                               int row, int col) {
+  int index = row * SCREEN_COLS + col;
+  if (index < 0 || index >= screen->count) return 0;
+  return (unsigned char)(screen->cells[index] >> 8);
+}
+
+static int row_text_is(const struct screen_snapshot *screen, int row, int col,
+                       const char *text) {
+  while (*text) {
+    if (cell_char(screen, row, col++) != (unsigned char)*text++) return 0;
+  }
+  return 1;
+}
+
+static int panel_frame_is_exact(const struct screen_snapshot *screen,
+                                int base) {
+  int row, col;
+
+  if (cell_char(screen, 0, base) != 0xc9 ||
+      cell_char(screen, 0, base + 13) != 0xd1 ||
+      cell_char(screen, 0, base + 26) != 0xd1 ||
+      cell_char(screen, 0, base + 39) != 0xbb)
+    return 0;
+  for (col = 1; col <= 12; ++col)
+    if (cell_char(screen, 0, base + col) != 0xcd) return 0;
+  for (col = 14; col <= 16; ++col)
+    if (cell_char(screen, 0, base + col) != 0xcd) return 0;
+  if (!row_text_is(screen, 0, base + 17, " C:\\ ")) return 0;
+  for (col = 22; col <= 25; ++col)
+    if (cell_char(screen, 0, base + col) != 0xcd) return 0;
+  for (col = 27; col <= 38; ++col)
+    if (cell_char(screen, 0, base + col) != 0xcd) return 0;
+
+  if (cell_char(screen, 1, base) != 0xba ||
+      cell_char(screen, 1, base + 13) != 0xb3 ||
+      cell_char(screen, 1, base + 26) != 0xb3 ||
+      cell_char(screen, 1, base + 39) != 0xba ||
+      !row_text_is(screen, 1, base + 5, "Name") ||
+      !row_text_is(screen, 1, base + 18, "Name") ||
+      !row_text_is(screen, 1, base + 31, "Name"))
+    return 0;
+
+  for (row = 2; row <= 19; ++row)
+    if (cell_char(screen, row, base) != 0xba ||
+        cell_char(screen, row, base + 13) != 0xb3 ||
+        cell_char(screen, row, base + 26) != 0xb3 ||
+        cell_char(screen, row, base + 39) != 0xba)
+      return 0;
+
+  if (cell_char(screen, 20, base) != 0xc7 ||
+      cell_char(screen, 20, base + 13) != 0xc1 ||
+      cell_char(screen, 20, base + 26) != 0xc1 ||
+      cell_char(screen, 20, base + 39) != 0xb6)
+    return 0;
+  for (col = 1; col <= 38; ++col)
+    if (col != 13 && col != 26 &&
+        cell_char(screen, 20, base + col) != 0xc4)
+      return 0;
+
+  if (cell_char(screen, 21, base) != 0xba ||
+      cell_char(screen, 21, base + 39) != 0xba ||
+      cell_char(screen, 22, base) != 0xc8 ||
+      cell_char(screen, 22, base + 39) != 0xbc)
+    return 0;
+  for (col = 1; col <= 38; ++col)
+    if (cell_char(screen, 22, base + col) != 0xcd) return 0;
+  return 1;
+}
+
+static int panel_attributes_are_exact(const struct screen_snapshot *screen,
+                                      int base, int active) {
+  int col;
+  if (cell_attr(screen, 0, base) != ATTR_PANEL ||
+      cell_attr(screen, 1, base) != ATTR_PANEL ||
+      cell_attr(screen, 20, base) != ATTR_PANEL ||
+      cell_attr(screen, 22, base + 39) != ATTR_PANEL)
+    return 0;
+  for (col = 0; col < 4; ++col) {
+    if (cell_attr(screen, 1, base + 5 + col) != ATTR_HEADING ||
+        cell_attr(screen, 1, base + 18 + col) != ATTR_HEADING ||
+        cell_attr(screen, 1, base + 31 + col) != ATTR_HEADING)
+      return 0;
+  }
+  for (col = 1; col <= 12; ++col)
+    if (cell_attr(screen, 2, base + col) !=
+        (active ? ATTR_CURSOR : ATTR_PANEL))
+      return 0;
+  for (col = 17; col <= 21; ++col)
+    if (cell_attr(screen, 0, base + col) !=
+        (active ? ATTR_CURSOR : ATTR_PANEL))
+      return 0;
+  return 1;
+}
+
+static int region_chars_equal(const struct screen_snapshot *a,
+                              const struct screen_snapshot *b,
+                              int first_row, int last_row) {
+  int row, col;
+  for (row = first_row; row <= last_row; ++row)
+    for (col = 0; col < SCREEN_COLS; ++col)
+      if (cell_char(a, row, col) != cell_char(b, row, col)) return 0;
+  return 1;
+}
+
+static int hidden_panel_is_dos_blank(const struct screen_snapshot *screen) {
+  int row, col;
+  for (row = 0; row <= 22; ++row)
+    for (col = 0; col < 40; ++col)
+      if (cell_char(screen, row, col) != ' ' ||
+          cell_attr(screen, row, col) != ATTR_DOS)
+        return 0;
+  return 1;
+}
+
+static void run_tests(void) {
+  struct screen_snapshot initial, both, hidden, restored, switched, typed;
+
+  capture(&initial);
+  check(initial.count == 25 * SCREEN_COLS, "captured all 25 text rows");
+  check(hidden_panel_is_dos_blank(&initial),
+        "initial inactive left panel is blank DOS text");
+  check(panel_frame_is_exact(&initial, 40),
+        "initial right panel has exact VC 4.05 frame and titles");
+  check(panel_attributes_are_exact(&initial, 40, 1),
+        "initial right panel has exact heading and cursor attributes");
+
+  kviktest_send_key(0x1910);  /* Ctrl+P: show inactive left panel. */
+  usleep(700000);
+  capture(&both);
+  check(panel_frame_is_exact(&both, 0) && panel_frame_is_exact(&both, 40),
+        "Ctrl+P renders both exact panel frames");
+  check(panel_attributes_are_exact(&both, 0, 0) &&
+        panel_attributes_are_exact(&both, 40, 1),
+        "inactive and active panel attributes are distinct and exact");
+
+  kviktest_send_key(0x180f);  /* Ctrl+O: temporarily hide both panels. */
+  usleep(700000);
+  capture(&hidden);
+  check(!panel_frame_is_exact(&hidden, 0) &&
+        !panel_frame_is_exact(&hidden, 40),
+        "Ctrl+O removes both panel frames");
+  check(row_text_is(&hidden, 23, 0, "C:\\>"),
+        "Ctrl+O preserves the exact command prompt");
+
+  kviktest_send_key(KEY_ESC);
+  usleep(700000);
+  capture(&restored);
+  check(region_chars_equal(&both, &restored, 0, 24),
+        "key after Ctrl+O restores every screen character");
+  check(panel_attributes_are_exact(&restored, 0, 0) &&
+        panel_attributes_are_exact(&restored, 40, 1),
+        "key after Ctrl+O restores panel attributes");
+
+  kviktest_send_key(KEY_TAB);
+  usleep(500000);
+  capture(&switched);
+  check(region_chars_equal(&restored, &switched, 0, 24),
+        "Tab changes active panel without damaging screen characters");
+  check(panel_attributes_are_exact(&switched, 0, 1) &&
+        panel_attributes_are_exact(&switched, 40, 0),
+        "Tab moves the exact cursor attributes to the left panel");
+
+  type_string("abc");
+  usleep(300000);
+  capture(&typed);
+  check(row_text_is(&typed, 23, 0, "C:\\>abc"),
+        "command entry appears at the exact prompt position");
+  check(panel_frame_is_exact(&typed, 0) && panel_frame_is_exact(&typed, 40),
+        "command entry preserves both exact panel frames");
+
+  kviktest_send_key(KEY_ESC);
+  check(kviktest_wait_for_text(23, 0, "C:\\>", 2000),
+        "Escape clears command entry back to the exact prompt");
+}
+
+TEST_MAIN("test_screen_contract", "coverage_screen_contract.bin")

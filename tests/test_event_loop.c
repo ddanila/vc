@@ -138,7 +138,7 @@ static void test_ctrl_o_panels(void) {
         "command line visible after Ctrl+O");
 
   /* Panel content should NOT be visible. */
-  check(!kviktest_find_text("Name", NULL, NULL) || kviktest_is_running(),
+  check(!kviktest_find_text("Name", NULL, NULL),
         "panels hidden after Ctrl+O");
 
   /* Press any key to restore panels. */
@@ -146,8 +146,7 @@ static void test_ctrl_o_panels(void) {
   usleep(1000000);
 
   /* Panels should be back. */
-  check(kviktest_wait_for_text_anywhere("Name", 3000, NULL, NULL) ||
-        kviktest_wait_for_text_anywhere("Help", 2000, NULL, NULL),
+  check(kviktest_wait_for_text_anywhere("Name", 3000, NULL, NULL),
         "panels restored after Ctrl+O + key");
 }
 
@@ -174,29 +173,43 @@ static void test_f9_menu_open_close(void) {
   kviktest_send_key(KEY_ESC);
   usleep(500000);
 
-  check(kviktest_wait_for_text(23, 0, "C:\\>", 3000) ||
-        kviktest_wait_for_text_anywhere("Help", 2000, NULL, NULL),
+  check(kviktest_wait_for_text(23, 0, "C:\\>", 3000),
         "back to panels after F9 menu");
 }
 
 static void test_ctrl_p_toggle(void) {
+  int was_visible, is_visible;
+  char buf[41];
+
   printf("\n--- Ctrl+P toggle non-active panel ---\n");
 
-  /* Start with only right panel on. Ctrl+P should enable left. */
+  /* Earlier Escape/menu tests may leave the global panel display hidden.
+   * Restore it first; Ctrl+P only toggles the non-active panel while the
+   * panel display is up. */
+  if (!kviktest_find_text("Name", NULL, NULL)) {
+    kviktest_send_key(KEY_ESC);
+    check(kviktest_wait_for_text_anywhere("Name", 3000, NULL, NULL),
+          "panel display restored before Ctrl+P");
+  }
+
+  kviktest_read_text(1, 0, buf, 40);
+  was_visible = strstr(buf, "Name") != NULL;
+
+  /* One Ctrl+P must invert the left (non-active) panel's visibility. */
   kviktest_send_key(0x1910);  /* Ctrl+P */
   usleep(1000000);
 
-  /* Left panel should now be visible — look for "Name" in left area. */
-  { char buf[41];
-    kviktest_read_text(1, 0, buf, 40);
-    check(strstr(buf, "Name") != NULL || kviktest_is_running(),
-          "Ctrl+P enabled left panel");
-  }
+  kviktest_read_text(1, 0, buf, 40);
+  is_visible = strstr(buf, "Name") != NULL;
+  check(is_visible != was_visible,
+        "Ctrl+P inverted non-active panel visibility");
 
-  /* Ctrl+P again should hide left panel. */
+  /* A second Ctrl+P must restore the exact prior visibility state. */
   kviktest_send_key(0x1910);
   usleep(500000);
-  check(kviktest_is_running(), "Ctrl+P toggled panel off");
+  kviktest_read_text(1, 0, buf, 40);
+  check((strstr(buf, "Name") != NULL) == was_visible,
+        "second Ctrl+P restored non-active panel visibility");
 }
 
 static void test_menu_highlight(void) {
@@ -219,8 +232,7 @@ static void test_menu_highlight(void) {
   /* Close menu. */
   kviktest_send_key(KEY_ESC);
   usleep(500000);
-  check(kviktest_wait_for_text(23, 0, "C:\\>", 3000) ||
-        kviktest_is_running(),
+  check(kviktest_wait_for_text(23, 0, "C:\\>", 3000),
         "back to panels after menu navigate");
 }
 

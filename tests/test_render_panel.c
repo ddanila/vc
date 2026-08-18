@@ -156,7 +156,7 @@ static void test_tree_deep(void) {
     kviktest_send_key(0x2B1C);
     usleep(2000000);
   }
-  check(kviktest_wait_for_text(23, 0, "C:\\>", 5000) || kviktest_is_running(),
+  check(kviktest_wait_for_text(23, 0, "C:\\>", 5000),
         "back at root after creating nested dirs");
 
   /* Switch left panel to Tree mode via 'T' hotkey (position-based

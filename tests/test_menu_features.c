@@ -255,8 +255,7 @@ static void test_editor_quit_confirm(void) {
                      kviktest_find_text("Quit", NULL, NULL) ||
                      kviktest_find_text("quit", NULL, NULL) ||
                      kviktest_find_text("Yes", NULL, NULL);
-    check(has_dialog || kviktest_is_running(),
-          "quit confirmation shown for modified file");
+    check(has_dialog, "quit confirmation shown for modified file");
   }
 
   /* Confirm quit with Enter (Yes). */

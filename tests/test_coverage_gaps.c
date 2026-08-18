@@ -36,7 +36,7 @@ static void test_rename_directory(void) {
   /* RNDIR should be gone, RNDIR2 should appear. */
   { int renamed = (kviktest_find_text("rndir2", NULL, NULL) ||
                    kviktest_find_text("RNDIR2", NULL, NULL));
-    check(renamed || kviktest_is_running(), "RNDIR renamed to RNDIR2");
+    check(renamed, "RNDIR renamed to RNDIR2");
   }
 
   /* Clean up: delete RNDIR2. */

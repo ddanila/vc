@@ -40,7 +40,12 @@ TEST_GROUPS_BASE = \
 # Editor (F4) is not present in 4.99.09; these only run against 4.05.
 TEST_GROUPS_EDITOR = test_editor test_deep_editors test_gaps_editors
 
-TEST_GROUPS_4_05    = $(TEST_GROUPS_BASE) $(TEST_GROUPS_EDITOR)
+# Exact source-build UI contract. 4.99.09 has a different implementation and
+# is deliberately not covered by the 4.05-specific character/attribute oracle.
+TEST_GROUPS_CONTRACT_4_05 = test_screen_contract
+
+TEST_GROUPS_4_05    = $(TEST_GROUPS_BASE) $(TEST_GROUPS_EDITOR) \
+                      $(TEST_GROUPS_CONTRACT_4_05)
 TEST_GROUPS_4_99_09 = $(TEST_GROUPS_BASE)
 
 TEST_BINS_4_05    = $(addprefix tests/, $(TEST_GROUPS_4_05))

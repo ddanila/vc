@@ -38,7 +38,7 @@ static void test_file_ops(void) {
   /* Verify TESTDIR is gone. */
   { int gone = !kviktest_find_text("TESTDIR", NULL, NULL) &&
                !kviktest_find_text("testdir", NULL, NULL);
-    check(gone || kviktest_is_running(), "TESTDIR deleted or still alive");
+    check(gone, "TESTDIR removed from panel after deletion");
   }
   check(!host_path_exists("TESTDIR") && !host_path_exists("testdir"),
         "TESTDIR gone from host filesystem");

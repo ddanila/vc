@@ -330,7 +330,7 @@ static void test_disk_full_abort(void) {
   /* ABORT.TXT should have been deleted by the abort cleanup. */
   { int gone = !kviktest_find_text("abort", NULL, NULL) &&
                !kviktest_find_text("ABORT", NULL, NULL);
-    check(gone || kviktest_is_running(), "ABORT.TXT cleaned up by VC");
+    check(gone, "ABORT.TXT cleaned up by VC");
   }
 }
 
