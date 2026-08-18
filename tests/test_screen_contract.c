@@ -357,7 +357,7 @@ static void run_tests(void) {
   struct screen_snapshot hidden, restored, switched, typed;
   struct screen_snapshot before_scroll, scrolled;
   struct screen_snapshot home, page_down, page_up, end, home_again;
-  struct screen_snapshot refreshed;
+  struct screen_snapshot refreshed, reread_error;
   struct screen_snapshot left_drive, left_drive_restored;
   struct screen_snapshot right_drive, right_drive_restored;
   struct screen_snapshot before_swap, swapped, swapped_back, both_again;
@@ -538,6 +538,14 @@ static void run_tests(void) {
             region_cells_equal(&refreshed, &home_again, 1, 22, 40, 79) &&
             region_cells_equal(&refreshed, &home_again, 23, 23, 0, 79),
             "second Ctrl-R preserves frames, inactive panel, and command row");
+
+      kviktest_inject_dos_error(0x4e, 0x1e, 0);
+      kviktest_send_key(0x1312);  /* Ctrl+R with injected read fault. */
+      usleep(700000);
+      capture(&reread_error);
+      check(region_cells_equal(&home_again, &reread_error, 1, 24, 0, 79),
+            "Ctrl-R read failure preserves every non-clock screen cell");
+      kviktest_clear_dos_error();
     }
 
     kviktest_send_key(0x6800);  /* Alt+F1: left drive chooser. */
