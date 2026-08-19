@@ -86,8 +86,13 @@ static void test_exact_user_menu(void) {
 
   check(write_user_menu(), "created deterministic VC.MNU fixture");
   usleep(300000);
-  kviktest_send_key(0x6000);  /* Ctrl-F3: pin source sort to Name */
-  usleep(300000);
+  /* Sort both WCBs through VC's own Ctrl-F3 path. The clean-start active WCB
+   * differs with host directory enumeration even though only Right is shown. */
+  kviktest_send_key(0x6000);  /* Ctrl-F3: sort active by Name */
+  kviktest_send_key(KEY_TAB);
+  kviktest_send_key(0x6000);  /* sort the other panel by Name */
+  kviktest_send_key(KEY_TAB); /* restore the original active side */
+  usleep(600000);
   capture(&baseline);
 
   kviktest_send_key(KEY_F2);
