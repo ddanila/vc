@@ -190,8 +190,10 @@ static int setup_fixtures(const char *master_dir, char **out_dir) {
    * for plain VC is still "no INI, clean state" so the existing 4.05
    * tests run as before. */
   snprintf(cmd, sizeof(cmd),
-           "cp -a '%s'/* '%s'/ 2>/dev/null; rm -f '%s'/VC.INI '%s'/vc.ini '%s'/VC.4.*.INI",
-           master_dir, tmp, tmp, tmp, tmp);
+           "cp -a '%s'/* '%s'/ 2>/dev/null; "
+           "rm -f '%s'/VC.INI '%s'/vc.ini '%s'/VC.4.*.INI; "
+           "find '%s' -mindepth 1 -maxdepth 1 -exec touch -t 202608181900.32 {} +",
+           master_dir, tmp, tmp, tmp, tmp, tmp);
   ret = system(cmd);
   if (ret < 0 || !WIFEXITED(ret) || WEXITSTATUS(ret) != 0) {
     fprintf(stderr, "setup_fixtures: command failed (exit %d): %s\n",
