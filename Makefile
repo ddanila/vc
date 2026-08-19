@@ -49,7 +49,7 @@ TEST_GROUPS_BEHAVIOR_4_05 = test_select_filter
 TEST_GROUPS_CONTRACT_4_05 = test_screen_contract test_viewer_contract \
                             test_selection_contract test_copy_contract \
                             test_mutation_contract test_menu_contract \
-                            test_help_contract
+                            test_help_contract test_user_menu_contract
 
 TEST_GROUPS_4_05    = $(TEST_GROUPS_BASE) $(TEST_GROUPS_EDITOR) \
                       $(TEST_GROUPS_BEHAVIOR_4_05) \
