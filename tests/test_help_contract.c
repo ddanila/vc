@@ -5,8 +5,8 @@
 
 #define SCREEN_COLS 80
 #define SCREEN_CELLS (25 * SCREEN_COLS)
-#define HELP_INDEX_FINGERPRINT UINT64_C(0x41c0320da430d0d0)
-#define HELP_PAGE_FINGERPRINT  UINT64_C(0x277b39ab9cd817e4)
+#define HELP_INDEX_FINGERPRINT UINT64_C(0x926ab9d4266c9b20)
+#define HELP_PAGE_FINGERPRINT  UINT64_C(0xfa96d11770707474)
 
 struct screen_snapshot {
   unsigned short cells[SCREEN_CELLS];
@@ -35,7 +35,10 @@ static uint64_t screen_fingerprint(const struct screen_snapshot *screen) {
 
   if (screen->count != SCREEN_CELLS) return 0;
   for (i = 0; i < screen->count; ++i) {
-    hash ^= (unsigned char)(screen->cells[i] & 0xff);
+    unsigned char character = (unsigned char)(screen->cells[i] & 0xff);
+    if (i >= 21 * SCREEN_COLS + 76 && i <= 21 * SCREEN_COLS + 78)
+      character = 0;  /* live VC clock digits and a/p suffix */
+    hash ^= character;
     hash *= UINT64_C(1099511628211);
     hash ^= (unsigned char)(screen->cells[i] >> 8);
     hash *= UINT64_C(1099511628211);
