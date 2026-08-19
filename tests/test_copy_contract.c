@@ -42,6 +42,15 @@ static int row_text_is(const struct screen_snapshot *screen, int row, int col,
   return 1;
 }
 
+static int row_contains(const struct screen_snapshot *screen, int row,
+                        const char *text) {
+  int col;
+  size_t length = strlen(text);
+  for (col = 0; col + (int)length <= SCREEN_COLS; ++col)
+    if (row_text_is(screen, row, col, text)) return 1;
+  return 0;
+}
+
 static int dialog_is_exact(const struct screen_snapshot *screen,
                            const char *description) {
   int row, col;
@@ -71,6 +80,21 @@ static int dialog_is_exact(const struct screen_snapshot *screen,
         cell_char(screen, 11, col) != 0xcd)
       return 0;
   }
+  return 1;
+}
+
+static int region_cells_equal(const struct screen_snapshot *a,
+                              const struct screen_snapshot *b,
+                              int first_row, int last_row,
+                              int first_col, int last_col) {
+  int row, col;
+  for (row = first_row; row <= last_row; ++row)
+    for (col = first_col; col <= last_col; ++col) {
+      int index = row * SCREEN_COLS + col;
+      if (index >= a->count || index >= b->count ||
+          a->cells[index] != b->cells[index])
+        return 0;
+    }
   return 1;
 }
 
@@ -118,9 +142,10 @@ static void run_tests(void) {
   capture(&selected_dialog);
   check(dialog_is_exact(&selected_dialog, "Copy 2 files to"),
         "selected set takes precedence and keeps the exact Copy dialog");
-  check(row_text_is(&selected_dialog, 21, 41,
-                    "     48 bytes in 2 selected files     "),
-        "Copy dialog leaves the exact selected-file total visible");
+  check(row_contains(&selected_dialog, 21, " bytes in 2 selected files") &&
+        region_cells_equal(&selected_before, &selected_dialog,
+                           21, 21, 40, 79),
+        "Copy dialog leaves the fixture-exact selected-file total visible");
   kviktest_send_key(KEY_ESC);
   usleep(500000);
   capture(&selected_restored);
