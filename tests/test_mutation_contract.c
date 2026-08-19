@@ -180,7 +180,7 @@ static int attributes_dialog_is_exact(const struct screen_snapshot *screen,
     "  [ ] Read only    Date       ",
     "  [x] Archive      ?????????  ",
     "  [ ] Hidden       Time       ",
-    "  [ ] System       ????????   ",
+    "  [ ] System       ?????????  ",
     "",
     "     [ Set ]   [ Cancel ]     "
   };
