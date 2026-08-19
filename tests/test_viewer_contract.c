@@ -64,6 +64,26 @@ static int row_attrs_are(const struct screen_snapshot *screen, int row,
   return 1;
 }
 
+static int wait_for_exact_text_view(struct screen_snapshot *screen) {
+  int attempt;
+
+  for (attempt = 0; attempt < 100; ++attempt) {
+    capture(screen);
+    if (screen->count == 25 * SCREEN_COLS &&
+        row_text_is(screen, 0, 0, "View:") &&
+        row_text_is(screen, 0, 6, "hello.txt") &&
+        row_text_is(screen, 0, 40, "Col 0") &&
+        row_text_is(screen, 0, 62, "12 Bytes") &&
+        row_text_is(screen, 0, 75, "100%") &&
+        row_text_is(screen, 1, 0, "Hello World") &&
+        row_attrs_are(screen, 0, 0, 79, ATTR_VIEW_STATUS) &&
+        row_attrs_are(screen, 1, 0, 79, ATTR_VIEW_BODY))
+      return 1;
+    usleep(100000);
+  }
+  return 0;
+}
+
 static void run_tests(void) {
   struct screen_snapshot panels, text, hex, restored;
 
@@ -71,9 +91,8 @@ static void run_tests(void) {
   capture(&panels);
 
   kviktest_send_key(KEY_F3);
-  check(kviktest_wait_for_text(0, 0, "View:", 3000),
-        "F3 enters the internal viewer");
-  capture(&text);
+  check(wait_for_exact_text_view(&text),
+        "F3 enters the exact completed text view");
   check(row_text_is(&text, 0, 0, "View:") &&
         row_text_is(&text, 0, 6, "hello.txt"),
         "text header has exact title and filename columns");

@@ -130,6 +130,20 @@ static int panel_attributes_are_exact(const struct screen_snapshot *screen,
   return 1;
 }
 
+static int wait_for_exact_initial_panel(struct screen_snapshot *screen) {
+  int attempt;
+
+  for (attempt = 0; attempt < 100; ++attempt) {
+    capture(screen);
+    if (screen->count == 25 * SCREEN_COLS &&
+        panel_frame_is_exact(screen, 40) &&
+        panel_attributes_are_exact(screen, 40, 1))
+      return 1;
+    usleep(100000);
+  }
+  return 0;
+}
+
 static int region_chars_equal(const struct screen_snapshot *a,
                               const struct screen_snapshot *b,
                               int first_row, int last_row) {
@@ -363,7 +377,8 @@ static void run_tests(void) {
   struct screen_snapshot before_swap, swapped, swapped_back, both_again;
   struct screen_snapshot filter, filter_restored;
 
-  capture(&initial);
+  check(wait_for_exact_initial_panel(&initial),
+        "initial exact panel becomes ready");
   check(initial.count == 25 * SCREEN_COLS, "captured all 25 text rows");
   check(hidden_panel_is_dos_blank(&initial, 0),
         "initial inactive left panel is blank DOS text");
