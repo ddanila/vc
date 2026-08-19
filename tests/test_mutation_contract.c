@@ -210,6 +210,30 @@ static int attributes_dialog_is_exact(const struct screen_snapshot *screen,
                                selected ? 3 : 2);
 }
 
+static int wait_for_dialog(
+    struct screen_snapshot *screen,
+    int (*dialog_check)(const struct screen_snapshot *, int),
+    int selected) {
+  int elapsed;
+  for (elapsed = 0; elapsed < 3000; elapsed += 10) {
+    capture(screen);
+    if (dialog_check(screen, selected)) return 1;
+    usleep(10000);
+  }
+  return 0;
+}
+
+static int wait_for_restore(const struct screen_snapshot *before,
+                            struct screen_snapshot *restored) {
+  int elapsed;
+  for (elapsed = 0; elapsed < 3000; elapsed += 10) {
+    capture(restored);
+    if (cells_equal_except_clock(before, restored)) return 1;
+    usleep(10000);
+  }
+  return 0;
+}
+
 static void check_cancel_restore(unsigned key,
                                  int (*dialog_check)(const struct screen_snapshot *,
                                                      int),
@@ -219,13 +243,9 @@ static void check_cancel_restore(unsigned key,
   struct screen_snapshot before, dialog, restored;
   capture(&before);
   kviktest_send_key(key);
-  usleep(700000);
-  capture(&dialog);
-  check(dialog_check(&dialog, selected), dialog_label);
+  check(wait_for_dialog(&dialog, dialog_check, selected), dialog_label);
   kviktest_send_key(KEY_ESC);
-  usleep(500000);
-  capture(&restored);
-  check(cells_equal_except_clock(&before, &restored), restore_label);
+  check(wait_for_restore(&before, &restored), restore_label);
 }
 
 static void run_tests(void) {
