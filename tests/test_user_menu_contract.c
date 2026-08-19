@@ -86,6 +86,8 @@ static void test_exact_user_menu(void) {
 
   check(write_user_menu(), "created deterministic VC.MNU fixture");
   usleep(300000);
+  kviktest_send_key(0x6000);  /* Ctrl-F3: pin source sort to Name */
+  usleep(300000);
   capture(&baseline);
 
   kviktest_send_key(KEY_F2);
