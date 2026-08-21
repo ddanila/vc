@@ -49,6 +49,7 @@ TEST_GROUPS_BEHAVIOR_4_05 = test_select_filter
 TEST_GROUPS_CONTRACT_4_05 = test_screen_contract test_viewer_contract \
                             test_selection_contract test_copy_contract \
                             test_mutation_contract test_menu_contract \
+                            test_panel_metadata_contract \
                             test_help_contract test_user_menu_contract \
                             test_find_contract
 
