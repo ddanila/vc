@@ -91,22 +91,22 @@ static void open_right_panel_menu(void) {
 static const unsigned char *const full_rows[23] = {
   (const unsigned char *)"\xc9\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xd1\xcd\xcd\xcd C:\\ \xcd\xd1\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xd1\xcd\xcd\xcd\xcd\xcd\xcd\xbb",
   (const unsigned char *)"\xba    Name    \xb3   Size  \xb3  Date  \xb3 Time \xba",
-  (const unsigned char *)"\xbazzz      bat\xb3       30\xb3 8-18-26\xb3 7:00p\xba",
-  (const unsigned char *)"\xbazebra    txt\xb3       18\xb3 8-18-26\xb3 7:00p\xba",
-  (const unsigned char *)"\xbavc       hlp\xb3    68836\xb3 8-18-26\xb3 7:00p\xba",
-  (const unsigned char *)"\xbavc       ext\xb3       94\xb3 8-18-26\xb3 7:00p\xba",
-  (const unsigned char *)"\xbatest     bat\xb3       10\xb3 8-18-26\xb3 7:00p\xba",
   (const unsigned char *)"\xbaTEP      BIN\xb3\x10SUB-DIR\x11\xb3 8-18-26\xb3 7:00p\xba",
-  (const unsigned char *)"\xbareadme   txt\xb3       21\xb3 8-18-26\xb3 7:00p\xba",
-  (const unsigned char *)"\xbamiddle   dat\xb3        1\xb3 8-18-26\xb3 7:00p\xba",
-  (const unsigned char *)"\xbahello    txt\xb3       12\xb3 8-18-26\xb3 7:00p\xba",
-  (const unsigned char *)"\xbagamma    txt\xb3       16\xb3 8-18-26\xb3 7:00p\xba",
-  (const unsigned char *)"\xba" "dirinfo     \xb3       61\xb3 8-18-26\xb3 7:00p\xba",
-  (const unsigned char *)"\xba" "delta    bin\xb3        3\xb3 8-18-26\xb3 7:00p\xba",
-  (const unsigned char *)"\xba" "data     bin\xb3        4\xb3 8-18-26\xb3 7:00p\xba",
-  (const unsigned char *)"\xba" "beta     doc\xb3        2\xb3 8-18-26\xb3 7:00p\xba",
-  (const unsigned char *)"\xba" "alpha    doc\xb3        5\xb3 8-18-26\xb3 7:00p\xba",
   (const unsigned char *)"\xba" "aaa      com\xb3        5\xb3 8-18-26\xb3 7:00p\xba",
+  (const unsigned char *)"\xba" "alpha    doc\xb3        5\xb3 8-18-26\xb3 7:00p\xba",
+  (const unsigned char *)"\xba" "beta     doc\xb3        2\xb3 8-18-26\xb3 7:00p\xba",
+  (const unsigned char *)"\xba" "data     bin\xb3        4\xb3 8-18-26\xb3 7:00p\xba",
+  (const unsigned char *)"\xba" "delta    bin\xb3        3\xb3 8-18-26\xb3 7:00p\xba",
+  (const unsigned char *)"\xba" "dirinfo     \xb3       61\xb3 8-18-26\xb3 7:00p\xba",
+  (const unsigned char *)"\xbagamma    txt\xb3       16\xb3 8-18-26\xb3 7:00p\xba",
+  (const unsigned char *)"\xbahello    txt\xb3       12\xb3 8-18-26\xb3 7:00p\xba",
+  (const unsigned char *)"\xbamiddle   dat\xb3        1\xb3 8-18-26\xb3 7:00p\xba",
+  (const unsigned char *)"\xbareadme   txt\xb3       21\xb3 8-18-26\xb3 7:00p\xba",
+  (const unsigned char *)"\xbatest     bat\xb3       10\xb3 8-18-26\xb3 7:00p\xba",
+  (const unsigned char *)"\xbavc       ext\xb3       94\xb3 8-18-26\xb3 7:00p\xba",
+  (const unsigned char *)"\xbavc       hlp\xb3    68836\xb3 8-18-26\xb3 7:00p\xba",
+  (const unsigned char *)"\xbazebra    txt\xb3       18\xb3 8-18-26\xb3 7:00p\xba",
+  (const unsigned char *)"\xbazzz      bat\xb3       30\xb3 8-18-26\xb3 7:00p\xba",
   (const unsigned char *)"\xba            \xb3         \xb3        \xb3      \xba",
   (const unsigned char *)"\xba            \xb3         \xb3        \xb3      \xba",
   (const unsigned char *)"\xc7\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc1\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc1\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc4\xc1\xc4\xc4\xc4\xc4\xc4\xc4\xb6",
@@ -125,7 +125,7 @@ static int full_attrs_are_exact(const struct screen_snapshot *screen) {
                        (col >= 24 && col <= 31) ||
                        (col >= 33 && col <= 37)))
         expected = ATTR_HEADING;
-      if (row == 2 && col >= 1 && col <= 38) expected = ATTR_CURSOR;
+      if (row == 17 && col >= 1 && col <= 38) expected = ATTR_CURSOR;
       if (cell_attr(screen, row, PANEL_BASE + col) != expected) return 0;
     }
   return 1;
@@ -319,14 +319,6 @@ static const char *const size_order[17] = {
   "middle   dat",
 };
 
-static const char *const unsorted_order[17] = {
-  "vc       ini", "zzz      bat", "zebra    txt", "vc       hlp",
-  "vc       ext", "test     bat", "TEP      BIN", "readme   txt",
-  "middle   dat", "hello    txt", "gamma    txt", "dirinfo     ",
-  "delta    bin", "data     bin", "beta     doc", "alpha    doc",
-  "aaa      com",
-};
-
 static int compare_dialog_is_exact(const struct screen_snapshot *screen) {
   static const unsigned char *const rows[5] = {
     (const unsigned char *)"\xc9\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd Compare \xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xbb",
@@ -400,8 +392,29 @@ static int name_attrs_are(const struct screen_snapshot *screen, int row,
   return 1;
 }
 
+static int panel_name_attr_is(const struct screen_snapshot *screen, int base,
+                              const char *name, unsigned char attr) {
+  int row, col, offset;
+  for (col = base + 1; col <= base + 27; col += 13)
+    for (row = 2; row <= 19; ++row) {
+      for (offset = 0; offset < 12; ++offset)
+        if (cell_char(screen, row, col + offset) !=
+            (unsigned char)name[offset])
+          break;
+      if (offset == 12) return name_attrs_are(screen, row, col, attr);
+    }
+  return 0;
+}
+
 static int different_compare_is_exact(const struct screen_snapshot *screen) {
-  int row;
+  int index;
+  static const char *const left_selected[17] = {
+    "aaa      com", "alpha    doc", "beta     doc", "data     bin",
+    "delta    bin", "dirinfo     ", "gamma    txt", "hello    txt",
+    "middle   dat", "onlyroot txt", "readme   txt", "test     bat",
+    "vc       ext", "vc       hlp", "vc       ini", "zebra    txt",
+    "zzz      bat",
+  };
   static const char left_status[] =
       "  69,636 bytes in 17 selected files   ";
   static const char right_status[] =
@@ -410,18 +423,13 @@ static int different_compare_is_exact(const struct screen_snapshot *screen) {
   if (!row_chars_are(screen, 0, 54, " C:\\CMPDIR\\ ") ||
       !row_chars_are(screen, 21, 1, left_status) ||
       !row_chars_are(screen, 21, 41, right_status) ||
-      !name_attrs_are(screen, 2, 1, ATTR_SELECTED) ||
-      !name_attrs_are(screen, 3, 1, ATTR_PANEL) ||
-      !name_attrs_are(screen, 10, 1, ATTR_PANEL) ||
-      !name_attrs_are(screen, 2, 14, ATTR_SELECTED) ||
-      !name_attrs_are(screen, 2, 41, ATTR_CURSOR) ||
-      !name_attrs_are(screen, 3, 41, ATTR_SELECTED))
+      !panel_name_attr_is(screen, 0, "CMPDIR      ", ATTR_PANEL) ||
+      !panel_name_attr_is(screen, 0, "TEP      BIN", ATTR_PANEL) ||
+      !panel_name_attr_is(screen, 40, "..          ", ATTR_CURSOR) ||
+      !panel_name_attr_is(screen, 40, "onlysub  txt", ATTR_SELECTED))
     return 0;
-  for (row = 4; row <= 19; ++row)
-    if (row != 10 && !name_attrs_are(screen, row, 1, ATTR_SELECTED))
-      return 0;
-  for (row = 3; row <= 19; ++row)
-    if (row != 3 && !name_attrs_are(screen, row, 41, ATTR_PANEL))
+  for (index = 0; index < 17; ++index)
+    if (!panel_name_attr_is(screen, 0, left_selected[index], ATTR_SELECTED))
       return 0;
   return 1;
 }
@@ -430,6 +438,14 @@ static void run_tests(void) {
   struct screen_snapshot brief, full, info;
   usleep(500000);
   capture(&brief);
+
+  /* Host directory enumeration is deliberately unspecified. Establish Name
+   * order and one stable cursor identity before pinning every Full cell. */
+  open_right_panel_menu();
+  type_string("n");
+  usleep(500000);
+  check(navigate_to("zzz.bat", "ZZZ.BAT"),
+        "Full oracle starts in deterministic Name order on ZZZ.BAT");
 
   open_right_panel_menu();
   type_string("f");
@@ -465,16 +481,38 @@ static void run_tests(void) {
   usleep(700000);
   check(host_path_exists("VC.INI"),
         "4.05 setup file exists before the sort oracle");
-  kviktest_send_key(0x1312);  /* Ctrl+R: pin the unsorted discovery order. */
+  kviktest_send_key(0x1312);  /* Refresh while retaining the current mode. */
+  usleep(700000);
+  open_right_panel_menu();
+  type_string("u");            /* Expose the host's discovery order once. */
   usleep(700000);
   check(navigate_to("zzz.bat", "ZZZ.BAT"),
         "sort oracle starts with ZZZ.BAT focused");
+  capture(&brief);             /* Host-specific discovery order is the oracle. */
 
   check_sort("n", "Name", name_order, 18, 8);
   check_sort("x", "Extension", extension_order, 5, 9);
   check_sort("m", "Time", time_order, 18, 10);
   check_sort("s", "Size", size_order, 7, 11);
-  check_sort("u", "Unsorted", unsorted_order, 3, 12);
+  {
+    struct screen_snapshot unsorted, menu, restored;
+    open_right_panel_menu();
+    type_string("u");
+    usleep(700000);
+    capture(&unsorted);
+    check(screens_equal(&brief, &unsorted),
+          "4.05 Unsorted restores exact discovery order and cursor");
+    open_right_panel_menu();
+    usleep(200000);
+    capture(&menu);
+    check(sort_checkmark_is_exact(&menu, 12),
+          "4.05 Unsorted sort has the exact menu checkmark");
+    kviktest_send_key(KEY_ESC);
+    usleep(300000);
+    capture(&restored);
+    check(screens_equal(&unsorted, &restored),
+          "4.05 Unsorted menu cancellation restores every cell");
+  }
 
   kviktest_send_key(0x1910);  /* Ctrl+P: show the left panel. */
   usleep(500000);
