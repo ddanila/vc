@@ -191,6 +191,141 @@ static int wait_for_mode(struct screen_snapshot *screen, int info) {
   return 0;
 }
 
+static int brief_order_is(const struct screen_snapshot *screen,
+                          const char *const names[17], int cursor_row) {
+  int row, col;
+  if (screen->count != SCREEN_CELLS) return 0;
+  for (row = 0; row < 17; ++row) {
+    if (strlen(names[row]) != 12) return 0;
+    for (col = 0; col < 12; ++col) {
+      unsigned char expected_attr = row + 2 == cursor_row ?
+                                    ATTR_CURSOR : ATTR_PANEL;
+      if (cell_char(screen, row + 2, 41 + col) !=
+            (unsigned char)names[row][col] ||
+          cell_attr(screen, row + 2, 41 + col) != expected_attr)
+        return 0;
+    }
+    for (col = 54; col <= 78; ++col) {
+      unsigned char expected_char = col == 66 ? 0xb3 : ' ';
+      if (cell_char(screen, row + 2, col) != expected_char ||
+          cell_attr(screen, row + 2, col) != ATTR_PANEL)
+        return 0;
+    }
+  }
+  for (col = 41; col <= 78; ++col)
+    if (cell_char(screen, 19, col) !=
+          (col == 53 || col == 66 ? 0xb3 : ' ') ||
+        cell_attr(screen, 19, col) != ATTR_PANEL)
+      return 0;
+  return cell_char(screen, 1, 45) == 'N' &&
+         cell_char(screen, 1, 58) == 'N' &&
+         cell_char(screen, 1, 71) == 'N' &&
+         cell_char(screen, 21, 41) == 'z' &&
+         cell_char(screen, 21, 42) == 'z' &&
+         cell_char(screen, 21, 43) == 'z' &&
+         cell_char(screen, 21, 44) == '.' &&
+         cell_char(screen, 21, 45) == 'b' &&
+         cell_char(screen, 21, 46) == 'a' &&
+         cell_char(screen, 21, 47) == 't';
+}
+
+static int wait_for_brief_order(struct screen_snapshot *screen,
+                                const char *const names[17],
+                                int cursor_row) {
+  int elapsed;
+  for (elapsed = 0; elapsed < 5000; elapsed += 20) {
+    capture(screen);
+    if (brief_order_is(screen, names, cursor_row)) return 1;
+    usleep(20000);
+  }
+  return 0;
+}
+
+static int sort_checkmark_is_exact(const struct screen_snapshot *screen,
+                                   int sort_row) {
+  int row, count = 0;
+  for (row = 2; row <= 16; ++row)
+    if (cell_char(screen, row, 43) == 0xfb) {
+      ++count;
+      if (row != 2 && row != sort_row) return 0;
+    }
+  return count == 2 && cell_char(screen, 2, 43) == 0xfb &&
+         cell_char(screen, sort_row, 43) == 0xfb;
+}
+
+static int screens_equal(const struct screen_snapshot *a,
+                         const struct screen_snapshot *b) {
+  return a->count == b->count &&
+         memcmp(a->cells, b->cells,
+                (size_t)a->count * sizeof(a->cells[0])) == 0;
+}
+
+static void check_sort(const char *hotkey, const char *label,
+                       const char *const names[17], int cursor_row,
+                       int sort_row) {
+  struct screen_snapshot sorted, menu, restored;
+  char message[128];
+
+  open_right_panel_menu();
+  type_string(hotkey);
+  snprintf(message, sizeof(message),
+           "4.05 %s sort has exact order and preserves the cursor", label);
+  check(wait_for_brief_order(&sorted, names, cursor_row), message);
+
+  open_right_panel_menu();
+  usleep(200000);
+  capture(&menu);
+  snprintf(message, sizeof(message),
+           "4.05 %s sort has the exact menu checkmark", label);
+  check(sort_checkmark_is_exact(&menu, sort_row), message);
+  kviktest_send_key(KEY_ESC);
+  usleep(300000);
+  capture(&restored);
+  snprintf(message, sizeof(message),
+           "4.05 %s menu cancellation restores every cell", label);
+  check(screens_equal(&sorted, &restored), message);
+}
+
+static const char *const name_order[17] = {
+  "TEP      BIN", "aaa      com", "alpha    doc", "beta     doc",
+  "data     bin", "delta    bin", "dirinfo     ", "gamma    txt",
+  "hello    txt", "middle   dat", "readme   txt", "test     bat",
+  "vc       ext", "vc       hlp", "vc       ini", "zebra    txt",
+  "zzz      bat",
+};
+
+static const char *const extension_order[17] = {
+  "TEP      BIN", "dirinfo     ", "test     bat", "zzz      bat",
+  "data     bin", "delta    bin", "aaa      com", "middle   dat",
+  "alpha    doc", "beta     doc", "vc       ext", "vc       hlp",
+  "vc       ini", "gamma    txt", "hello    txt", "readme   txt",
+  "zebra    txt",
+};
+
+static const char *const time_order[17] = {
+  "TEP      BIN", "vc       ini", "aaa      com", "alpha    doc",
+  "beta     doc", "data     bin", "delta    bin", "dirinfo     ",
+  "gamma    txt", "hello    txt", "middle   dat", "readme   txt",
+  "test     bat", "vc       ext", "vc       hlp", "zebra    txt",
+  "zzz      bat",
+};
+
+static const char *const size_order[17] = {
+  "TEP      BIN", "vc       hlp", "vc       ini", "vc       ext",
+  "dirinfo     ", "zzz      bat", "readme   txt", "zebra    txt",
+  "gamma    txt", "hello    txt", "test     bat", "aaa      com",
+  "alpha    doc", "data     bin", "delta    bin", "beta     doc",
+  "middle   dat",
+};
+
+static const char *const unsorted_order[17] = {
+  "vc       ini", "zzz      bat", "zebra    txt", "vc       hlp",
+  "vc       ext", "test     bat", "TEP      BIN", "readme   txt",
+  "middle   dat", "hello    txt", "gamma    txt", "dirinfo     ",
+  "delta    bin", "data     bin", "beta     doc", "alpha    doc",
+  "aaa      com",
+};
+
 static void run_tests(void) {
   struct screen_snapshot brief, full, info;
   usleep(500000);
@@ -224,6 +359,22 @@ static void run_tests(void) {
   }
   check(unchanged_outside_panel(&full, &info),
         "Info mode changes only the selected panel");
+
+  open_right_panel_menu();
+  type_string("b");
+  usleep(700000);
+  check(host_path_exists("VC.INI"),
+        "4.05 setup file exists before the sort oracle");
+  kviktest_send_key(0x1312);  /* Ctrl+R: pin the unsorted discovery order. */
+  usleep(700000);
+  check(navigate_to("zzz.bat", "ZZZ.BAT"),
+        "sort oracle starts with ZZZ.BAT focused");
+
+  check_sort("n", "Name", name_order, 18, 8);
+  check_sort("x", "Extension", extension_order, 5, 9);
+  check_sort("m", "Time", time_order, 18, 10);
+  check_sort("s", "Size", size_order, 7, 11);
+  check_sort("u", "Unsorted", unsorted_order, 3, 12);
 }
 
 TEST_MAIN("test_panel_metadata_contract", "coverage_panel_metadata_contract.bin")
