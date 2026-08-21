@@ -8,6 +8,7 @@
 #define ATTR_PANEL 0x1b
 #define ATTR_HEADING 0x1e
 #define ATTR_CURSOR 0x30
+#define ATTR_SELECTED 0x1e
 
 struct screen_snapshot {
   unsigned short cells[SCREEN_CELLS];
@@ -326,6 +327,105 @@ static const char *const unsorted_order[17] = {
   "aaa      com",
 };
 
+static int compare_dialog_is_exact(const struct screen_snapshot *screen) {
+  static const unsigned char *const rows[5] = {
+    (const unsigned char *)"\xc9\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd Compare \xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xbb",
+    (const unsigned char *)"\xba The two directories appear \xba",
+    (const unsigned char *)"\xba      to be identical.      \xba",
+    (const unsigned char *)"\xba             Ok             \xba",
+    (const unsigned char *)"\xc8\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xbc",
+  };
+  int row, col;
+  for (row = 0; row < 5; ++row) {
+    if (strlen((const char *)rows[row]) != 30) return 0;
+    for (col = 0; col < 30; ++col) {
+      unsigned char expected_attr =
+          row == 3 && col >= 13 && col <= 16 ? ATTR_CURSOR : 0x70;
+      if (cell_char(screen, 8 + row, 25 + col) != rows[row][col] ||
+          cell_attr(screen, 8 + row, 25 + col) != expected_attr)
+        return 0;
+    }
+  }
+  for (row = 8; row <= 12; ++row)
+    if (cell_attr(screen, row, 58) != 0x03 ||
+        cell_attr(screen, row, 59) != 0x03)
+      return 0;
+  return 1;
+}
+
+static int wait_for_compare_dialog(struct screen_snapshot *screen) {
+  int elapsed;
+  for (elapsed = 0; elapsed < 3000; elapsed += 20) {
+    capture(screen);
+    if (compare_dialog_is_exact(screen)) return 1;
+    usleep(20000);
+  }
+  return 0;
+}
+
+static int write_compare_file(const char *directory, const char *name,
+                              const char *contents) {
+  char path[1024];
+  FILE *file;
+  snprintf(path, sizeof(path), "%s/%s", directory, name);
+  file = fopen(path, "wb");
+  if (!file) return 0;
+  if (fputs(contents, file) == EOF || fclose(file) != 0) return 0;
+  return 1;
+}
+
+static int chars_equal_except_status(const struct screen_snapshot *before,
+                                     const struct screen_snapshot *after) {
+  int row, col;
+  for (row = 0; row < 25; ++row) {
+    if (row == 21) continue;
+    for (col = 0; col < SCREEN_COLS; ++col)
+      if (cell_char(before, row, col) != cell_char(after, row, col)) return 0;
+  }
+  return 1;
+}
+
+static int row_chars_are(const struct screen_snapshot *screen, int row,
+                         int col, const char *text) {
+  while (*text)
+    if (cell_char(screen, row, col++) != (unsigned char)*text++) return 0;
+  return 1;
+}
+
+static int name_attrs_are(const struct screen_snapshot *screen, int row,
+                          int col, unsigned char attr) {
+  int offset;
+  for (offset = 0; offset < 12; ++offset)
+    if (cell_attr(screen, row, col + offset) != attr) return 0;
+  return 1;
+}
+
+static int different_compare_is_exact(const struct screen_snapshot *screen) {
+  int row;
+  static const char left_status[] =
+      "  69,636 bytes in 17 selected files   ";
+  static const char right_status[] =
+      "      9 bytes in 1 selected file      ";
+
+  if (!row_chars_are(screen, 0, 54, " C:\\CMPDIR\\ ") ||
+      !row_chars_are(screen, 21, 1, left_status) ||
+      !row_chars_are(screen, 21, 41, right_status) ||
+      !name_attrs_are(screen, 2, 1, ATTR_SELECTED) ||
+      !name_attrs_are(screen, 3, 1, ATTR_PANEL) ||
+      !name_attrs_are(screen, 10, 1, ATTR_PANEL) ||
+      !name_attrs_are(screen, 2, 14, ATTR_SELECTED) ||
+      !name_attrs_are(screen, 2, 41, ATTR_CURSOR) ||
+      !name_attrs_are(screen, 3, 41, ATTR_SELECTED))
+    return 0;
+  for (row = 4; row <= 19; ++row)
+    if (row != 10 && !name_attrs_are(screen, row, 1, ATTR_SELECTED))
+      return 0;
+  for (row = 3; row <= 19; ++row)
+    if (row != 3 && !name_attrs_are(screen, row, 41, ATTR_PANEL))
+      return 0;
+  return 1;
+}
+
 static void run_tests(void) {
   struct screen_snapshot brief, full, info;
   usleep(500000);
@@ -375,6 +475,59 @@ static void run_tests(void) {
   check_sort("m", "Time", time_order, 18, 10);
   check_sort("s", "Size", size_order, 7, 11);
   check_sort("u", "Unsorted", unsorted_order, 3, 12);
+
+  kviktest_send_key(0x1910);  /* Ctrl+P: show the left panel. */
+  usleep(500000);
+  kviktest_send_key(0x1312);  /* Ctrl+R: refresh right. */
+  usleep(500000);
+  kviktest_send_key(KEY_TAB);
+  kviktest_send_key(0x1312);  /* Ctrl+R: refresh left. */
+  usleep(500000);
+  kviktest_send_key(KEY_TAB);
+  usleep(300000);
+  {
+    struct screen_snapshot before_compare, dialog, restored;
+    capture(&before_compare);
+    kviktest_send_key(0x2e03);  /* Ctrl+C: compare directories. */
+    check(wait_for_compare_dialog(&dialog),
+          "4.05 identical-directory Compare dialog is exact");
+    kviktest_send_key(KEY_ESC);
+    usleep(300000);
+    capture(&restored);
+    check(screens_equal(&before_compare, &restored),
+          "Compare acknowledgement restores every screen cell");
+  }
+
+  {
+    char compare_dir[1024];
+    struct screen_snapshot before_different, compared;
+    snprintf(compare_dir, sizeof(compare_dir), "%s/CMPDIR", g_mount_dir);
+    check(mkdir(compare_dir, 0700) == 0,
+          "created isolated compare directory");
+    check(write_compare_file(compare_dir, "ONLYSUB.TXT", "sub-nine\n"),
+          "created nine-byte subdirectory compare fixture");
+    check(write_compare_file(g_mount_dir, "ONLYROOT.TXT", "root-7\n"),
+          "created seven-byte root compare fixture");
+
+    kviktest_send_key(0x1312);  /* Refresh right root panel. */
+    usleep(500000);
+    kviktest_send_key(KEY_TAB);
+    kviktest_send_key(0x1312);  /* Refresh left root panel. */
+    usleep(500000);
+    kviktest_send_key(KEY_TAB);
+    check(navigate_to("CMPDIR", "cmpdir"),
+          "focused compare directory in the right panel");
+    kviktest_send_key(0x7600);  /* Ctrl+PgDn: enter directory. */
+    usleep(700000);
+    capture(&before_different);
+    kviktest_send_key(0x2e03);  /* Ctrl+C: compare different directories. */
+    usleep(700000);
+    capture(&compared);
+    check(chars_equal_except_status(&before_different, &compared),
+          "different-directory Compare changes only selection state");
+    check(different_compare_is_exact(&compared),
+          "different-directory Compare marks exact files and byte totals");
+  }
 }
 
 TEST_MAIN("test_panel_metadata_contract", "coverage_panel_metadata_contract.bin")
